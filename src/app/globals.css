@@ -80,6 +80,25 @@ body {
   to   { transform: translateX(-50%); }
 }
 .animate-marquee { animation: marquee 28s linear infinite; }
+.animate-marquee-slow { animation: marquee 45s linear infinite; }
+.animate-marquee-slow:hover, .animate-marquee:hover { animation-play-state: paused; }
+
+/* shimmer sweep across a button (21st.dev style) */
+@keyframes shimmer {
+  from { transform: translateX(-150%) skewX(-15deg); }
+  to   { transform: translateX(350%) skewX(-15deg); }
+}
+.animate-shimmer { animation: shimmer 2.8s ease-in-out infinite; }
+
+/* animated gradient heading text */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-x 5s ease infinite;
+}
 
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }

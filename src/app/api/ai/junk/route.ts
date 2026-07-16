@@ -5,7 +5,7 @@ const MODEL = "llama-3.3-70b-versatile";
 
 export async function POST(req: NextRequest) {
   try {
-    const { craving, allergies = [], conditions = [] } = await req.json();
+    const { craving, allergies = [], conditions = [], jain = false } = await req.json();
 
     if (!craving) return NextResponse.json({ error: "No craving provided" }, { status: 400 });
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `You are a creative vegetarian chef who specialises in making junk food cravings guilt-free. Someone is craving: "${craving}".
+          content: `You are a creative vegetarian chef who specialises in making junk food cravings guilt-free. Someone is craving: "${craving}".${jain ? "\n\nSTRICT JAIN DIET: absolutely no onion, garlic, ginger, potato, carrot, radish, beetroot or any root vegetable; no mushrooms or fungi; no eggs; no honey." : ""}
 
 Create a healthier vegetarian version of this dish.${allergyNote}${conditionNote}
 

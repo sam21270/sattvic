@@ -21,6 +21,9 @@ export interface PoolMeal {
   image?: string;
   videoUrl?: string;
   sourceUrl?: string;
+  // Manually audited as Jain-safe: no root vegetables, fungi, eggs, honey,
+  // sprouts, or composite sauces that contain onion/garlic (marinara, salsa…).
+  jain?: boolean;
 }
 
 export const MEAL_POOL: PoolMeal[] = [
@@ -32,6 +35,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g Greek yogurt", "1 tbsp honey", "30g granola", "Handful mixed berries", "1 tsp chia seeds"],
     instructions: ["Spoon yogurt into a bowl.", "Top with berries, granola and chia seeds.", "Drizzle honey over the top."],
     tags: ["Quick", "High Protein"], allergens: ["dairy"], conditionFlags: ["kidney"],
+    image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Masala Oats with Peanuts", mealType: "breakfast",
@@ -40,6 +44,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["60g rolled oats", "1 onion, diced", "1 tomato, diced", "2 tbsp peanuts", "1 tsp mustard seeds", "Curry leaves", "Turmeric, chilli powder", "1 tsp oil"],
     instructions: ["Heat oil, splutter mustard seeds and curry leaves.", "Add onion, cook until soft. Add tomato and spices.", "Add oats and 1.5 cups water, simmer 5 min.", "Top with crushed roasted peanuts."],
     tags: ["Indian", "Vegan"], allergens: ["nuts"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Tofu Scramble Wrap", mealType: "breakfast",
@@ -48,6 +53,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g firm tofu, crumbled", "1 wheat tortilla", "½ bell pepper, diced", "¼ tsp turmeric", "Black salt (optional)", "1 tsp oil"],
     instructions: ["Heat oil, sauté pepper 2 min.", "Add crumbled tofu, turmeric, salt. Cook 5 min, stirring.", "Warm tortilla, fill with tofu scramble, roll up."],
     tags: ["Vegan", "Quick"], allergens: ["soy", "gluten"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Besan Chilla (Chickpea Pancake)", mealType: "breakfast",
@@ -64,6 +71,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["3 tbsp chia seeds", "250ml almond milk", "1 scoop vanilla protein powder", "1 tsp maple syrup", "Sliced almonds"],
     instructions: ["Whisk protein powder into almond milk until smooth.", "Stir in chia seeds and maple syrup.", "Refrigerate overnight. Top with sliced almonds before eating."],
     tags: ["Vegan", "Make-Ahead"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Egg White Veggie Omelette", mealType: "breakfast",
@@ -72,6 +80,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["4 egg whites", "Handful spinach", "¼ cup mushrooms, sliced", "1 tomato, diced", "1 tsp olive oil"],
     instructions: ["Sauté mushroom, tomato and spinach in oil until soft.", "Pour egg whites over, cook on medium until set.", "Fold in half and serve."],
     tags: ["High Protein", "Low Carb"], allergens: ["eggs"], conditionFlags: ["kidney"],
+    image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Quinoa Breakfast Porridge", mealType: "breakfast",
@@ -80,6 +89,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["60g quinoa, rinsed", "200ml oat milk", "1 banana, sliced", "½ tsp cinnamon", "1 tbsp maple syrup"],
     instructions: ["Simmer quinoa in oat milk 12-15 min until creamy.", "Stir in cinnamon and maple syrup.", "Top with sliced banana."],
     tags: ["Gluten-Free", "Vegan"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Paneer Bhurji Toast", mealType: "breakfast",
@@ -88,6 +98,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g paneer, crumbled", "2 slices thick bread", "1 onion, diced", "1 tomato, diced", "½ tsp garam masala", "1 tsp butter"],
     instructions: ["Sauté onion until golden, add tomato and spices.", "Add crumbled paneer, cook 4-5 min.", "Toast bread with butter, top with paneer bhurji."],
     tags: ["Indian", "High Protein"], allergens: ["dairy", "gluten"], conditionFlags: ["high cholesterol"],
+    image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Masala Dosa with Sambar", mealType: "breakfast",
@@ -96,6 +107,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["Dosa batter (rice & urad dal)", "2 potatoes, boiled & mashed", "Mustard seeds, curry leaves", "Sambar", "Coconut chutney"],
     instructions: ["Spread dosa batter thin on a hot griddle.", "Cook potato filling with mustard seeds, turmeric, curry leaves.", "Fill dosa, fold, serve with sambar and chutney."],
     tags: ["Indian", "Gluten-Free", "Vegan"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Vegetable Poha", mealType: "breakfast",
@@ -112,6 +124,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["100g acai puree, frozen", "1 banana", "30g granola", "1 scoop protein powder", "Berries"],
     instructions: ["Blend acai, half the banana, and protein powder until thick.", "Pour into a bowl.", "Top with granola, remaining banana, and berries."],
     tags: ["Vegan", "Quick"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Turkish Menemen", mealType: "breakfast",
@@ -120,6 +133,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["3 eggs", "1 green pepper", "2 tomatoes", "40g feta", "1 tsp butter"],
     instructions: ["Sauté pepper until soft, add chopped tomato, cook until jammy.", "Pour in beaten eggs, stir gently until just set.", "Crumble feta over the top, serve immediately."],
     tags: ["Mediterranean", "Quick"], allergens: ["eggs", "dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Sourdough Avocado Toast with Egg", mealType: "breakfast",
@@ -136,6 +150,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 banana, mashed", "2 eggs", "1 scoop protein powder", "30g oats", "Maple syrup"],
     instructions: ["Blend banana, eggs, protein powder and oats into a batter.", "Cook small pancakes on a non-stick pan, 2 min each side.", "Stack and drizzle with maple syrup."],
     tags: ["High Protein", "Quick"], allergens: ["eggs"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Congee with Pickled Vegetables", mealType: "breakfast",
@@ -154,6 +169,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g rajma (kidney beans), soaked", "150g rice", "1 onion", "2 tomatoes", "Ginger-garlic paste", "Garam masala, cumin"],
     instructions: ["Pressure cook rajma until soft.", "Sauté onion, ginger-garlic, tomato into a thick masala.", "Add rajma, simmer 15 min.", "Serve over steamed rice."],
     tags: ["Indian", "Vegan"], allergens: [], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Palak Paneer with Roti", mealType: "main",
@@ -162,6 +178,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["250g spinach", "150g paneer, cubed", "1 onion", "1 tomato", "Ginger-garlic paste", "2 roti"],
     instructions: ["Blanch and blend spinach to a smooth puree.", "Sauté onion, ginger-garlic, tomato. Add spinach puree.", "Add paneer cubes, simmer 8 min.", "Serve with roti."],
     tags: ["Indian", "High Protein"], allergens: ["dairy", "gluten"], conditionFlags: ["high cholesterol"],
+    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Chickpea Quinoa Buddha Bowl", mealType: "main",
@@ -170,6 +187,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g chickpeas, cooked", "80g quinoa", "Mixed greens", "2 tbsp tahini", "Lemon juice", "Roasted vegetables"],
     instructions: ["Roast chickpeas with spices at 200°C for 20 min.", "Cook quinoa according to packet.", "Assemble bowl with greens, quinoa, chickpeas, roasted veg.", "Drizzle tahini-lemon dressing."],
     tags: ["Gluten-Free", "Vegan"], allergens: [], conditionFlags: ["ibs"],
+    jain: true,
   },
   {
     name: "Tofu Stir Fry with Brown Rice", mealType: "main",
@@ -178,6 +196,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g firm tofu, cubed", "100g brown rice", "Mixed bell peppers, broccoli", "Soy sauce", "Garlic, ginger", "1 tbsp sesame oil"],
     instructions: ["Pan-fry tofu until golden on all sides, set aside.", "Stir fry vegetables with garlic and ginger.", "Add tofu back, toss with soy sauce and sesame oil.", "Serve over brown rice."],
     tags: ["Asian", "High Protein"], allergens: ["soy"], conditionFlags: ["high blood pressure"],
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Dal Tadka with Brown Rice", mealType: "main",
@@ -186,6 +205,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g toor dal", "100g brown rice", "1 tomato", "Cumin, mustard seeds", "Garlic, dried red chilli", "1 tbsp ghee or oil"],
     instructions: ["Pressure cook dal with turmeric until soft.", "Heat oil, fry cumin, garlic, dried chilli until fragrant.", "Pour tadka over dal, simmer 5 min.", "Serve over brown rice."],
     tags: ["Indian", "Gluten-Free", "Vegan"], allergens: [], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Mediterranean Lentil Salad", mealType: "main",
@@ -194,6 +214,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g cooked green lentils", "Cucumber, diced", "Cherry tomatoes", "50g feta, crumbled", "Olives", "Lemon juice, olive oil"],
     instructions: ["Combine lentils, cucumber, tomatoes, olives in a bowl.", "Crumble feta over the top.", "Dress with lemon juice and olive oil, toss."],
     tags: ["Mediterranean", "Gluten-Free"], allergens: ["dairy"], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Paneer Tikka Masala with Rice", mealType: "main",
@@ -202,6 +224,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g paneer, cubed", "150g rice", "2 tomatoes, pureed", "2 tbsp cashew paste", "Ginger-garlic paste", "Garam masala"],
     instructions: ["Marinate and grill paneer until charred at edges.", "Cook tomato puree with ginger-garlic and spices until thick.", "Stir in cashew paste, add paneer, simmer 5 min.", "Serve over rice."],
     tags: ["Indian", "High Protein"], allergens: ["dairy", "nuts"], conditionFlags: ["high cholesterol"],
+    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Black Bean & Sweet Potato Bowl", mealType: "main",
@@ -218,6 +241,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["100g soya chunks, soaked", "2 roti", "1 onion", "2 tomatoes", "Ginger-garlic paste", "Garam masala"],
     instructions: ["Boil and squeeze out soaked soya chunks.", "Sauté onion, ginger-garlic, tomato into a masala base.", "Add soya chunks, simmer 10 min.", "Serve with roti."],
     tags: ["Indian", "High Protein"], allergens: ["soy", "gluten"], conditionFlags: ["kidney"],
+    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Mushroom Risotto", mealType: "main",
@@ -234,6 +258,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g chickpeas, cooked", "80g quinoa", "1 onion", "2 tomatoes", "Garam masala, amchur", "Ginger-garlic paste"],
     instructions: ["Sauté onion, ginger-garlic, tomato into a thick base.", "Add chickpeas and spices, simmer 15 min.", "Cook quinoa separately.", "Serve chana masala over quinoa."],
     tags: ["Indian", "Gluten-Free", "Vegan"], allergens: [], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Greek Salad with Feta & Chickpeas", mealType: "main",
@@ -258,6 +283,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g flat rice noodles", "150g firm tofu, cubed", "Beansprouts", "2 tbsp tamarind paste", "2 tbsp peanuts, crushed", "Lime"],
     instructions: ["Soak noodles until pliable.", "Pan-fry tofu until golden.", "Stir fry noodles with tamarind sauce, add tofu and beansprouts.", "Top with crushed peanuts and lime."],
     tags: ["Thai"], allergens: ["soy", "nuts"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Margherita Pizza", mealType: "main",
@@ -266,6 +292,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 pizza base", "100g mozzarella", "3 tbsp tomato sauce", "Fresh basil", "Olive oil"],
     instructions: ["Spread tomato sauce on the base.", "Tear mozzarella over the top.", "Bake at 240°C for 10-12 min until bubbling.", "Finish with fresh basil and olive oil."],
     tags: ["Italian"], allergens: ["dairy", "gluten"], conditionFlags: ["high cholesterol"],
+    image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Falafel Wrap", mealType: "main",
@@ -282,6 +309,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g rice", "150g black beans", "Grilled peppers & onion", "Corn", "Guacamole", "Lime, cilantro"],
     instructions: ["Cook rice, toss with lime juice and cilantro.", "Grill peppers and onion until charred.", "Warm black beans with cumin.", "Assemble bowl, top with guacamole."],
     tags: ["Mexican", "Vegan", "Gluten-Free"], allergens: [], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1543353071-873f17a7a088?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Enchiladas Verdes", mealType: "main",
@@ -306,6 +334,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g rice noodles", "Vegetable broth with star anise & cinnamon", "Mushrooms, tofu", "Beansprouts, Thai basil, lime"],
     instructions: ["Simmer broth with spices 20 min, strain.", "Cook noodles separately, place in a bowl.", "Add mushrooms and tofu to hot broth briefly.", "Pour over noodles, top with herbs, beansprouts and lime."],
     tags: ["Vietnamese", "Vegan"], allergens: ["soy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Bibimbap", mealType: "main",
@@ -322,6 +351,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["100g rice", "80g moong dal", "Mixed vegetables", "Turmeric, cumin", "1 tbsp ghee"],
     instructions: ["Pressure cook rice, dal, vegetables and turmeric together until soft and porridge-like.", "Temper cumin in ghee, pour over.", "Serve hot with a dollop of yogurt."],
     tags: ["Indian", "Gluten-Free"], allergens: ["dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Pav Bhaji", mealType: "main",
@@ -330,6 +361,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["Mixed vegetables (potato, peas, cauliflower, capsicum), mashed", "Pav bhaji masala", "2 pav (bread rolls)", "Butter", "Onion, lemon"],
     instructions: ["Boil and mash vegetables.", "Sauté onion, add mashed vegetables and pav bhaji masala, cook until thick.", "Toast pav with butter.", "Serve bhaji with pav, onion and lemon."],
     tags: ["Indian"], allergens: ["gluten", "dairy"], conditionFlags: ["high cholesterol"],
+    image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Vegetable Lasagna", mealType: "main",
@@ -338,6 +370,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["Lasagna sheets", "250g ricotta", "200g spinach", "400g marinara sauce", "100g mozzarella"],
     instructions: ["Layer sauce, pasta sheets, ricotta and spinach repeatedly in a dish.", "Top with mozzarella.", "Bake at 190°C for 35-40 min until golden."],
     tags: ["Italian"], allergens: ["dairy", "gluten"], conditionFlags: ["high cholesterol"],
+    image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Moroccan Vegetable Tagine", mealType: "main",
@@ -362,6 +395,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g firm tofu, cubed", "150g rice", "3 tbsp peanuts", "Dried red chillies", "Soy sauce, rice vinegar, sugar"],
     instructions: ["Pan-fry tofu until crisp, set aside.", "Fry dried chillies briefly, add sauce ingredients.", "Toss tofu and peanuts through the sauce.", "Serve over rice."],
     tags: ["Chinese"], allergens: ["soy", "nuts"], conditionFlags: ["high blood pressure"],
+    jain: true,
   },
   {
     name: "Spanakopita", mealType: "main",
@@ -378,6 +412,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g basmati rice", "Mixed vegetables", "Fried onions", "Biryani masala, saffron", "Mint, coriander"],
     instructions: ["Parboil rice with whole spices.", "Cook vegetable masala separately.", "Layer rice and vegetables in a pot, top with fried onions and saffron milk.", "Cover tightly, cook on low heat (dum) for 20 min."],
     tags: ["Indian", "Vegan", "Gluten-Free"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Baingan Bharta with Roti", mealType: "main",
@@ -394,6 +429,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["250g pasta", "150g mozzarella, torn", "Cherry tomatoes, halved", "Fresh basil", "Olive oil, balsamic"],
     instructions: ["Cook pasta al dente.", "Toss hot pasta with mozzarella so it melts slightly, tomatoes and basil.", "Finish with olive oil and a balsamic drizzle."],
     tags: ["Italian", "Quick"], allergens: ["dairy", "gluten"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Stuffed Paratha with Yogurt", mealType: "main",
@@ -412,6 +448,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g Greek yogurt", "Handful mixed berries"],
     instructions: ["Spoon yogurt into a bowl.", "Top with berries."],
     tags: ["Quick"], allergens: ["dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Plant Protein Smoothie", mealType: "snack",
@@ -420,6 +458,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 scoop pea protein powder", "1 banana", "200ml oat milk", "Ice"],
     instructions: ["Blend all ingredients until smooth."],
     tags: ["Vegan", "Quick"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Roasted Chickpeas", mealType: "snack",
@@ -428,6 +468,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200g chickpeas, cooked & dried", "1 tsp oil", "Smoked paprika, salt"],
     instructions: ["Toss chickpeas with oil and spices.", "Roast at 200°C for 20-25 min until crisp."],
     tags: ["Gluten-Free", "Vegan"], allergens: [], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Mixed Nuts Handful", mealType: "snack",
@@ -436,6 +478,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["30g mixed almonds and walnuts"],
     instructions: ["Portion into a small bowl and eat."],
     tags: ["Gluten-Free", "Vegan"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Hummus with Veggie Sticks", mealType: "snack",
@@ -444,6 +487,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["80g hummus", "1 carrot, sticks", "½ cucumber, sticks"],
     instructions: ["Cut vegetables into sticks.", "Serve alongside hummus for dipping."],
     tags: ["Gluten-Free", "Vegan"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1577805947697-89e18249d767?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Whey Protein Shake", mealType: "snack",
@@ -452,6 +496,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 scoop whey protein powder", "250ml water or milk"],
     instructions: ["Shake protein powder with water or milk in a shaker bottle."],
     tags: ["Quick", "High Protein"], allergens: ["dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Boiled Edamame", mealType: "snack",
@@ -460,6 +506,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g edamame pods", "Sea salt"],
     instructions: ["Boil or steam edamame pods for 5 min.", "Toss with sea salt, serve warm."],
     tags: ["Asian", "Gluten-Free"], allergens: ["soy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1564894809611-1742fc40ed80?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Apple with Peanut Butter", mealType: "snack",
@@ -468,6 +516,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 apple, sliced", "1.5 tbsp peanut butter"],
     instructions: ["Slice the apple.", "Serve with peanut butter for dipping."],
     tags: ["Quick", "Vegan"], allergens: ["nuts"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Cottage Cheese Bowl", mealType: "snack",
@@ -476,6 +526,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g cottage cheese (paneer-style)", "1 tsp honey", "Few walnuts"],
     instructions: ["Spoon cottage cheese into a bowl.", "Drizzle honey, top with walnuts."],
     tags: ["High Protein", "Low Carb"], allergens: ["dairy", "nuts"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Seed & Date Energy Bites", mealType: "snack",
@@ -484,6 +535,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["100g dates, pitted", "40g rolled oats", "2 tbsp mixed seeds (pumpkin, sunflower)"],
     instructions: ["Blend dates into a paste.", "Mix in oats and seeds.", "Roll into small balls, refrigerate 30 min."],
     tags: ["Vegan", "Make-Ahead"], allergens: [], conditionFlags: ["diabetes", "pcos"],
+    jain: true,
   },
   {
     name: "Sprouts Chaat", mealType: "snack",
@@ -492,6 +544,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["150g sprouted moong", "Onion, tomato, cucumber, diced", "Chaat masala, lemon juice", "Coriander"],
     instructions: ["Steam sprouts lightly for 3-4 min.", "Toss with chopped vegetables and chaat masala.", "Finish with lemon juice and coriander."],
     tags: ["Indian", "Gluten-Free", "Vegan"], allergens: [], conditionFlags: ["ibs"],
+    image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Roasted Makhana (Fox Nuts)", mealType: "snack",
@@ -500,6 +553,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["40g makhana (fox nuts)", "1 tsp ghee", "Rock salt, black pepper"],
     instructions: ["Dry roast makhana in a pan until crisp.", "Add ghee and seasoning off heat, toss well."],
     tags: ["Indian", "Gluten-Free"], allergens: ["dairy"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Rice Cakes with Almond Butter", mealType: "snack",
@@ -508,6 +562,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["2 rice cakes", "2 tbsp almond butter", "Cinnamon"],
     instructions: ["Spread almond butter onto rice cakes.", "Dust with cinnamon."],
     tags: ["Gluten-Free", "Quick", "Vegan"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Sattu Drink", mealType: "snack",
@@ -516,6 +571,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["40g sattu (roasted gram flour)", "250ml water", "Lemon juice", "Roasted cumin powder", "Salt"],
     instructions: ["Whisk sattu into water until smooth.", "Stir in lemon juice, cumin and salt.", "Serve chilled."],
     tags: ["Indian", "Vegan", "Quick"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Masala Buttermilk (Chaas)", mealType: "snack",
@@ -524,6 +581,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["200ml yogurt", "Water", "Roasted cumin powder", "Mint, salt"],
     instructions: ["Whisk yogurt with water until smooth.", "Add cumin, mint and salt, blend briefly.", "Serve chilled."],
     tags: ["Indian", "Quick"], allergens: ["dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Peanut Chikki", mealType: "snack",
@@ -532,6 +591,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["80g roasted peanuts", "60g jaggery"],
     instructions: ["Melt jaggery until it forms a thick syrup.", "Stir in roasted peanuts quickly.", "Spread onto a greased tray, cut into pieces once set."],
     tags: ["Indian", "Gluten-Free"], allergens: ["nuts"], conditionFlags: ["diabetes"],
+    jain: true,
   },
   {
     name: "Veggie Sticks with Tzatziki", mealType: "snack",
@@ -548,6 +608,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["30g popcorn kernels", "1 tsp olive oil", "Sea salt"],
     instructions: ["Air-pop or pan-pop the kernels with oil.", "Toss with sea salt while hot."],
     tags: ["Vegan", "Gluten-Free", "Quick"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Paneer Cubes with Chaat Masala", mealType: "snack",
@@ -556,6 +617,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["100g paneer, cubed", "Chaat masala", "Lemon juice"],
     instructions: ["Cut paneer into cubes.", "Sprinkle with chaat masala and a squeeze of lemon."],
     tags: ["Indian", "High Protein", "Low Carb", "Gluten-Free"], allergens: ["dairy"], conditionFlags: ["high cholesterol"],
+    jain: true,
   },
 
 
@@ -615,7 +677,7 @@ export const MEAL_POOL: PoolMeal[] = [
     instructions: [
       "Begin by roasting the squash. Slice it into thin crescents and drizzle with a little oil and sprinkle with sea salt. I added a fresh little sage I had in the fridge, but it’s unnecessary. Roast the squash a 205 C (400 F) for 20-30 minutes, flipping halfway through, until soft and golden. Let cool and chop into cubes.",
       "Meanwhile, rinse the lentils and cover them with water. Bring them to the boil then turn down to a simmer and let cook (uncovered) for 20-30 minutes, or until tender. Drain and set aside.",
-      "While the lentils are cooking heat the 1 Tbsp. of oil on low in a medium pot. Add the onions and leeks and sauté for 5 or so minutes, or until they begin to soften. Add the garlic next along with the cumin and coriander, cooking for a few more minutes. Add the remaining spices – paprika, cinnamon, chilli, cocoa, Worcestershire sauce, salt, and oregano. Next add the can of tomatoes, the water or stock, and carrots. Let simmer, covered, for 20 minutes or until the veg is tender and the mixture has thickened up. You’ll need to check on the pot periodically for a stir and a top of of liquid if needed.",
+      "While the lentils are cooking heat the 1 Tbsp. of oil on low in a medium pot. Add the onions and leeks and sauté for 5 or so minutes, or until they begin to soften. Add the garlic next along with the cumin and coriander, cooking for a few more minutes. Add the remaining spices – paprika, cinnamon, chilli, cocoa, soy sauce, salt, and oregano. Next add the can of tomatoes, the water or stock, and carrots. Let simmer, covered, for 20 minutes or until the veg is tender and the mixture has thickened up. You’ll need to check on the pot periodically for a stir and a top of of liquid if needed.",
       "Add the lentils and chopped roasted squash. Let cook for 10 more minutes to heat through.",
       "Serve with sliced jalapeno, lime wedges, cilantro, green onions, and cashew sour cream.",
       "SIMPLE CASHEW SOUR CREAM",
@@ -942,7 +1004,7 @@ export const MEAL_POOL: PoolMeal[] = [
       "4 tbsp Mirin",
       "2 tbs Soy Sauce",
       "1 tblsp Caster Sugar",
-      "1 tblsp Worcestershire Sauce"
+      "1 tbsp soy sauce"
     ],
     instructions: [
       "Boil some water in a large saucepan. Add 250ml cold water and the udon noodles. (As they are so thick, adding cold water helps them to cook a little bit slower so the middle cooks through). If using frozen or fresh noodles, cook for 2 mins or until al dente; dried will take longer, about 5-6 mins. Drain and leave in the colander.",
@@ -1280,17 +1342,15 @@ export const MEAL_POOL: PoolMeal[] = [
       "1/2 bag Vermicelli Rice Noodles",
       "200g Bean Sprouts",
       "Zest and juice of 2 Lime",
-      "2-3 tbsp Fish Sauce",
+      "2-3 tbsp soy sauce",
       "1 tsp Muscovado Sugar",
       "1 sliced Red Onions",
       "2 small Lettuce",
-      "500g Minced Pork",
       "Knob Ginger",
       "Pinch Cayenne Pepper",
       "1 tsp Sunflower Oil",
       "2 tblsp Sesame Seed",
       "1 tsp Oil",
-      "4 Sirloin steak",
       "1 sliced Red Chilli"
     ],
     instructions: [
@@ -1299,9 +1359,7 @@ export const MEAL_POOL: PoolMeal[] = [
       "step 2",
       "Stir together the lime zest and juice, fish or soy sauce and sugar. Stir into the noodles with the red onion and lettuce.",
       "step 3",
-      "To make with mince, heat a little oil in a non-stick frying pan and stir-fry 500g minced pork, a small knob of grated ginger and pinch cayenne pepper or chilli powder for 10 mins, until the mince is browned and cooked through. Mix into the noodles, divide between four bowls and serve warm.",
-      "step 4",
-      "To make with steak, make the rice noodle salad. Heat 1 tsp sunflower oil in a frying pan. Tip 2 tbsp sesame seeds onto a plate. Rub 1 tsp oil into 4 x 175g sirloin steaks and press into sesame seeds. Fry for 5 mins for medium rare, turning halfway. Leave to rest for 5 mins, then thinly slice. Toss 1 deseeded and shredded red chilli, and a handful mint leaves into noodles. Top with steak to serve."
+      "step 4"
     ],
     tags: ["Thai", "Gluten-Free"], allergens: ["nuts"], conditionFlags: [],
   },
@@ -1461,6 +1519,7 @@ export const MEAL_POOL: PoolMeal[] = [
       "Mix soured cream, lemon juice, vinegar and dill, then season with black pepper and add to fennel mix."
     ],
     tags: ["Vegan", "Gluten-Free"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Jamaican Instant Pot Rice and Beans", mealType: "main",
@@ -1507,6 +1566,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 mango, cubed", "½ papaya, cubed", "1 banana, sliced", "Juice of 1 lime", "1 tbsp chia seeds", "Fresh mint"],
     instructions: ["Cube mango and papaya, slice banana.", "Toss with lime juice.", "Sprinkle chia seeds and mint to serve."],
     tags: ["Vegan", "Gluten-Free", "Quick", "Raw"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Mixed Berry Chia Smoothie Bowl", mealType: "breakfast",
@@ -1515,6 +1575,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["100g mixed berries, frozen", "1 banana", "2 tbsp chia seeds", "200ml almond milk", "30g granola", "Fresh strawberries"],
     instructions: ["Blend berries, banana and almond milk until thick.", "Pour into a bowl.", "Top with chia seeds, granola and fresh strawberries."],
     tags: ["Vegan", "Gluten-Free", "Quick"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Avocado Smash Bowl with Pomegranate", mealType: "breakfast",
@@ -1523,6 +1584,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 avocado", "100g Greek yogurt", "Juice of ½ lemon", "3 tbsp pomegranate seeds", "1 tbsp pumpkin seeds", "Pinch chilli flakes"],
     instructions: ["Smash avocado with lemon juice and seasoning.", "Spoon yogurt into a bowl, top with smashed avocado.", "Scatter pomegranate, pumpkin seeds and chilli flakes."],
     tags: ["Gluten-Free", "Quick"], allergens: ["dairy"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Mango Lassi", mealType: "snack",
@@ -1531,6 +1593,8 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 ripe mango, cubed", "150ml yogurt", "100ml cold water", "1 tsp sugar", "Pinch cardamom"],
     instructions: ["Blend all ingredients until smooth.", "Serve chilled."],
     tags: ["Indian", "Quick", "Gluten-Free"], allergens: ["dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&h=400&fit=crop&q=80",
+    jain: true,
   },
   {
     name: "Papaya with Lime & Chia", mealType: "snack",
@@ -1539,6 +1603,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["½ medium papaya, sliced", "Juice of 1 lime", "1 tbsp chia seeds", "Pinch black salt"],
     instructions: ["Slice papaya and arrange on a plate.", "Squeeze lime juice over, sprinkle chia seeds and black salt."],
     tags: ["Vegan", "Gluten-Free", "Quick", "Raw"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Fresh Fruit Chaat", mealType: "snack",
@@ -1547,6 +1612,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 banana", "1 apple, diced", "1 guava, diced", "Handful grapes", "Chaat masala", "Lemon juice", "Rock salt", "Coriander"],
     instructions: ["Chop all fruit into bite-size pieces.", "Toss with chaat masala, lemon juice and rock salt.", "Garnish with coriander."],
     tags: ["Indian", "Vegan", "Gluten-Free", "Quick", "Raw"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Watermelon & Mint Slices", mealType: "snack",
@@ -1555,6 +1621,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["300g watermelon, sliced", "Fresh mint leaves", "Pinch black salt"],
     instructions: ["Slice watermelon.", "Scatter mint leaves, dust with black salt, serve cold."],
     tags: ["Vegan", "Gluten-Free", "Quick", "Raw", "Light"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Avocado & Tomato Snack Plate", mealType: "snack",
@@ -1563,6 +1630,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 avocado, sliced", "Cherry tomatoes", "1 tbsp olive oil", "1 tbsp mixed seeds (sesame, pumpkin)", "Lemon juice", "Sea salt"],
     instructions: ["Slice avocado, halve cherry tomatoes.", "Arrange on a plate.", "Drizzle olive oil and lemon juice, scatter seeds and salt."],
     tags: ["Vegan", "Gluten-Free", "Quick", "Low Carb"], allergens: [], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Orange & Almond Energy Snack", mealType: "snack",
@@ -1571,6 +1639,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["2 oranges, segmented", "20g almonds"],
     instructions: ["Peel and segment oranges.", "Serve alongside almonds."],
     tags: ["Vegan", "Gluten-Free", "Quick", "Raw"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Avocado Chickpea Power Salad", mealType: "main",
@@ -1595,6 +1664,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["50g rolled oats", "2 tbsp chia seeds", "250ml almond milk", "1 tsp maple syrup", "½ tsp vanilla extract", "Sliced banana and berries to top"],
     instructions: ["Combine oats, chia seeds, almond milk, maple syrup and vanilla in a jar.", "Stir well, refrigerate overnight.", "In the morning, top with banana and berries."],
     tags: ["Vegan", "Make-Ahead", "Gluten-Free"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Flaxseed & Banana Smoothie", mealType: "snack",
@@ -1603,6 +1673,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 banana", "1 tbsp ground flaxseed", "1 tbsp almond butter", "200ml oat milk", "Ice"],
     instructions: ["Blend all ingredients until smooth.", "Serve immediately."],
     tags: ["Vegan", "Gluten-Free", "Quick"], allergens: ["nuts"], conditionFlags: [],
+    jain: true,
   },
   {
     name: "Guacamole & Veggie Sticks", mealType: "snack",
@@ -1619,6 +1690,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["2 kiwi, peeled", "Handful spinach", "½ cucumber", "Juice of ½ lemon", "200ml coconut water"],
     instructions: ["Blend all ingredients until smooth.", "Serve immediately over ice."],
     tags: ["Vegan", "Gluten-Free", "Quick", "Raw"], allergens: [], conditionFlags: [],
+    jain: true,
   },
 
   {
@@ -1631,7 +1703,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: [
       "1.5 pounds sliced Egg Plants",
       "2 tablespoons Peanut Oil",
-      "1/4 cup Chicken Stock",
+      "1/4 cup Vegetable Stock",
       "2 tsp Sugar",
       "1/2 tsp Soy Sauce",
       "1 ½ tbsp Chilli Bean Paste",
@@ -1649,7 +1721,7 @@ export const MEAL_POOL: PoolMeal[] = [
       "**Sichuan peppercorns are available at some stores and online for quite cheap. They aren't spicy like other peppers but rather have a citrusy flavor and induce a tingly, numbing sensation like a carbonated drink.",
       "Prep eggplant, chili sauce, cornstarch slurry, vinegar and scallions:",
       "Begin your mise en place. Quarter the eggplant lengthwise and chop into large batons and set aside.",
-      "In a small bowl, mix together the chicken stock, sugar, and soy sauce and set it aside.",
+      "In a small bowl, mix together the vegetable stock, sugar, and soy sauce and set it aside.",
       "In a second bowl, mix together the chili bean paste, garlic, ginger, and sichuan peppercorns and set it aside.",
       "In a third bowl, mix together the cornstarch with a tablespoon of water and set it aside.",
       "Lastly, in a fourth bowl, mix together the scallions and vinegar and set it aside.",
@@ -1657,7 +1729,7 @@ export const MEAL_POOL: PoolMeal[] = [
       "Place the oil in a wok or large sauté pan over medium-high heat until the oil is almost smoking. Add the eggplant and sauté, allowing it to sit for a few seconds each time you move it to allow it to brown and blister. If the eggplant absorbs all the oil and some pieces don't get any then add a little more oil.",
       "Add the chili bean paste, garlic, ginger, and sichuan peppercorns and sauté:",
       "until fragrant, about 30 seconds.",
-      "Add the chicken stock mixture:",
+      "Add the vegetable stock mixture:",
       "turn the heat to medium-low and simmer for 90 seconds.",
       "Add the cornstarch mixture:",
       "and stir together until the sauce thickens a bit.",
@@ -1667,4 +1739,211 @@ export const MEAL_POOL: PoolMeal[] = [
     ],
     tags: ["Chinese", "Vegan"], allergens: ["soy"], conditionFlags: [],
   },
+
+  /* ── INDIAN CLASSICS (round 2) ──────────────────── */
+  {
+    name: "Moong Dal Chilla with Mint Chutney", mealType: "breakfast",
+    description: "Golden savoury pancakes made from ground moong dal, stuffed with onion and coriander — protein-packed and light.",
+    calories: 310, protein: 18, carbs: 42, fat: 8, fiber: 7, prepTime: 20,
+    ingredients: ["1 cup moong dal, soaked 3 hours", "1 onion, finely chopped", "1 green chilli", "Fresh coriander", "1 tsp cumin", "Salt", "1 tsp oil per chilla", "Mint chutney to serve"],
+    instructions: ["Blend soaked moong dal with green chilli and cumin into a smooth batter.", "Fold in onion and coriander. Season with salt.", "Spread a ladle on a hot oiled tawa like a dosa.", "Cook 2-3 min per side until golden.", "Serve hot with mint chutney."],
+    tags: ["Indian", "High Protein", "Quick"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1587339144367-6c5b419a0e93?w=600&h=400&fit=crop&q=80",
+  },
+  {
+    name: "Kadhi Chawal", mealType: "main",
+    description: "Tangy yogurt-besan curry with soft pakoras over steamed rice — the ultimate North Indian comfort meal.",
+    calories: 480, protein: 15, carbs: 68, fat: 16, fiber: 5, prepTime: 40,
+    ingredients: ["1 cup sour yogurt", "3 tbsp besan (gram flour)", "150g rice", "1 tsp turmeric", "Curry leaves, mustard seeds", "2 dried red chillies", "1 tbsp ghee", "For pakoras: ½ cup besan, 1 onion"],
+    instructions: ["Whisk yogurt, besan, turmeric and 3 cups water until smooth.", "Simmer on low 20 min, stirring occasionally.", "Fry small onion pakoras and drop into the kadhi.", "Temper ghee with mustard seeds, curry leaves and red chillies; pour over.", "Serve over steamed rice."],
+    tags: ["Indian", "Comfort"], allergens: ["dairy", "gluten"], conditionFlags: [],
+  },
+  {
+    name: "Steamed Dhokla", mealType: "snack",
+    description: "Soft, spongy Gujarati besan cakes with a mustard-curry leaf tempering — steamed, not fried.",
+    calories: 180, protein: 8, carbs: 26, fat: 5, fiber: 3, prepTime: 25,
+    ingredients: ["1 cup besan", "1 tbsp semolina", "1 tsp ginger-chilli paste", "1 tsp eno fruit salt", "1 tbsp lemon juice", "Mustard seeds, curry leaves, green chilli", "1 tbsp oil"],
+    instructions: ["Whisk besan, semolina, ginger-chilli paste, lemon juice and water into a thick batter.", "Stir in eno, pour into a greased tray immediately.", "Steam 15 min until a knife comes out clean.", "Temper oil with mustard seeds, curry leaves and chilli; pour over.", "Cut into squares and serve."],
+    tags: ["Indian", "Steamed", "Light"], allergens: ["gluten"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&h=400&fit=crop&q=80",
+  },
+  {
+    name: "Idli with Sambar", mealType: "breakfast",
+    description: "Steamed fermented rice-lentil cakes with a hot vegetable sambar — light, gut-friendly and endlessly satisfying.",
+    calories: 340, protein: 12, carbs: 62, fat: 5, fiber: 8, prepTime: 25,
+    ingredients: ["4 idlis (from batter or store-bought)", "1 cup toor dal", "Mixed vegetables (drumstick, carrot, pumpkin)", "2 tbsp sambar powder", "Tamarind pulp", "Mustard seeds, curry leaves"],
+    instructions: ["Steam idlis 12 min until fluffy.", "Pressure cook toor dal; mash smooth.", "Simmer vegetables with tamarind and sambar powder, add dal.", "Temper with mustard seeds and curry leaves.", "Serve idlis dunked in hot sambar."],
+    tags: ["Indian", "South Indian", "Fermented"], allergens: [], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&h=400&fit=crop&q=80",
+  },
+  {
+    name: "Vegetable Rava Upma", mealType: "breakfast",
+    description: "Toasted semolina cooked with vegetables, ginger and curry leaves — a 15-minute South Indian workhorse.",
+    calories: 320, protein: 9, carbs: 52, fat: 9, fiber: 5, prepTime: 15,
+    ingredients: ["1 cup rava (semolina)", "1 onion", "1 carrot, peas", "1 tsp mustard seeds", "Curry leaves, ginger, green chilli", "2 tsp ghee", "Roasted peanuts"],
+    instructions: ["Dry roast rava until fragrant; set aside.", "Temper mustard seeds, curry leaves, ginger and chilli in ghee.", "Sauté onion and vegetables 3 min.", "Add 2.5 cups hot water, salt; bring to boil.", "Stream in rava, stirring. Cover 3 min. Top with peanuts."],
+    tags: ["Indian", "South Indian", "Quick"], allergens: ["gluten", "dairy", "nuts"], conditionFlags: [],
+  },
+
+  /* ── SALAD JARS ─────────────────────────────────── */
+  {
+    name: "Rainbow Protein Salad Jar", mealType: "main",
+    description: "Layered mason-jar salad: chickpeas, paneer cubes, corn, peppers and greens with a lemon-tahini dressing. Shake and eat — meal-prep gold.",
+    calories: 420, protein: 24, carbs: 40, fat: 18, fiber: 12, prepTime: 15,
+    ingredients: ["1 cup boiled chickpeas", "80g paneer, cubed", "½ cup sweet corn", "1 bell pepper, diced", "Cherry tomatoes", "2 cups spinach/lettuce", "Dressing: 1 tbsp tahini, lemon juice, garlic, salt"],
+    instructions: ["Pour dressing into the jar first (always bottom).", "Layer chickpeas, then corn, peppers, tomatoes, paneer.", "Pack greens on top — they stay crisp away from dressing.", "Seal. Keeps 3 days in the fridge.", "Shake hard and eat straight from the jar."],
+    tags: ["Meal Prep", "Salad Jar", "High Protein"], allergens: ["dairy", "sesame"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop&q=80",
+  },
+  {
+    name: "Mexican Bean Salad Jar", mealType: "main",
+    description: "Black beans, brown rice, salsa, avocado and crunchy lettuce layered in a jar — a burrito bowl you can carry to work.",
+    calories: 450, protein: 18, carbs: 60, fat: 15, fiber: 15, prepTime: 15,
+    ingredients: ["1 cup boiled black beans", "½ cup cooked brown rice", "3 tbsp salsa", "½ avocado, cubed", "Sweet corn", "Shredded lettuce", "Lime juice, cumin, coriander"],
+    instructions: ["Salsa and lime juice go in first.", "Layer beans, rice, corn, avocado.", "Top with lettuce and coriander.", "Seal and refrigerate — best within 2 days.", "Shake and eat."],
+    tags: ["Meal Prep", "Salad Jar", "Mexican", "Vegan"], allergens: [], conditionFlags: [],
+  },
+  {
+    name: "Sprouts & Peanut Salad Jar", mealType: "snack",
+    description: "Moong sprouts, roasted peanuts, cucumber, pomegranate and a chaat-masala lime dressing — desi crunch in a jar.",
+    calories: 220, protein: 11, carbs: 26, fat: 9, fiber: 8, prepTime: 10,
+    ingredients: ["1 cup moong sprouts", "2 tbsp roasted peanuts", "1 cucumber, diced", "Pomegranate seeds", "Lime juice, chaat masala", "Fresh coriander"],
+    instructions: ["Lime juice + chaat masala at the bottom.", "Layer sprouts, cucumber, pomegranate.", "Peanuts and coriander on top so they stay crunchy.", "Shake before eating."],
+    tags: ["Indian", "Salad Jar", "Vegan", "Light"], allergens: ["nuts"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop&q=80",
+  },
+
+  /* ── HEALTHY DESSERTS (scheduled 2x per week) ───── */
+  {
+    name: "Jaggery Rice Kheer", mealType: "snack",
+    description: "Slow-cooked rice pudding sweetened with jaggery instead of sugar, scented with cardamom and topped with almonds.",
+    calories: 260, protein: 8, carbs: 42, fat: 7, fiber: 1, prepTime: 35,
+    ingredients: ["3 tbsp rice", "2 cups milk", "3 tbsp jaggery, grated", "4 cardamom pods", "6 almonds, slivered", "Few saffron strands"],
+    instructions: ["Simmer rice in milk on low, stirring, 25 min until thick and creamy.", "Turn off heat, let cool 2 min, then stir in jaggery (it splits hot milk).", "Add crushed cardamom and saffron.", "Top with almond slivers. Serve warm or chilled."],
+    tags: ["Dessert", "Indian"], allergens: ["dairy", "nuts"], conditionFlags: ["diabetes"],
+    jain: true,
+  },
+  {
+    name: "Dark Chocolate Stuffed Dates", mealType: "snack",
+    description: "Medjool dates stuffed with peanut butter, dipped in dark chocolate and frozen — tastes like a candy bar, made of 3 whole foods.",
+    calories: 210, protein: 5, carbs: 30, fat: 9, fiber: 4, prepTime: 15,
+    ingredients: ["6 medjool dates, pitted", "2 tbsp peanut butter", "40g dark chocolate (70%+)", "Sea salt flakes"],
+    instructions: ["Slit dates and stuff each with peanut butter.", "Melt dark chocolate.", "Dip or drizzle dates with chocolate.", "Sprinkle sea salt. Freeze 10 min until set.", "Store in the fridge — they keep a week."],
+    tags: ["Dessert", "No Bake", "Vegan"], allergens: ["nuts"], conditionFlags: ["diabetes"],
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=600&h=400&fit=crop&q=80",
+    jain: true,
+  },
+  {
+    name: "Fruit & Yogurt Bark", mealType: "snack",
+    description: "Greek yogurt spread thin, topped with berries, honey and pistachios, frozen and snapped into shards — a 5-minute frozen dessert.",
+    calories: 180, protein: 12, carbs: 22, fat: 5, fiber: 2, prepTime: 10,
+    ingredients: ["1.5 cups Greek yogurt", "1 tbsp honey", "Mixed berries", "2 tbsp pistachios, chopped", "Dark chocolate shavings (optional)"],
+    instructions: ["Mix yogurt with honey.", "Spread 1cm thick on a lined tray.", "Scatter berries, pistachios and chocolate.", "Freeze 3 hours until solid.", "Snap into shards. Eat straight from the freezer."],
+    tags: ["Dessert", "High Protein", "Frozen"], allergens: ["dairy", "nuts"], conditionFlags: [],
+  },
+  {
+    name: "Ragi Dry Fruit Ladoo", mealType: "snack",
+    description: "Roasted ragi (finger millet) flour bound with dates, ghee and nuts — an iron-rich ladoo with no refined sugar.",
+    calories: 190, protein: 5, carbs: 26, fat: 8, fiber: 4, prepTime: 20,
+    ingredients: ["1 cup ragi flour", "8 dates, deseeded", "2 tbsp ghee", "2 tbsp mixed nuts, chopped", "1 tsp cardamom powder"],
+    instructions: ["Roast ragi flour in ghee on low 8-10 min until nutty.", "Blend dates to a paste.", "Mix flour, date paste, nuts and cardamom.", "Shape into small ladoos while warm.", "Store airtight up to 10 days."],
+    tags: ["Dessert", "Indian", "Iron Rich"], allergens: ["dairy", "nuts"], conditionFlags: ["diabetes"],
+    image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=600&h=400&fit=crop&q=80",
+    jain: true,
+  },
+  {
+    name: "High-Protein Chocolate Mousse", mealType: "snack",
+    description: "Silky chocolate mousse made from Greek yogurt, cocoa and protein powder — 20g protein that tastes like dessert from a restaurant.",
+    calories: 220, protein: 20, carbs: 20, fat: 6, fiber: 3, prepTime: 10,
+    ingredients: ["200g thick Greek yogurt", "1 scoop chocolate protein powder", "1.5 tbsp cocoa powder", "1 tbsp honey or maple syrup", "1 square dark chocolate, grated", "Pinch of salt"],
+    instructions: ["Whisk Greek yogurt, protein powder, cocoa, sweetener and salt until completely smooth and glossy.", "Taste — add more sweetener if needed.", "Spoon into a glass, refrigerate 30 min to set.", "Top with grated dark chocolate before serving."],
+    tags: ["Dessert", "High Protein", "No Bake"], allergens: ["dairy"], conditionFlags: [],
+    image: "https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?w=600&h=400&fit=crop&q=80",
+    videoUrl: "https://www.youtube.com/results?search_query=high+protein+chocolate+mousse+greek+yogurt",
+  },
+  {
+    name: "Banana Peanut Butter Nice Cream", mealType: "snack",
+    description: "Frozen bananas blended with peanut butter into soft-serve ice cream — one ingredient base, zero added sugar, all the creaminess.",
+    calories: 240, protein: 7, carbs: 36, fat: 9, fiber: 4, prepTime: 5,
+    ingredients: ["2 ripe bananas, sliced & frozen overnight", "1.5 tbsp peanut butter", "Splash of milk (any)", "Pinch of cinnamon", "Optional: 1 tsp cocoa for chocolate version"],
+    instructions: ["Blend frozen banana slices, scraping down sides, until crumbly.", "Add peanut butter and a small splash of milk.", "Blend until it turns into smooth soft-serve.", "Eat immediately, or freeze 1 hour for scoopable texture."],
+    tags: ["Dessert", "Vegan", "No Bake"], allergens: ["nuts"], conditionFlags: [],
+    videoUrl: "https://www.youtube.com/results?search_query=banana+nice+cream+peanut+butter+2+ingredient",
+    jain: true,
+  },
+  /* ── JAIN CLASSICS (no onion, garlic, or root vegetables) ── */
+  {
+    name: "Jain Dal Fry with Rice", mealType: "main",
+    description: "Toor dal tempered with hing, cumin, tomatoes and ghee — the classic no-onion-no-garlic dal that tastes every bit as deep.",
+    calories: 480, protein: 18, carbs: 74, fat: 12, fiber: 11, prepTime: 30,
+    ingredients: ["1 cup toor dal", "150g rice", "2 tomatoes, chopped", "1 tsp cumin seeds", "½ tsp hing (asafoetida)", "1 tsp turmeric", "2 green chillies", "2 tbsp ghee", "Fresh coriander"],
+    instructions: ["Pressure cook dal with turmeric until soft; whisk smooth.", "Heat ghee, add cumin and hing — let them sizzle.", "Add tomatoes and green chillies, cook until mushy.", "Pour in dal, simmer 10 min. Season with salt.", "Top with coriander, serve over steamed rice."],
+    tags: ["Indian", "Jain", "Comfort"], allergens: ["dairy"], conditionFlags: [], jain: true,
+  },
+  {
+    name: "Jain Paneer Butter Masala", mealType: "main",
+    description: "Rich tomato-cashew gravy made the Jain way — hing and kasuri methi carry the flavour, no onion or garlic needed.",
+    calories: 520, protein: 22, carbs: 34, fat: 32, prepTime: 35, fiber: 5,
+    ingredients: ["200g paneer, cubed", "5 tomatoes", "12 cashews, soaked", "½ tsp hing", "1 tsp kasuri methi", "1 tsp kashmiri chilli", "1 tsp garam masala", "2 tbsp butter", "3 tbsp cream", "2 roti to serve"],
+    instructions: ["Simmer tomatoes and cashews 10 min; blend to a silky purée.", "Heat butter, add hing and kashmiri chilli.", "Add purée, cook until it thickens and darkens, 8 min.", "Add garam masala, kasuri methi, salt and cream.", "Drop in paneer, simmer 5 min. Serve with roti."],
+    tags: ["Indian", "Jain", "High Protein", "Restaurant Style"], allergens: ["dairy", "nuts", "gluten"], conditionFlags: ["high cholesterol"], jain: true,
+  },
+  {
+    name: "Jain Chole with Rice", mealType: "main",
+    description: "Punjabi-style chickpeas in a tangy tomato gravy built on hing, amchur and tea-leaf colour — zero onion, zero garlic.",
+    calories: 490, protein: 17, carbs: 78, fat: 11, fiber: 13, prepTime: 40,
+    ingredients: ["1 cup chickpeas, soaked overnight", "150g rice", "3 tomatoes, puréed", "½ tsp hing", "2 tsp chole masala", "1 tsp amchur (dry mango powder)", "1 black tea bag", "2 tbsp oil", "Fresh coriander"],
+    instructions: ["Pressure cook chickpeas with the tea bag for deep colour; discard bag.", "Heat oil, add hing, then tomato purée. Cook until oil separates.", "Add chole masala and amchur.", "Add chickpeas with some cooking water; simmer 15 min, mashing a few.", "Serve over rice with coriander."],
+    tags: ["Indian", "Jain", "High Fibre"], allergens: [], conditionFlags: [], jain: true,
+  },
+  {
+    name: "Jain Vegetable Pulao", mealType: "main",
+    description: "Fragrant basmati cooked with peas, beans, capsicum and whole spices — a one-pot Jain staple, served with cool raita.",
+    calories: 450, protein: 12, carbs: 72, fat: 13, fiber: 8, prepTime: 30,
+    ingredients: ["150g basmati rice", "½ cup green peas", "8 french beans, chopped", "1 capsicum, diced", "1 bay leaf, 4 cloves, 1 cinnamon stick", "1 tsp cumin seeds", "½ tsp hing", "2 tbsp ghee", "150g yogurt for raita"],
+    instructions: ["Rinse and soak rice 20 min.", "Heat ghee; crackle cumin, hing and whole spices.", "Add vegetables, sauté 3 min.", "Add rice and 2 cups water, salt. Cover, cook 12 min on low.", "Fluff and serve with whisked yogurt raita."],
+    tags: ["Indian", "Jain", "One Pot"], allergens: ["dairy"], conditionFlags: [], jain: true,
+  },
+  {
+    name: "Dal Dhokli", mealType: "main",
+    description: "Gujarat's beloved one-pot: soft wheat-flour diamonds simmered in sweet-tangy toor dal. Pure comfort, naturally Jain.",
+    calories: 470, protein: 16, carbs: 76, fat: 11, fiber: 10, prepTime: 45,
+    ingredients: ["1 cup toor dal", "1 cup wheat flour", "1 tbsp besan", "2 tomatoes", "1 tbsp jaggery", "1 tsp cumin-mustard seeds", "½ tsp hing", "Curry leaves", "1 tbsp peanuts", "2 tbsp ghee", "Lemon juice"],
+    instructions: ["Cook dal soft; whisk with 3 cups water, tomatoes, jaggery and salt.", "Knead flour + besan + 1 tbsp ghee into a stiff dough; roll thin, cut diamonds.", "Temper ghee with cumin, mustard, hing, curry leaves and peanuts; add to dal.", "Simmer dal, slide in dhokli pieces one at a time.", "Cook 12 min until dhokli is tender. Finish with lemon."],
+    tags: ["Indian", "Gujarati", "Jain", "One Pot"], allergens: ["gluten", "dairy", "nuts"], conditionFlags: [], jain: true,
+  },
+  {
+    name: "Jain Kadhi with Khichdi", mealType: "main",
+    description: "Light yogurt-besan kadhi (no ginger, hing-tempered) over soft moong dal khichdi — the gentlest dinner in Indian cooking.",
+    calories: 440, protein: 15, carbs: 66, fat: 13, fiber: 8, prepTime: 35,
+    ingredients: ["1 cup sour yogurt", "3 tbsp besan", "100g rice", "80g moong dal", "1 tsp cumin seeds", "½ tsp hing", "Curry leaves", "2 dried red chillies", "2 tbsp ghee", "1 tsp turmeric"],
+    instructions: ["Pressure cook rice + moong dal with turmeric into soft khichdi.", "Whisk yogurt, besan and 2.5 cups water until lump-free.", "Simmer on low 15 min, stirring.", "Temper ghee with cumin, hing, curry leaves, red chillies; pour over kadhi.", "Serve kadhi over khichdi with a spoon of ghee."],
+    tags: ["Indian", "Gujarati", "Jain", "Comfort"], allergens: ["dairy", "gluten"], conditionFlags: [], jain: true,
+  },
+  {
+    name: "Jain Poha", mealType: "breakfast",
+    description: "Flattened rice with peanuts, curry leaves, green chilli and lemon — the classic breakfast, made without onion or potato.",
+    calories: 320, protein: 8, carbs: 52, fat: 10, fiber: 4, prepTime: 15,
+    ingredients: ["1.5 cups thick poha", "3 tbsp peanuts", "1 tsp mustard seeds", "½ tsp hing", "Curry leaves", "2 green chillies", "1 tsp turmeric", "1 tsp sugar", "2 tsp oil", "Lemon juice, coriander"],
+    instructions: ["Rinse poha in a colander; let it soften 5 min.", "Heat oil; crackle mustard seeds, hing, curry leaves, chillies and peanuts.", "Add turmeric, then poha, sugar and salt. Toss gently 2 min.", "Finish with lemon juice and coriander."],
+    tags: ["Indian", "Jain", "Quick"], allergens: ["nuts"], conditionFlags: [], jain: true,
+  },
+  {
+    name: "Methi Thepla with Curd", mealType: "breakfast",
+    description: "Soft fenugreek-spiced Gujarati flatbreads with a bowl of cold curd — travels well, keeps for days, loved by everyone.",
+    calories: 350, protein: 11, carbs: 48, fat: 13, fiber: 6, prepTime: 25,
+    ingredients: ["1.5 cups wheat flour", "1 cup fresh methi leaves, chopped", "2 tbsp besan", "2 tbsp yogurt (for dough)", "1 tsp turmeric, chilli powder", "½ tsp hing", "1 tsp sesame seeds", "2 tbsp oil", "150g curd to serve"],
+    instructions: ["Knead flour, besan, methi, spices, yogurt and 1 tbsp oil into a soft dough.", "Rest 15 min. Roll into thin rounds.", "Cook on a hot tawa with a little oil until golden-spotted on both sides.", "Serve warm with cold curd."],
+    tags: ["Indian", "Gujarati", "Jain"], allergens: ["gluten", "dairy", "sesame"], conditionFlags: [], jain: true,
+  },
+
+  {
+    name: "Grilled Cinnamon Pineapple", mealType: "snack",
+    description: "Pineapple rings caramelised on a hot pan with cinnamon and a tiny drizzle of honey — warm, juicy, zero guilt.",
+    calories: 120, protein: 1, carbs: 30, fat: 0, fiber: 3, prepTime: 10,
+    ingredients: ["4 pineapple rings", "1 tsp cinnamon", "1 tsp honey", "Pinch of salt", "Few mint leaves"],
+    instructions: ["Heat a dry pan or grill until hot.", "Grill pineapple rings 2-3 min per side until char marks appear.", "Dust with cinnamon and salt.", "Drizzle honey, top with mint. Serve warm."],
+    tags: ["Dessert", "Vegan", "Fruit"], allergens: [], conditionFlags: ["diabetes"],
+    image: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=600&h=400&fit=crop&q=80",
+  }
 ];

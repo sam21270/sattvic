@@ -2,16 +2,24 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { ArrowRight, Leaf, Sparkles, Star, Play } from "lucide-react";
 import { ScrambleText } from "@/components/ui/ScrambleText";
 import { FoodGallery } from "@/components/ui/FoodGallery";
 import { AnimatedTerminal } from "@/components/ui/AnimatedTerminal";
-import { FloatingOrbs } from "@/components/ui/FloatingOrbs";
 import { CounterStat } from "@/components/ui/CounterStat";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { BorderBeam } from "@/components/ui/BorderBeam";
 import { JourneyRoadmap } from "@/components/ui/JourneyRoadmap";
+import { TiltCard } from "@/components/ui/TiltCard";
+
+const HeroOrbScene = dynamic(() => import("@/components/ui/HeroOrbScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_30%,rgba(16,185,129,0.08)_0%,transparent_70%)]" />
+  ),
+});
 
 /* ─── Ticker ───────────────────── */
 const tickerItems = [
@@ -172,10 +180,8 @@ export default function HomePage() {
         ref={heroRef}
         className="relative min-h-[95vh] flex flex-col items-center justify-center px-4 overflow-hidden"
       >
-        {/* floating orbs */}
-        <FloatingOrbs />
-        {/* radial glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_30%,rgba(16,185,129,0.08)_0%,transparent_70%)] pointer-events-none" />
+        {/* 3D interactive orb background */}
+        <HeroOrbScene />
         {/* grid lines */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
 
@@ -354,7 +360,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto space-y-12">
           <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} className="text-center space-y-3">
             <span className="text-xs font-semibold tracking-widest text-emerald-500 uppercase">Everything inside</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-300 to-white animate-gradient-text">
               Eight tools. One app.<br />Zero excuses.
             </h2>
           </motion.div>
@@ -365,7 +371,8 @@ export default function HomePage() {
           >
             {features.map((f, i) => (
               <motion.div key={f.href} variants={fadeUp}>
-                <Link href={f.href} className="group block relative rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+                <TiltCard maxTilt={8}>
+                <Link href={f.href} className="group block relative rounded-2xl overflow-hidden transition-all duration-300"
                   style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${f.border}` }}>
                   <BorderBeam duration={3 + i * 0.4} colorFrom={f.color} colorTo={f.color} />
 
@@ -405,6 +412,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </Link>
+                </TiltCard>
               </motion.div>
             ))}
           </motion.div>
@@ -426,32 +434,28 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold text-white tracking-tight">Real people, real results.</h2>
           </motion.div>
 
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-4"
-          >
-            {reviews.map((r) => (
-              <motion.div
-                key={r.name}
-                variants={fadeUp}
-                className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 space-y-4 hover:border-white/[0.12] transition-colors"
-              >
-                <div className="flex gap-1">
-                  {Array.from({ length: r.stars }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
+          {/* infinite marquee — pauses on hover */}
+          <div className="relative overflow-hidden" style={{ maskImage: "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)" }}>
+            <div className="flex gap-4 w-max animate-marquee-slow">
+              {[...reviews, ...reviews, ...reviews, ...reviews].map((r, i) => (
+                <div
+                  key={`${r.name}-${i}`}
+                  className="w-80 shrink-0 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 space-y-4 hover:border-emerald-500/25 transition-colors"
+                >
+                  <div className="flex gap-1">
+                    {Array.from({ length: r.stars }).map((_, s) => (
+                      <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-zinc-400 leading-relaxed text-sm">"{r.text}"</p>
+                  <div>
+                    <p className="font-semibold text-zinc-200 text-sm">{r.name}</p>
+                    <p className="text-zinc-600 text-xs">{r.handle}</p>
+                  </div>
                 </div>
-                <p className="text-zinc-400 leading-relaxed text-sm">"{r.text}"</p>
-                <div>
-                  <p className="font-semibold text-zinc-200 text-sm">{r.name}</p>
-                  <p className="text-zinc-600 text-xs">{r.handle}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -471,7 +475,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(16,185,129,0.08),transparent)] pointer-events-none" />
 
           <Leaf className="relative w-10 h-10 mx-auto text-emerald-400 opacity-80" />
-          <h2 className="relative text-4xl md:text-5xl font-bold text-white tracking-tight">
+          <h2 className="relative text-4xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-300 to-white animate-gradient-text">
             Ready to eat with intention?
           </h2>
           <p className="relative text-zinc-400 text-lg max-w-xl mx-auto">
@@ -479,8 +483,9 @@ export default function HomePage() {
           </p>
           <Link
             href="/macros"
-            className="relative inline-flex items-center gap-2 bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
+            className="relative inline-flex items-center gap-2 bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30 overflow-hidden"
           >
+            <span aria-hidden className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
             Calculate My Macros <ArrowRight className="w-5 h-5" />
           </Link>
         </motion.div>

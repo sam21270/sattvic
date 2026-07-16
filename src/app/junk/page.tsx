@@ -53,7 +53,7 @@ export default function JunkPage() {
       const res = await fetch("/api/ai/junk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ craving: craving.trim() }),
+        body: JSON.stringify({ craving: craving.trim(), jain: localStorage.getItem("sattvic-jain") === "1" }),
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "Failed");

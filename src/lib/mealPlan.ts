@@ -87,6 +87,21 @@ function baseIngredients(meal: PoolMeal): string[] {
   return BASE_KEYWORDS.filter((kw) => text.includes(kw));
 }
 
+function isDessert(meal: PoolMeal): boolean {
+  return meal.tags.includes("Dessert");
+}
+
+// Jain diet: only meals manually audited as jain-safe (see PoolMeal.jain).
+// Stricter than keyword matching — catches composite sauces (marinara, salsa,
+// hummus) and sprouts, which keyword scans miss.
+export function filterJain(pool: PoolMeal[]): PoolMeal[] {
+  return pool.filter((m) => m.jain === true);
+}
+
+// Desserts are a treat, not a staple: only the evening snack slot on these
+// day indices (0-based within the week) offers one. Wed + Sat pattern.
+const DESSERT_DAY_INDICES = [2, 5];
+
 // Scores a candidate — lower is better.
 // Protein shortfalls are punished hardest; cross-day and same-day repeats are
 // penalized but NOT added as hard exclusions here (caller filters those out first).
@@ -95,7 +110,8 @@ function scoreCandidate(
   targetCal: number,
   targetProtein: number,
   usedBasesToday: Set<string>,
-  dosha: string | null = null
+  dosha: string | null = null,
+  weekUseCount: Map<string, number> | null = null
 ): number {
   const calGap = (targetCal - c.calories) / targetCal;
   const calPenalty = calGap > 0 ? calGap * 1.1 : Math.abs(calGap) * 0.7;
@@ -105,7 +121,10 @@ function scoreCandidate(
   const bases = baseIngredients(c);
   const baseRepeatPenalty = bases.some((b) => usedBasesToday.has(b)) ? 5 : 0;
   const doshaPenalty = doshaScoreAdjustment(c.name, c.tags, dosha);
-  return calPenalty + proteinPenalty + baseRepeatPenalty + doshaPenalty;
+  // Week-level variety: each prior appearance this week costs heavily, so the
+  // plan explores the pool instead of settling into a repeating cycle.
+  const weekRepeatPenalty = (weekUseCount?.get(c.name) ?? 0) * 3;
+  return calPenalty + proteinPenalty + baseRepeatPenalty + doshaPenalty + weekRepeatPenalty;
 }
 
 // Returns candidates filtered by hard cross-day diversity rules.
@@ -138,12 +157,13 @@ function pickBest(
   targetCal: number,
   targetProtein: number,
   usedBasesToday: Set<string>,
-  dosha: string | null = null
+  dosha: string | null = null,
+  weekUseCount: Map<string, number> | null = null
 ): PoolMeal {
   let best = candidates[0];
   let bestScore = Infinity;
   for (const c of candidates) {
-    const score = scoreCandidate(c, targetCal, targetProtein, usedBasesToday, dosha);
+    const score = scoreCandidate(c, targetCal, targetProtein, usedBasesToday, dosha, weekUseCount);
     if (score < bestScore) {
       bestScore = score;
       best = c;
@@ -190,6 +210,7 @@ function repairDayForProtein(
     let improved = false;
     for (const slot of slotsByProteinDensity) {
       const current = day[slot]!;
+      if (isDessert(current)) continue; // the treat stays
       const type = SLOT_TO_TYPE[slot];
       const usedNamesInDay = new Set(
         PLAN_SLOTS.map((s) => day[s]?.name).filter(Boolean) as string[]
@@ -197,6 +218,7 @@ function repairDayForProtein(
 
       const candidates = pool.filter((m) => {
         if (m.mealType !== type) return false;
+        if (isDessert(m)) return false;
         if (m.name === current.name || usedNamesInDay.has(m.name)) return false;
         if (blockedCrossDay.has(m.name)) return false;
         const newTotalCal = totals.calories - current.calories + m.calories;
@@ -221,13 +243,18 @@ export function buildWeekPlan(
   allergies: string[] = [],
   conditions: string[] = [],
   dosha: string | null = null,
-  fast: FastType = "none"
+  fast: FastType = "none",
+  jain = false
 ): WeekPlan {
-  const pool = filterFasting(filterPool(allergies, conditions), fast);
+  let pool = filterFasting(filterPool(allergies, conditions), fast);
+  if (jain) pool = filterJain(pool);
   const plan = buildEmptyWeek(days);
 
   // Track names used on each completed day for cross-day freshness checks
   const dayNameSets: Set<string>[] = []; // index 0 = first day, etc.
+
+  // Count of appearances across the whole week so far — drives variety
+  const weekUseCount = new Map<string, number>();
 
   for (let di = 0; di < days.length; di++) {
     const day = days[di];
@@ -246,7 +273,15 @@ export function buildWeekPlan(
 
     for (const slot of PLAN_SLOTS) {
       const type = SLOT_TO_TYPE[slot];
-      const candidates = freshCandidates(pool, type, usedToday, recentDays);
+      let candidates = freshCandidates(pool, type, usedToday, recentDays);
+
+      // Dessert treat: evening snack on dessert days picks from desserts;
+      // every other slot never sees them.
+      const wantDessert = slot === "snack2" && DESSERT_DAY_INDICES.includes(di % 7);
+      const desserts = candidates.filter(isDessert);
+      candidates = wantDessert && desserts.length > 0
+        ? desserts
+        : candidates.filter((m) => !isDessert(m));
       if (candidates.length === 0) continue;
 
       const chosen = pickBest(
@@ -254,7 +289,8 @@ export function buildWeekPlan(
         targets.calories * SLOT_SHARE[slot],
         targets.protein * SLOT_SHARE[slot],
         usedBasesToday,
-        dosha
+        dosha,
+        weekUseCount
       );
 
       dayPool[slot] = chosen;
@@ -269,6 +305,7 @@ export function buildWeekPlan(
       PLAN_SLOTS.map((s) => dayPool[s]?.name).filter(Boolean) as string[]
     );
     dayNameSets.push(todayNames);
+    todayNames.forEach((n) => weekUseCount.set(n, (weekUseCount.get(n) ?? 0) + 1));
 
     // Scale portions uniformly if calorie target can't be reached with this pool
     const totals = dayTotals(dayPool);
@@ -291,9 +328,11 @@ export function swapSlot(
   slot: PlanSlot,
   targets: MacroTargets,
   allergies: string[] = [],
-  conditions: string[] = []
+  conditions: string[] = [],
+  jain = false
 ): Meal | null {
-  const pool = filterPool(allergies, conditions);
+  let pool = filterPool(allergies, conditions);
+  if (jain) pool = filterJain(pool);
   const type = SLOT_TO_TYPE[slot];
   const currentName = plan[day][slot]?.name;
 
@@ -322,7 +361,10 @@ export function swapSlot(
   if (currentName) usedToday.delete(currentName);
 
   const candidates = freshCandidates(pool, type, usedToday, recentDays);
-  const filtered = candidates.filter((m) => m.name !== currentName);
+  const currentPool = currentName ? poolByName.get(currentName) : undefined;
+  const currentIsDessert = currentPool ? isDessert(currentPool) : false;
+  let filtered = candidates.filter((m) => m.name !== currentName && isDessert(m) === currentIsDessert);
+  if (filtered.length === 0) filtered = candidates.filter((m) => m.name !== currentName && !isDessert(m));
   if (filtered.length === 0) return null;
 
   const chosen = pickBest(

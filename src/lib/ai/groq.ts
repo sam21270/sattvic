@@ -91,6 +91,7 @@ export function calculateMacros(input: {
   gender: string;
   activityLevel: string;
   goal: string;
+  pace?: "gentle" | "aggressive";
 }) {
   // Mifflin-St Jeor BMR
   const bmr = input.gender.toLowerCase() === "female"
@@ -110,10 +111,25 @@ export function calculateMacros(input: {
   const tdee = Math.round(bmr * activityMultipliers[activityKey]);
 
   const goalKey = input.goal.toLowerCase();
+
+  // Weight loss: percentage deficit, never below a safe intake floor
+  // (1200 F / 1500 M). Gentle = 18% long-run, Aggressive = 25%.
+  const floor = input.gender.toLowerCase() === "female" ? 1200 : 1500;
+  const finalPct = input.pace === "aggressive" ? 0.25 : 0.18;
+  const calAt = (pct: number) => Math.max(Math.round(tdee * (1 - pct)), floor);
   const calories =
-    goalKey.includes("lose")   ? Math.round(tdee - 500) :
+    goalKey.includes("lose")   ? calAt(finalPct) :
     goalKey.includes("gain")   ? Math.round(tdee + 300) :
     tdee;
+
+  // Taper plan: ease in over weeks instead of dropping to the target on day 1
+  const phases = goalKey.includes("lose")
+    ? [
+        { label: "Weeks 1–2", calories: calAt(0.08), note: "Ease in — just below maintenance, build the habit" },
+        { label: "Weeks 3–4", calories: calAt(finalPct / 2 + 0.04), note: "Step down — appetite has adjusted" },
+        { label: "Week 5+",  calories: calAt(finalPct), note: "Full pace — your long-run target" },
+      ]
+    : undefined;
 
   // Protein: 1.6 g/kg for gain/maintain, 1.4 g/kg for loss (preserve muscle)
   const proteinPerKg = goalKey.includes("gain") ? 1.6 : 1.4;
@@ -129,14 +145,14 @@ export function calculateMacros(input: {
   const fiber = Math.round((calories / 1000) * 14);
 
   const goalDescriptions: Record<string, string> = {
-    lose: `To lose weight, you're in a 500 kcal daily deficit from your maintenance of ${tdee} kcal. Protein is set at ${proteinPerKg}g/kg to preserve muscle while in a deficit.`,
+    lose: `To lose weight, you're in a gentle ${tdee - calories} kcal daily deficit from your maintenance of ${tdee} kcal — about ${Math.round(((tdee - calories) / tdee) * 100)}%, which is sustainable and won't leave you starving in week one. Expect roughly ${(((tdee - calories) * 7) / 7700).toFixed(1)} kg lost per week. Protein is set at ${proteinPerKg}g/kg to preserve muscle while in a deficit.`,
     gain: `To gain muscle, you're in a 300 kcal surplus over your maintenance of ${tdee} kcal. Protein is set at ${proteinPerKg}g/kg to support muscle synthesis.`,
     maintain: `To maintain weight, calories match your TDEE of ${tdee} kcal. Protein at ${proteinPerKg}g/kg supports muscle health on a vegetarian diet.`,
   };
   const descKey = goalKey.includes("lose") ? "lose" : goalKey.includes("gain") ? "gain" : "maintain";
   const explanation = `${goalDescriptions[descKey]} Carbohydrates (${carbs}g) provide the bulk of energy from whole grains, fruits, and vegetables. Fat (${fat}g) comes from nuts, seeds, and healthy oils. Fiber target of ${fiber}g supports gut health.`;
 
-  return { calories, protein, carbs, fat, fiber, explanation };
+  return { calories, protein, carbs, fat, fiber, explanation, phases, maintenance: tdee };
 }
 
 export { chat };

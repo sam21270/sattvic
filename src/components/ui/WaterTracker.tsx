@@ -40,14 +40,19 @@ export function WaterTracker({ current, goal = 2500, onAdd }: Props) {
 
           <g clipPath="url(#bottle-clip)">
             {/* wave background */}
-            <motion.rect
+            {/* full-height rect scaled from the bottle's bottom via CSS —
+                SVG geometry attributes don't animate reliably, transforms do */}
+            <rect
               x="10"
-              y={20 + (1 - pct) * 98}
+              y="20"
               width="60"
-              height={pct * 98}
+              height="98"
               fill="url(#water-grad)"
-              animate={{ y: 20 + (1 - pct) * 98, height: pct * 98 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
+              style={{
+                transform: `scaleY(${pct})`,
+                transformOrigin: "40px 118px",
+                transition: "transform 0.6s ease-in-out",
+              }}
             />
 
             {/* ripple */}
@@ -103,6 +108,22 @@ export function WaterTracker({ current, goal = 2500, onAdd }: Props) {
           </button>
         ))}
       </div>
+
+      {/* remove buttons — for mis-taps */}
+      {current > 0 && (
+        <div className="flex gap-2">
+          {levels.map((ml) => (
+            <button
+              key={ml}
+              onClick={() => onAdd(-Math.min(ml, current))}
+              disabled={current <= 0}
+              className="px-3 py-1 rounded-lg text-[11px] font-semibold bg-white/[0.04] text-zinc-500 border border-white/[0.08] hover:text-rose-300 hover:border-rose-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              −{ml}ml
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

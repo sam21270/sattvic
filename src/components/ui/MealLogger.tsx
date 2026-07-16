@@ -65,7 +65,6 @@ const INDIAN_PORTION_OPTIONS = [
 
 const INDIAN_TAGS = ["Indian"];
 
-const EMPTY_CUSTOM = { name: "", calories: "", protein: "", carbs: "", fat: "", fiber: "" };
 
 type Panel = "list" | "portion" | "custom";
 
@@ -98,7 +97,14 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
   const [query, setQuery]       = useState("");
   const [pending, setPending]   = useState<PoolMeal | AIMeal | null>(null);
   const [showCustom, setShowCustom] = useState(false);
-  const [custom, setCustom]     = useState(EMPTY_CUSTOM);
+  const [customText, setCustomText] = useState("");
+  const [customLoading, setCustomLoading] = useState(false);
+  const [customError, setCustomError] = useState("");
+  const [customResult, setCustomResult] = useState<{
+    items: { name: string; calories: number; protein: number }[];
+    totals: { calories: number; protein: number; carbs: number; fat: number; fiber: number };
+    note?: string;
+  } | null>(null);
   const [aiResults, setAiResults]   = useState<AIMeal[]>([]);
   const [aiLoading, setAiLoading]   = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,7 +176,9 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
     setQuery("");
     setPending(null);
     setShowCustom(false);
-    setCustom(EMPTY_CUSTOM);
+    setCustomText("");
+    setCustomResult(null);
+    setCustomError("");
   }
 
   function closePanel() {
@@ -180,7 +188,9 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
     setAiResults([]);
     setAiLoading(false);
     setShowCustom(false);
-    setCustom(EMPTY_CUSTOM);
+    setCustomText("");
+    setCustomResult(null);
+    setCustomError("");
   }
 
   function selectMeal(m: PoolMeal | AIMeal) {
@@ -214,19 +224,41 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
     closePanel();
   }
 
+  async function analyzeCustom() {
+    if (!customText.trim() || customLoading) return;
+    setCustomLoading(true);
+    setCustomError("");
+    setCustomResult(null);
+    try {
+      const res = await fetch("/api/ai/food-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: customText }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (!data.items?.length) throw new Error();
+      setCustomResult(data);
+    } catch {
+      setCustomError("Couldn't analyze that — try rephrasing (e.g. \"2 rotis, 1 katori dal\").");
+    } finally {
+      setCustomLoading(false);
+    }
+  }
+
   function submitCustom(slot: SlotKey) {
-    if (!custom.name.trim() || !custom.calories) return;
-    const micros = getMicros(custom.name);
+    if (!customResult) return;
+    const micros = getMicros(customText);
     commitMeal(slot, {
-      name:     custom.name.trim(),
-      calories: Number(custom.calories) || 0,
-      protein:  Number(custom.protein)  || 0,
-      carbs:    Number(custom.carbs)    || 0,
-      fat:      Number(custom.fat)      || 0,
-      fiber:    Number(custom.fiber)    || 0,
+      name:     customText.trim(),
+      calories: customResult.totals.calories,
+      protein:  customResult.totals.protein,
+      carbs:    customResult.totals.carbs,
+      fat:      customResult.totals.fat,
+      fiber:    customResult.totals.fiber,
       b12:      micros.b12,
       iron:     micros.iron,
-      portion:  "custom",
+      portion:  "AI estimated",
     });
   }
 
@@ -390,8 +422,8 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
                             onClick={() => setShowCustom((v) => !v)}
                             className="flex items-center gap-2 text-xs font-semibold text-zinc-500 hover:text-zinc-300 transition-colors"
                           >
-                            <PenLine className="w-3.5 h-3.5" />
-                            Add a custom meal
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                            Just type what you ate — AI counts the macros
                             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCustom ? "rotate-180" : ""}`} />
                           </button>
 
@@ -405,50 +437,51 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
                                 className="overflow-hidden"
                               >
                                 <div className="pt-3 space-y-2">
-                                  <input
-                                    type="text"
-                                    placeholder="Meal name (e.g. Pasta Arrabiata, Dosa with Sambar…)"
-                                    value={custom.name}
-                                    onChange={(e) => setCustom((c) => ({ ...c, name: e.target.value }))}
-                                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
+                                  <textarea
+                                    placeholder='e.g. "2 rotis, 1 katori dal, half cup rice"'
+                                    value={customText}
+                                    rows={2}
+                                    onChange={(e) => { setCustomText(e.target.value); setCustomResult(null); }}
+                                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); analyzeCustom(); } }}
+                                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 resize-none"
                                   />
-                                  <div className="grid grid-cols-3 gap-2">
-                                    {(["calories", "protein", "carbs"] as const).map((field) => (
-                                      <div key={field}>
-                                        <p className="text-[10px] text-zinc-600 mb-1 capitalize">
-                                          {field === "calories" ? "Calories (kcal)" : `${field} (g)`}
-                                        </p>
-                                        <input
-                                          type="number"
-                                          placeholder="0"
-                                          value={custom[field]}
-                                          onChange={(e) => setCustom((c) => ({ ...c, [field]: e.target.value }))}
-                                          className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
-                                        />
+                                  {customError && <p className="text-xs text-rose-400">{customError}</p>}
+
+                                  {customResult && (
+                                    <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 space-y-1.5">
+                                      {customResult.items.map((it, i) => (
+                                        <div key={i} className="flex justify-between text-xs">
+                                          <span className="text-zinc-300">{it.name}</span>
+                                          <span className="text-zinc-500 tabular-nums">{it.calories} kcal · {it.protein}g P</span>
+                                        </div>
+                                      ))}
+                                      <div className="flex justify-between text-xs font-bold pt-1.5 border-t border-white/[0.07]">
+                                        <span className="text-white">Total</span>
+                                        <span className="text-emerald-400 tabular-nums">
+                                          {customResult.totals.calories} kcal · {customResult.totals.protein}g P
+                                        </span>
                                       </div>
-                                    ))}
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {(["fat", "fiber"] as const).map((field) => (
-                                      <div key={field}>
-                                        <p className="text-[10px] text-zinc-600 mb-1 capitalize">{field} (g)</p>
-                                        <input
-                                          type="number"
-                                          placeholder="0"
-                                          value={custom[field]}
-                                          onChange={(e) => setCustom((c) => ({ ...c, [field]: e.target.value }))}
-                                          className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
-                                        />
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <button
-                                    onClick={() => submitCustom(key)}
-                                    disabled={!custom.name.trim() || !custom.calories}
-                                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
-                                  >
-                                    Log this meal
-                                  </button>
+                                    </div>
+                                  )}
+
+                                  {!customResult ? (
+                                    <button
+                                      onClick={analyzeCustom}
+                                      disabled={!customText.trim() || customLoading}
+                                      className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-sm font-semibold rounded-xl transition-colors"
+                                    >
+                                      {customLoading
+                                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Counting macros…</>
+                                        : <><Sparkles className="w-4 h-4" /> Analyze with AI</>}
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => submitCustom(key)}
+                                      className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold rounded-xl transition-colors"
+                                    >
+                                      Log this meal
+                                    </button>
+                                  )}
                                 </div>
                               </motion.div>
                             )}

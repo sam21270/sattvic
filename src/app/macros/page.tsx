@@ -34,7 +34,10 @@ function MacrosCalculator() {
     weight: "", height: "", age: "", gender: "female",
     activityLevel: "moderate", goal: "maintain",
   });
-  const [result, setResult] = useState<MacroTargets | null>(null);
+  const [pace, setPace] = useState<"gentle" | "aggressive">("gentle");
+  const [result, setResult] = useState<
+    (MacroTargets & { phases?: { label: string; calories: number; note: string }[]; maintenance?: number }) | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -53,6 +56,7 @@ function MacrosCalculator() {
           gender: form.gender,
           activityLevel: form.activityLevel,
           goal: form.goal,
+          pace,
         }),
       });
       const data = await res.json();
@@ -138,6 +142,34 @@ function MacrosCalculator() {
           </div>
         </div>
 
+        {form.goal === "lose_weight" && (
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-zinc-200">Pace</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPace("gentle")}
+                className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-colors text-left ${
+                  pace === "gentle" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-zinc-400 border-white/[0.1] hover:bg-white/[0.03]"
+                }`}
+              >
+                🌱 Ease me in
+                <span className="block text-xs opacity-75 mt-0.5">Gradual taper — recommended</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPace("aggressive")}
+                className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-colors text-left ${
+                  pace === "aggressive" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-zinc-400 border-white/[0.1] hover:bg-white/[0.03]"
+                }`}
+              >
+                🔥 Aggressive
+                <span className="block text-xs opacity-75 mt-0.5">Bigger deficit, faster results</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
         <button
@@ -168,6 +200,23 @@ function MacrosCalculator() {
               </div>
             ))}
           </div>
+          {result.phases && (
+            <div className="border-t border-white/[0.07] pt-4 space-y-2">
+              <h3 className="text-sm font-bold text-zinc-200">Your ramp-down plan — don&apos;t jump straight to the target</h3>
+              {result.phases.map((p, i) => (
+                <div key={p.label} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.07] rounded-xl px-4 py-3">
+                  <span className="w-7 h-7 rounded-full bg-emerald-500/15 text-emerald-400 font-bold text-sm flex items-center justify-center shrink-0">{i + 1}</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-white">{p.label} — {p.calories} kcal/day</p>
+                    <p className="text-xs text-zinc-500">{p.note}</p>
+                  </div>
+                </div>
+              ))}
+              {result.maintenance && (
+                <p className="text-xs text-zinc-600">Your maintenance is ≈{result.maintenance} kcal — every phase stays safely below it, never crash-level.</p>
+              )}
+            </div>
+          )}
           {result.explanation && (
             <p className="text-sm text-zinc-500 leading-relaxed border-t border-white/[0.07] pt-4">
               {result.explanation}

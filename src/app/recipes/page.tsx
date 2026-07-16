@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Search, SlidersHorizontal, Flame } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, SlidersHorizontal, Flame, Link2, Loader2 } from "lucide-react";
 import { FlipCard } from "@/components/meals/FlipCard";
 import { Meal } from "@/types";
 
@@ -10,7 +10,7 @@ import { Meal } from "@/types";
 const SAMPLE_MEALS: Meal[] = [
   {
     _id: "1",
-    name: "Viral Baked Feta Pasta",
+    name: "Viral Baked Feta Pasta", mealTime: "dinner",
     description: "The recipe that broke the internet in 2021 — whole block of feta roasted with cherry tomatoes until gooey, tossed with pasta. Unapologetically rich.",
     image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&h=400&fit=crop&q=80",
     calories: 510, protein: 22, carbs: 62, fat: 20, fiber: 4, prepTime: 35,
@@ -28,7 +28,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "2",
-    name: "15-Min Chilli Garlic Noodles",
+    name: "15-Min Chilli Garlic Noodles", mealTime: "dinner",
     description: "Crispy shallots, chilli oil, soy, and sesame on any noodle you have. Went viral on every food platform for a reason — deeply addictive, done in 15 minutes.",
     image: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&h=400&fit=crop&q=80",
     calories: 420, protein: 12, carbs: 58, fat: 18, fiber: 3, prepTime: 15,
@@ -45,7 +45,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "3",
-    name: "Green Goddess Salad",
+    name: "Green Goddess Salad", mealTime: "lunch",
     description: "The TikTok salad that got millions of views. Shredded cabbage, cucumber, and herbs drowning in an insanely good green goddess dressing. Genuinely life-changing.",
     image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop&q=80",
     calories: 220, protein: 6, carbs: 18, fat: 14, fiber: 5, prepTime: 15,
@@ -62,7 +62,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "4",
-    name: "Marry Me Tofu",
+    name: "Marry Me Tofu", mealTime: "dinner",
     description: "The plant-based spin on Marry Me Chicken that took Reddit by storm. Sun-dried tomatoes, cream, parmesan, and herbs in a sauce so good it'll make you propose.",
     image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop&q=80",
     calories: 380, protein: 26, carbs: 18, fat: 24, fiber: 3, prepTime: 30,
@@ -80,7 +80,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "5",
-    name: "Mumbai Masala Omelette",
+    name: "Mumbai Masala Omelette", mealTime: "breakfast",
     description: "Street-style egg omelette with onion, chilli, tomato and coriander. Every Indian hostel student's 3am recipe. Dead simple, absolutely delicious.",
     image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&h=400&fit=crop&q=80",
     calories: 260, protein: 20, carbs: 8, fat: 17, fiber: 2, prepTime: 10,
@@ -98,7 +98,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "6",
-    name: "Korean Sundubu Jjigae",
+    name: "Korean Sundubu Jjigae", mealTime: "dinner",
     description: "Spicy silken tofu stew that's been on every Korean food YouTuber's channel. Deeply warming, incredibly quick, and packed with umami. Serve with rice — non-negotiable.",
     image: "https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=600&h=400&fit=crop&q=80",
     calories: 290, protein: 18, carbs: 14, fat: 16, fiber: 3, prepTime: 20,
@@ -116,7 +116,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "7",
-    name: "Tamago Sando",
+    name: "Tamago Sando", mealTime: "lunch",
     description: "Japan's legendary egg salad sandwich. The convenience store version that food bloggers obsessed over. Pillowy milk bread, eggy-mayo filling, perfect every time.",
     image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&h=400&fit=crop&q=80",
     calories: 390, protein: 16, carbs: 34, fat: 22, fiber: 1, prepTime: 20,
@@ -134,7 +134,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "8",
-    name: "High-Protein Overnight Oats",
+    name: "High-Protein Overnight Oats", mealTime: "breakfast",
     description: "The fitness TikTok staple done properly. Cottage cheese + Greek yogurt base makes this 40g protein per jar. Actually tastes incredible, not sad diet food.",
     image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&h=400&fit=crop&q=80",
     calories: 420, protein: 40, carbs: 48, fat: 8, fiber: 7, prepTime: 5,
@@ -152,7 +152,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "9",
-    name: "Miso Glazed Aubergine",
+    name: "Miso Glazed Aubergine", mealTime: "dinner",
     description: "Nasu Dengaku — Japanese restaurant dish that blew up on food Instagram. Silky roasted aubergine with a caramelised sweet miso glaze. Zero effort, maximum impact.",
     image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&h=400&fit=crop&q=80",
     calories: 200, protein: 6, carbs: 24, fat: 9, fiber: 6, prepTime: 25,
@@ -170,7 +170,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "10",
-    name: "Dhaba-Style Dal Tadka",
+    name: "Dhaba-Style Dal Tadka", mealTime: "lunch",
     description: "The yellow dal that every Indian restaurant pretends is difficult. It's not. This dhaba method with a proper ghee tadka poured sizzling over the dal changes everything.",
     image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
     calories: 310, protein: 18, carbs: 44, fat: 9, fiber: 12, prepTime: 40,
@@ -188,7 +188,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "11",
-    name: "Smashed Cucumber Salad",
+    name: "Smashed Cucumber Salad", mealTime: "snack",
     description: "The TikTok Chinese salad that got everyone smashing cucumbers on their countertops. The smashing creates jagged edges that hold the dressing like nothing else.",
     image: "https://images.unsplash.com/photo-1625944525533-473f1a3d54e7?w=600&h=400&fit=crop&q=80",
     calories: 140, protein: 3, carbs: 10, fat: 9, fiber: 2, prepTime: 15,
@@ -206,7 +206,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "12",
-    name: "Shakshuka",
+    name: "Shakshuka", mealTime: "breakfast",
     description: "The NYT Cooking recipe that got millions of saves. Eggs poached in spiced tomato sauce — the brunch dish that replaced avocado toast on every food blog for a year.",
     image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600&h=400&fit=crop&q=80",
     calories: 290, protein: 18, carbs: 22, fat: 16, fiber: 5, prepTime: 30,
@@ -224,7 +224,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "13",
-    name: "Paneer Butter Masala",
+    name: "Paneer Butter Masala", mealTime: "dinner",
     description: "The most-searched Indian recipe on YouTube, made right. Velvety tomato-cashew gravy with paneer that melts in your mouth. Restaurant quality in 40 minutes.",
     image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
     calories: 460, protein: 22, carbs: 22, fat: 32, fiber: 4, prepTime: 40,
@@ -242,7 +242,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "14",
-    name: "Chilli Oil Fried Eggs",
+    name: "Chilli Oil Fried Eggs", mealTime: "breakfast",
     description: "2 million TikTok views for a reason. Eggs fried in bubbling chilli oil with crispy edges and a runny yolk. On rice, toast, noodles — everything. Life-changing breakfast.",
     image: "https://images.unsplash.com/photo-1607532941433-304659e8198a?w=600&h=400&fit=crop&q=80",
     calories: 230, protein: 14, carbs: 4, fat: 18, fiber: 1, prepTime: 7,
@@ -260,7 +260,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "15",
-    name: "Saag Paneer",
+    name: "Saag Paneer", mealTime: "dinner",
     description: "Not the watered-down restaurant version. This is the real thing — charred greens, whole spices, and paneer that holds its shape. Punjabi grandmothers would approve.",
     image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&h=400&fit=crop&q=80",
     calories: 390, protein: 26, carbs: 18, fat: 26, fiber: 7, prepTime: 40,
@@ -278,7 +278,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "16",
-    name: "Harissa Chickpea Stew",
+    name: "Harissa Chickpea Stew", mealTime: "dinner",
     description: "The NYT Cooking / Ottolenghi-style dish that food Reddit wouldn't stop talking about. One pan, 25 minutes, restaurant-quality North African flavours.",
     image: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600&h=400&fit=crop&q=80",
     calories: 340, protein: 16, carbs: 48, fat: 11, fiber: 14, prepTime: 25,
@@ -296,7 +296,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "17",
-    name: "Japanese Matcha Chia Pudding",
+    name: "Japanese Matcha Chia Pudding", mealTime: "breakfast",
     description: "The health food Instagram staple that actually delivers. Ceremonial grade matcha + coconut milk base is rich and earthy. Prep tonight, eat tomorrow.",
     image: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=600&h=400&fit=crop&q=80",
     calories: 260, protein: 8, carbs: 24, fat: 14, fiber: 11, prepTime: 5,
@@ -314,7 +314,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "18",
-    name: "Dalgona Whipped Coffee Oats",
+    name: "Dalgona Whipped Coffee Oats", mealTime: "breakfast",
     description: "The 2020 lockdown viral recipe meets the 2023 protein oat trend. Whipped coffee foam on cold milk oats. Looks absurdly good and tastes even better.",
     image: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?w=600&h=400&fit=crop&q=80",
     calories: 380, protein: 14, carbs: 54, fat: 10, fiber: 6, prepTime: 10,
@@ -332,7 +332,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "19",
-    name: "Crispy Smashed Potatoes",
+    name: "Crispy Smashed Potatoes", mealTime: "snack",
     description: "The side dish that got more saves than any main on food Instagram. Baby potatoes boiled, smashed flat, then roasted until insanely crispy. Serve with herb yogurt.",
     image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=600&h=400&fit=crop&q=80",
     calories: 280, protein: 6, carbs: 40, fat: 12, fiber: 4, prepTime: 45,
@@ -350,7 +350,7 @@ const SAMPLE_MEALS: Meal[] = [
   },
   {
     _id: "20",
-    name: "Cottage Cheese Toast",
+    name: "Cottage Cheese Toast", mealTime: "breakfast",
     description: "2024's biggest TikTok health trend. Whipped cottage cheese on toast is high protein, creamy, and infinitely customisable. The new avocado toast — and actually more nutritious.",
     image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop&q=80",
     calories: 290, protein: 24, carbs: 26, fat: 9, fiber: 3, prepTime: 8,
@@ -375,8 +375,43 @@ export default function RecipesPage() {
   const [highProtein, setHighProtein] = useState(false);
   const [lowCarb, setLowCarb] = useState(false);
   const [viralOnly, setViralOnly] = useState(false);
+  const [mealTime, setMealTime] = useState<"all" | "breakfast" | "lunch" | "dinner" | "snack">("all");
 
-  const filtered = SAMPLE_MEALS.filter((m) => {
+  // AI recipe import — paste a link or recipe text
+  const [importInput, setImportInput] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [imported, setImported] = useState<Meal[]>([]);
+
+  useEffect(() => {
+    try { setImported(JSON.parse(localStorage.getItem("sattvic-imported-recipes") ?? "[]")); } catch {}
+  }, []);
+
+  async function importRecipe() {
+    if (!importInput.trim() || importing) return;
+    setImporting(true);
+    setImportError("");
+    try {
+      const res = await fetch("/api/ai/recipe-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: importInput }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error ?? "failed");
+      const meal: Meal = { ...data, _id: `imported-${Date.now()}`, image: "", tags: data.tags ?? ["Imported"] };
+      const next = [meal, ...imported];
+      setImported(next);
+      localStorage.setItem("sattvic-imported-recipes", JSON.stringify(next));
+      setImportInput("");
+    } catch (e) {
+      setImportError(e instanceof Error && e.message !== "failed" ? e.message : "Couldn't extract a recipe — try pasting the recipe text itself.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  const filtered = [...imported, ...SAMPLE_MEALS].filter((m) => {
     const q = search.toLowerCase();
     const matchesSearch = !q || m.name.toLowerCase().includes(q) ||
       m.description.toLowerCase().includes(q) ||
@@ -384,7 +419,8 @@ export default function RecipesPage() {
     const matchesProtein = !highProtein || m.isHighProtein;
     const matchesCarb    = !lowCarb    || m.isLowCarb;
     const matchesViral   = !viralOnly  || m.tags.some((t) => VIRAL_TAGS.includes(t));
-    return matchesSearch && matchesProtein && matchesCarb && matchesViral;
+    const matchesTime    = mealTime === "all" || m.mealTime === mealTime;
+    return matchesSearch && matchesProtein && matchesCarb && matchesViral && matchesTime;
   });
 
   return (
@@ -396,6 +432,55 @@ export default function RecipesPage() {
           Viral hits from TikTok, Instagram, Reddit & YouTube — all vegetarian, all tried and tested.
           Tap any card to flip for the full recipe.
         </p>
+      </div>
+
+      {/* AI recipe import */}
+      <div className="bg-white/[0.03] border border-emerald-500/20 rounded-2xl p-4 space-y-2">
+        <p className="text-sm font-bold text-white flex items-center gap-2">
+          <Link2 className="w-4 h-4 text-emerald-400" /> Import any recipe
+        </p>
+        <p className="text-xs text-zinc-500">Paste a blog/YouTube link or the recipe text itself — AI turns it into a card with macros.</p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={importInput}
+            onChange={(e) => setImportInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && importRecipe()}
+            placeholder="https://… or paste recipe text"
+            className="flex-1 px-4 py-2.5 rounded-xl border border-white/[0.1] text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-[#141414] text-zinc-200 placeholder-zinc-600"
+          />
+          <button
+            onClick={importRecipe}
+            disabled={importing || !importInput.trim()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-white font-bold rounded-xl text-sm transition-colors"
+          >
+            {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Import"}
+          </button>
+        </div>
+        {importError && <p className="text-xs text-rose-400">{importError}</p>}
+      </div>
+
+      {/* When to eat it */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          { value: "all",       label: "🍽️ All" },
+          { value: "breakfast", label: "🌅 Breakfast" },
+          { value: "lunch",     label: "☀️ Lunch" },
+          { value: "dinner",    label: "🌙 Dinner" },
+          { value: "snack",     label: "🍎 Snacks" },
+        ] as const).map((t) => (
+          <button
+            key={t.value}
+            onClick={() => setMealTime(t.value)}
+            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
+              mealTime === t.value
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "bg-white/[0.04] text-zinc-400 border-white/[0.1] hover:border-white/[0.2] hover:text-zinc-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}

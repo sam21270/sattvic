@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -12,6 +13,7 @@ import { Meal, MacroTargets } from "@/types";
 import { buildWeekPlan, swapSlot, buildEmptyWeek, PLAN_SLOTS, PlanSlot, WeekPlan } from "@/lib/mealPlan";
 import { isMealGoodForDosha, DOSHA_BADGE, Dosha } from "@/lib/doshaRules";
 import { FastType, FAST_META } from "@/lib/fastingRules";
+import { CookMode } from "@/components/ui/CookMode";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -60,38 +62,104 @@ function categoriseIngredient(ingredient: string): string {
   return "🧃 Other";
 }
 
+// Words that describe preparation, not a thing to buy
+const PREP_WORDS = new Set([
+  "diced", "chopped", "sliced", "mashed", "pureed", "puréed", "grated", "minced",
+  "cubed", "boiled", "cooked", "dried", "roasted", "soaked", "frozen", "fresh",
+  "finely", "thinly", "roughly", "deseeded", "pitted", "peeled", "shredded",
+  "to", "serve", "taste", "garnish", "optional", "and", "or", "&", "for", "of",
+  "crumbled", "pinch", "square", "squares", "shavings", "slivered", "pods",
+  "overnight", "splash", "drizzle", "handful", "bunch", "zest", "juice",
+]);
+
+// Not things you buy
+const SKIP_ITEMS = new Set(["water", "ice", "warm water", "hot water", "ice cubes"]);
+
+// Canonical buy-able items: first keyword match wins
+const CANONICAL: [string, string][] = [
+  ["cherry tomato", "Cherry tomatoes"], ["tomato", "Tomatoes"],
+  ["spring onion", "Spring onions"], ["onion", "Onions"],
+  ["baby spinach", "Spinach"], ["spinach", "Spinach"],
+  ["ginger-garlic", "Garlic & ginger"], ["garlic", "Garlic & ginger"], ["ginger", "Garlic & ginger"],
+  ["protein powder", "Protein powder"], ["whey", "Protein powder"],
+  ["dark chocolate", "Dark chocolate"], ["cocoa", "Cocoa powder"],
+  ["edamame", "Edamame"],
+  ["sprout", "Moong for sprouting (start 2–3 days ahead)"],
+  ["rajma", "Rajma (soak overnight before cooking)"], ["kidney bean", "Rajma (soak overnight before cooking)"],
+  ["bell pepper", "Bell peppers"], ["capsicum", "Bell peppers"],
+  ["banana", "Bananas"], ["lemon", "Lemons / limes"], ["lime", "Lemons / limes"],
+  ["cucumber", "Cucumbers"], ["carrot", "Carrots"], ["peas", "Peas"],
+  ["mushroom", "Mushrooms"], ["sweet corn", "Sweet corn"], ["corn", "Sweet corn"],
+  ["coriander", "Fresh coriander"], ["mint", "Mint"], ["basil", "Fresh basil"],
+  ["red chilli", "Dried red chillies"], ["chilli powder", "Chilli powder / flakes"],
+  ["chilli flakes", "Chilli powder / flakes"], ["cayenne", "Chilli powder / flakes"],
+  ["chilli", "Green chillies"],
+  ["berries", "Mixed berries"], ["avocado", "Avocados"], ["mango", "Mangoes"],
+  ["lettuce", "Lettuce"], ["cabbage", "Cabbage"], ["broccoli", "Broccoli"],
+  ["potato", "Potatoes"], ["aubergine", "Aubergine"], ["eggplant", "Aubergine"],
+  ["paneer", "Paneer"], ["tofu", "Tofu"], ["greek yogurt", "Greek yogurt"],
+  ["yogurt", "Yogurt"], ["curd", "Yogurt"], ["milk", "Milk"], ["ghee", "Ghee"],
+  ["butter", "Butter"], ["cheese", "Cheese"], ["cream", "Cream"], ["egg", "Eggs"],
+  ["rice", "Rice"], ["roti", "Roti / atta"], ["oats", "Oats"], ["quinoa", "Quinoa"],
+  ["besan", "Besan"], ["dal", "Dal / lentils"], ["lentil", "Dal / lentils"],
+  ["bread", "Bread"], ["pasta", "Pasta"], ["noodle", "Noodles"],
+  ["peanut", "Peanuts"], ["almond", "Almonds"], ["cashew", "Cashews"],
+  ["chia", "Chia seeds"], ["flaxseed", "Flaxseeds"], ["honey", "Honey"],
+  ["soy sauce", "Soy sauce"], ["olive oil", "Olive oil"], ["oil", "Cooking oil"],
+  ["chickpea", "Chickpeas (soak overnight if dried)"], ["chana", "Chickpeas (soak overnight if dried)"],
+  ["salt", "Salt"],
+];
+
+function canonicalItem(raw: string): string | null {
+  const cleaned = raw
+    .toLowerCase()
+    .replace(/^.*?:/, "") // "dressing: 1 tbsp tahini" → "1 tbsp tahini"
+    .replace(/\(.*?\)/g, "")
+    .replace(/[\d½¼¾⅓⅔]+[\d\/.,\s]*(g|kg|ml|l|tbsp|tsp|cups?|handfuls?|slices?|pieces?|cloves?|cans?|scoops?|inch|cm)?\b/gi, "")
+    .replace(/\b(medium|large|small|big|ripe|extra-firm|firm|thick|whole|full-fat|low-fat)\b/gi, "")
+    .trim();
+  if (!cleaned || cleaned.startsWith("scale all") || SKIP_ITEMS.has(cleaned)) return null;
+
+  for (const [kw, label] of CANONICAL) {
+    if (cleaned.includes(kw)) return label;
+  }
+  // no canonical match: drop prep words, keep what's left as its own item
+  const words = cleaned.split(/\s+/).filter((w) => !PREP_WORDS.has(w));
+  if (words.length === 0) return null;
+  const name = words.join(" ").replace(/^[-–—.,\s]+|[-–—.,\s]+$/g, "").trim();
+  return name.length > 2 ? name[0].toUpperCase() + name.slice(1) : null;
+}
+
 function buildGroceryList(plan: WeekPlan, servings: number): Record<string, string[]> {
-  const seen = new Set<string>();
-  const grouped: Record<string, string[]> = {};
+  // canonical name → number of recipes that use it
+  const counts = new Map<string, number>();
 
   for (const day of Object.values(plan)) {
     for (const meal of Object.values(day)) {
       if (!meal) continue;
       for (const ing of meal.ingredients ?? []) {
-        // normalise: strip leading quantities, lowercase, trim
-        const normalised = ing
-          .replace(/^\d[\d\/\s.,]*\s*(g|kg|ml|l|tbsp|tsp|cup|cups|handful|slice|slices|piece|pieces|clove|cloves|can|scoop|medium|large|small|inch|cm)?\s*/i, "")
-          .trim()
-          .toLowerCase();
-        if (!normalised || seen.has(normalised) || normalised.startsWith("scale all")) continue;
-        seen.add(normalised);
-        const cat = categoriseIngredient(ing);
-        if (!grouped[cat]) grouped[cat] = [];
-        // Keep original capitalisation for display, just strip quantity prefix
-        // Scale numeric prefix by servings
-        const display = servings === 1
-          ? ing.replace(/^\d[\d\/\s.,]*\s*(g|kg|ml|l|tbsp|tsp|cup|cups|handful|slice|slices|piece|pieces|clove|cloves|can|scoop|medium|large|small|inch|cm)?\s*/i, "").trim()
-          : ing.replace(/^(\d[\d.,]*)/, (_, n) => String(Math.round(parseFloat(n) * servings * 10) / 10)).trim();
-        grouped[cat].push(display);
+        // compound entries ("onion, tomato, cucumber, diced") → one item each
+        for (const part of ing.split(",")) {
+          const item = canonicalItem(part);
+          if (item) counts.set(item, (counts.get(item) ?? 0) + 1);
+        }
       }
     }
   }
 
-  // sort categories in defined order
+  const grouped: Record<string, string[]> = {};
+  for (const [item, n] of counts) {
+    const cat = categoriseIngredient(item);
+    if (!grouped[cat]) grouped[cat] = [];
+    const forPeople = servings > 1 ? `, for ${servings} people` : "";
+    grouped[cat].push(n > 1 ? `${item} (${n} recipes${forPeople})` : `${item}${forPeople ? ` (${forPeople.slice(2)})` : ""}`);
+  }
+
   const ordered: Record<string, string[]> = {};
   for (const cat of GROCERY_CATEGORIES) {
     if (grouped[cat.label]) ordered[cat.label] = grouped[cat.label].sort();
   }
+  if (grouped["🧃 Other"]) ordered["🧃 Other"] = grouped["🧃 Other"].sort();
   return ordered;
 }
 
@@ -101,6 +169,14 @@ function GroceryModal({ plan, servings, onClose }: { plan: WeekPlan; servings: n
   const list = buildGroceryList(plan, servings);
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+
+  // pantry-aware: cross-reference against My Fridge contents
+  const [fridge, setFridge] = useState<string[]>([]);
+  useEffect(() => {
+    try { setFridge(JSON.parse(localStorage.getItem("sattvic-fridge") ?? "[]")); } catch {}
+  }, []);
+  const inFridge = (item: string) =>
+    fridge.some((f) => item.toLowerCase().includes(f.toLowerCase()));
 
   function toggle(item: string) {
     setChecked((prev) => {
@@ -121,10 +197,19 @@ function GroceryModal({ plan, servings, onClose }: { plan: WeekPlan; servings: n
 
   const totalItems = Object.values(list).flat().length;
 
+  // Split into "actually buy this week" vs "pantry staples you likely have"
+  const isPantryCat = (cat: string) => cat.includes("Spices") || cat.includes("Pantry");
+  const [showPantry, setShowPantry] = useState(false);
+  const shopEntries = Object.entries(list).filter(([cat]) => !isPantryCat(cat));
+  const pantryEntries = Object.entries(list).filter(([cat]) => isPantryCat(cat));
+  const pantryCount = pantryEntries.reduce((n, [, items]) => n + items.length, 0);
+  const fridgeCount = shopEntries.reduce((n, [, items]) => n + items.filter(inFridge).length, 0);
+  const toBuy = totalItems - pantryCount - fridgeCount;
+
   return (
-    <div className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm overflow-y-auto p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm overflow-y-auto p-4" data-lenis-prevent onClick={onClose}>
       <div
-        className="bg-[#141414] border border-white/[0.1] rounded-3xl max-w-lg w-full mx-auto my-8"
+        className="bg-[#141414] border border-white/[0.1] rounded-3xl max-w-4xl w-full mx-auto my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
@@ -135,11 +220,24 @@ function GroceryModal({ plan, servings, onClose }: { plan: WeekPlan; servings: n
               Weekly Shopping List
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">
-              {totalItems} ingredients · {checked.size} ticked off
-              {servings > 1 && <span className="text-emerald-400 ml-1">· scaled for {servings} people</span>}
+              <span className="text-emerald-400 font-bold">Only {toBuy} things to buy</span>
+              {fridgeCount > 0 && ` · ${fridgeCount} already in your fridge`}
+              {` · ${pantryCount} pantry top-ups`}
+              {checked.size > 0 && ` · ${checked.size} ticked off`}
+              {servings > 1 && <span className="text-emerald-400 ml-1">· for {servings} people</span>}
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(
+                "🛒 SATTVIC weekly shopping list\n\n" +
+                Object.entries(list).map(([cat, items]) => `${cat}\n${items.map((i) => `• ${i}`).join("\n")}`).join("\n\n")
+              )}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
+            >
+              Share
+            </a>
             <button
               onClick={copyAll}
               className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
@@ -153,34 +251,75 @@ function GroceryModal({ plan, servings, onClose }: { plan: WeekPlan; servings: n
           </div>
         </div>
 
-        {/* items */}
-        <div className="px-6 py-4 space-y-5">
-          {Object.entries(list).map(([category, items]) => (
-            <div key={category}>
-              <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">{category}</p>
-              <ul className="space-y-1">
-                {items.map((item) => (
-                  <li key={item}>
-                    <button
-                      onClick={() => toggle(item)}
-                      className="flex items-center gap-3 w-full text-left py-1 group"
-                    >
-                      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                        checked.has(item)
-                          ? "bg-emerald-500 border-emerald-500"
-                          : "border-white/[0.2] group-hover:border-emerald-500/60"
-                      }`}>
-                        {checked.has(item) && <Check className="w-2.5 h-2.5 text-white" />}
-                      </span>
-                      <span className={`text-sm transition-colors ${checked.has(item) ? "text-zinc-600 line-through" : "text-zinc-300"}`}>
-                        {item}
-                      </span>
-                    </button>
-                  </li>
+        {/* items — multi-column so the whole shop fits on one screen */}
+        <div className="px-6 py-4">
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
+            {shopEntries.map(([category, items]) => (
+              <div key={category} className="break-inside-avoid mb-5">
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">{category}</p>
+                <ul className="space-y-1">
+                  {items.map((item) => (
+                    <li key={item}>
+                      <button
+                        onClick={() => toggle(item)}
+                        className="flex items-center gap-3 w-full text-left py-1 group"
+                      >
+                        <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                          checked.has(item)
+                            ? "bg-emerald-500 border-emerald-500"
+                            : "border-white/[0.2] group-hover:border-emerald-500/60"
+                        }`}>
+                          {checked.has(item) && <Check className="w-2.5 h-2.5 text-white" />}
+                        </span>
+                        <span className={`text-sm transition-colors ${checked.has(item) ? "text-zinc-600 line-through" : "text-zinc-300"}`}>
+                          {item}
+                        </span>
+                        {inFridge(item) && !checked.has(item) && (
+                          <span className="ml-auto text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full shrink-0">
+                            in fridge
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* pantry staples — collapsed by default so the list doesn't feel expensive */}
+          <div className="border-t border-white/[0.07] pt-3 mt-2">
+            <button
+              onClick={() => setShowPantry((v) => !v)}
+              className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase tracking-widest hover:text-zinc-300 transition-colors"
+            >
+              {showPantry ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              Pantry staples ({pantryCount}) — you likely have these
+            </button>
+            {showPantry && (
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 mt-3">
+                {pantryEntries.map(([category, items]) => (
+                  <div key={category} className="break-inside-avoid mb-5">
+                    <p className="text-xs font-bold text-zinc-600 uppercase tracking-widest mb-2">{category}</p>
+                    <ul className="space-y-1">
+                      {items.map((item) => (
+                        <li key={item}>
+                          <button onClick={() => toggle(item)} className="flex items-center gap-3 w-full text-left py-1 group">
+                            <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                              checked.has(item) ? "bg-emerald-500 border-emerald-500" : "border-white/[0.2] group-hover:border-emerald-500/60"
+                            }`}>
+                              {checked.has(item) && <Check className="w-2.5 h-2.5 text-white" />}
+                            </span>
+                            <span className={`text-sm ${checked.has(item) ? "text-zinc-600 line-through" : "text-zinc-400"}`}>{item}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -212,14 +351,17 @@ function MealRow({
   dosha,
   onSwap,
   swapping,
+  servings = 1,
 }: {
   slot: PlanSlot;
   meal: Meal | null;
   dosha: string | null;
   onSwap: () => void;
   swapping: boolean;
+  servings?: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [cooking, setCooking] = useState(false);
   const [imgError, setImgError] = useState(false);
   const fallback = FALLBACK_GRADIENTS[PLAN_SLOTS.indexOf(slot) % FALLBACK_GRADIENTS.length];
   const isGood = meal ? isMealGoodForDosha(meal.name, meal.tags, dosha) : false;
@@ -244,34 +386,42 @@ function MealRow({
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.025] transition-colors text-left group"
       >
-        <span className="text-xl shrink-0 w-7 text-center">{SLOT_EMOJI[slot]}</span>
-        <span className="text-[11px] uppercase tracking-wider font-bold text-zinc-500 w-28 shrink-0 hidden sm:block">
-          {SLOT_LABELS[slot]}
-        </span>
-        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
           {meal.image && !imgError ? (
             <img src={meal.image} alt={meal.name} className="w-full h-full object-cover" onError={() => setImgError(true)} />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-lg" style={{ background: fallback }}>
+            <div className="w-full h-full flex items-center justify-center text-2xl" style={{ background: fallback }}>
               {SLOT_EMOJI[slot]}
             </div>
           )}
         </div>
-        <div className="flex-1 flex items-center gap-2 min-w-0">
-          <span className="font-semibold text-zinc-100 text-sm leading-tight line-clamp-1">{meal.name}</span>
-          {isGood && badge && (
-            <span className={`hidden sm:inline-flex shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}>
-              {badge.label}
+        <div className="flex-1 min-w-0 space-y-0.5">
+          <p className="text-xs uppercase tracking-wider font-bold text-zinc-500">
+            {SLOT_EMOJI[slot]} {SLOT_LABELS[slot]}
+            {meal.tags?.includes("Dessert") && (
+              <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/25 normal-case tracking-normal">
+                🍰 Treat day
+              </span>
+            )}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-zinc-100 text-base leading-tight line-clamp-1">{meal.name}</span>
+            {isGood && badge && (
+              <span className={`hidden sm:inline-flex shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}>
+                {badge.label}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-orange-400 font-semibold">{meal.calories} kcal</span>
+            <span className="text-blue-400 font-semibold">{meal.protein}g protein</span>
+            <span className="hidden sm:flex items-center gap-1 text-zinc-500">
+              <Clock className="w-3.5 h-3.5" />{meal.prepTime} min
             </span>
-          )}
-        </div>
-        <div className="hidden sm:flex items-center gap-3 text-xs shrink-0">
-          <span className="text-orange-400 font-semibold">{meal.calories} kcal</span>
-          <span className="text-blue-400 font-semibold">{meal.protein}g P</span>
-          <span className="flex items-center gap-1 text-zinc-600">
-            <Clock className="w-3 h-3" />{meal.prepTime}m
-          </span>
-          {meal.videoUrl && <PlayCircle className="w-3.5 h-3.5 text-rose-400" />}
+            <span className="flex items-center gap-1 text-rose-400 text-xs font-semibold">
+              <PlayCircle className="w-3.5 h-3.5" />video
+            </span>
+          </div>
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-zinc-500 shrink-0" /> : <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />}
       </button>
@@ -281,17 +431,17 @@ function MealRow({
         <div className="bg-white/[0.02] px-4 pb-5 pt-2 space-y-4">
           <div className="flex gap-4">
             {meal.image && !imgError && (
-              <div className="w-32 h-24 rounded-xl overflow-hidden shrink-0">
+              <div className="w-44 h-32 rounded-xl overflow-hidden shrink-0 hidden sm:block">
                 <img src={meal.image} alt={meal.name} className="w-full h-full object-cover" onError={() => setImgError(true)} />
               </div>
             )}
             <div className="flex-1 space-y-2">
               {isGood && badge && (
-                <span className={`inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}>
+                <span className={`inline-flex text-xs font-bold px-2.5 py-1 rounded-full border ${badge.color}`}>
                   {badge.label} — Balancing for your dosha
                 </span>
               )}
-              <p className="text-zinc-400 text-sm leading-relaxed">{meal.description}</p>
+              <p className="text-zinc-300 text-base leading-relaxed">{meal.description}</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   { Icon: Flame, val: `${meal.calories} kcal`, color: "text-orange-400 bg-orange-400/10" },
@@ -305,23 +455,33 @@ function MealRow({
                 ))}
               </div>
               <div className="flex gap-2 flex-wrap">
-                {meal.videoUrl && (
-                  <a href={meal.videoUrl} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/20 transition-colors">
-                    <PlayCircle className="w-3.5 h-3.5" />Watch recipe video
-                  </a>
-                )}
+                <a
+                  href={meal.videoUrl ?? `https://www.youtube.com/results?search_query=${encodeURIComponent(meal.name.replace(/\s*\(.*?x portion\)/, "") + " recipe vegetarian")}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/20 transition-colors">
+                  <PlayCircle className="w-3.5 h-3.5" />
+                  {meal.videoUrl ? "Watch recipe video" : "Watch on YouTube"}
+                </a>
                 {meal.sourceUrl && (
                   <a href={meal.sourceUrl} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-lg hover:bg-white/[0.08] transition-colors">
                     <ExternalLink className="w-3.5 h-3.5" />Full recipe
                   </a>
                 )}
+                {meal.instructions && meal.instructions.length > 0 && (
+                  <button onClick={() => setCooking(true)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-500 transition-colors">
+                    <Flame className="w-3.5 h-3.5" />Cook this
+                  </button>
+                )}
                 <button onClick={onSwap} disabled={swapping}
                   className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-lg hover:bg-white/[0.08] transition-colors disabled:opacity-50">
                   <RefreshCw className={`w-3.5 h-3.5 ${swapping ? "animate-spin" : ""}`} />
                   {swapping ? "Swapping…" : "Swap meal"}
                 </button>
+                {cooking && meal.instructions && (
+                  <CookMode name={meal.name} steps={meal.instructions} onClose={() => setCooking(false)} />
+                )}
               </div>
             </div>
           </div>
@@ -329,11 +489,16 @@ function MealRow({
           <div className="grid sm:grid-cols-2 gap-4">
             {meal.ingredients?.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">Ingredients</p>
-                <ul className="space-y-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-2">
+                  Ingredients{servings > 1 ? ` · scaled for ${servings} people` : ""}
+                </p>
+                <ul className="space-y-1.5">
                   {meal.ingredients.map((ing, i) => (
-                    <li key={i} className="text-xs text-zinc-400 flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 shrink-0 mt-1.5" />{ing}
+                    <li key={i} className="text-sm text-zinc-300 flex items-start gap-2 leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 shrink-0 mt-2" />
+                      {servings > 1
+                        ? ing.replace(/^([\d]+(?:[.,][\d]+)?)/, (m) => String(Math.round(parseFloat(m) * servings * 10) / 10))
+                        : ing}
                     </li>
                   ))}
                 </ul>
@@ -341,11 +506,11 @@ function MealRow({
             )}
             {meal.instructions && meal.instructions.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">How to make it</p>
-                <ol className="space-y-1.5">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-2">How to make it</p>
+                <ol className="space-y-2">
                   {meal.instructions.map((step, i) => (
-                    <li key={i} className="text-xs text-zinc-400 flex gap-2">
-                      <span className="text-emerald-500 font-bold shrink-0 w-4">{i + 1}.</span>
+                    <li key={i} className="text-sm text-zinc-300 flex gap-2.5 leading-relaxed">
+                      <span className="text-emerald-500 font-bold shrink-0 w-5">{i + 1}.</span>
                       {step}
                     </li>
                   ))}
@@ -404,6 +569,7 @@ function MealPlanner() {
   const [conditions, setConditions] = useState<string[]>([]);
   const [dosha, setDosha] = useState<string | null>(null);
   const [fast, setFast] = useState<FastType>("none");
+  const [jain, setJain] = useState(false);
   const [servings, setServings] = useState(1);
   const [activeDay, setActiveDay] = useState(DAYS[0]);
   const [swappingSlot, setSwappingSlot] = useState<PlanSlot | null>(null);
@@ -421,16 +587,34 @@ function MealPlanner() {
       setConditions(c);
       const d = localStorage.getItem("sattvic-dosha");
       if (d) setDosha(d);
+      setJain(localStorage.getItem("sattvic-jain") === "1");
     } catch {}
   }, []);
 
+  function toggleJain() {
+    setJain((j) => {
+      localStorage.setItem("sattvic-jain", j ? "0" : "1");
+      return !j;
+    });
+  }
+
   function generatePlan() {
-    setPlan(buildWeekPlan(DAYS, targets, allergies, conditions, dosha, fast));
+    setPlan(buildWeekPlan(DAYS, targets, allergies, conditions, dosha, fast, jain));
+  }
+
+  // Drag a meal row onto a day tab to swap it with that day's same slot
+  function moveMeal(slot: PlanSlot, fromDay: string, toDay: string) {
+    if (fromDay === toDay) return;
+    setPlan((p) => ({
+      ...p,
+      [fromDay]: { ...p[fromDay], [slot]: p[toDay][slot] },
+      [toDay]:   { ...p[toDay],   [slot]: p[fromDay][slot] },
+    }));
   }
 
   function handleSwap(slot: PlanSlot) {
     setSwappingSlot(slot);
-    const newMeal = swapSlot(plan, activeDay, slot, targets, allergies, conditions);
+    const newMeal = swapSlot(plan, activeDay, slot, targets, allergies, conditions, jain);
     if (newMeal) {
       setPlan((p) => ({ ...p, [activeDay]: { ...p[activeDay], [slot]: newMeal } }));
     }
@@ -523,6 +707,24 @@ function MealPlanner() {
           </span>
         )}
 
+        {/* Jain mode — no root vegetables, fungi, eggs or honey */}
+        <button
+          onClick={toggleJain}
+          title="No onion, garlic, potato, carrot or other root vegetables; no mushrooms, eggs or honey"
+          className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold border transition-colors ${
+            jain
+              ? "bg-amber-500/15 text-amber-300 border-amber-500/40"
+              : "bg-[#141414] text-zinc-400 border-white/[0.08] hover:border-white/[0.2]"
+          }`}
+        >
+          🙏 Jain mode {jain ? "on" : "off"}
+        </button>
+        {jain && (
+          <span className="text-xs font-semibold px-3 py-1.5 rounded-full border bg-amber-500/10 text-amber-300/90 border-amber-500/25">
+            No root veg · no fungi · no eggs · no honey
+          </span>
+        )}
+
         {/* Family serving scaler */}
         <div className="flex items-center gap-2 bg-[#141414] border border-white/[0.08] rounded-2xl px-4 py-2.5 ml-auto">
           <span className="text-sm text-zinc-500 font-semibold">👨‍👩‍👧 Cooking for</span>
@@ -543,13 +745,13 @@ function MealPlanner() {
       {hasMeals && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Calories", actual: avg.calories, target: targets.calories, unit: "kcal" },
-            { label: "Protein", actual: avg.protein, target: targets.protein, unit: "g" },
-            { label: "Carbs", actual: avg.carbs, target: targets.carbs, unit: "g" },
-            { label: "Fat", actual: avg.fat, target: targets.fat, unit: "g" },
+            { label: "Calories", emoji: "🔥", actual: avg.calories, target: targets.calories, unit: "kcal", tint: "from-orange-500/10" },
+            { label: "Protein", emoji: "💪", actual: avg.protein, target: targets.protein, unit: "g", tint: "from-blue-500/10" },
+            { label: "Carbs", emoji: "🌾", actual: avg.carbs, target: targets.carbs, unit: "g", tint: "from-amber-500/10" },
+            { label: "Fat", emoji: "🥑", actual: avg.fat, target: targets.fat, unit: "g", tint: "from-rose-500/10" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#141414] border border-white/[0.08] rounded-2xl p-4 space-y-1">
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{s.label} / day (avg)</p>
+            <div key={s.label} className={`bg-gradient-to-br ${s.tint} to-[#141414] border border-white/[0.08] rounded-2xl p-4 space-y-1`}>
+              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{s.emoji} {s.label} / day (avg)</p>
               <p className="text-2xl font-bold">
                 <span className={statColor(s.actual, s.target)}>{s.actual}</span>
                 <span className="text-zinc-600 text-sm font-medium"> / {s.target}{s.unit}</span>
@@ -590,35 +792,61 @@ function MealPlanner() {
       {hasMeals && (
         <div className="space-y-4">
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {DAYS.map((day) => (
+            {DAYS.map((day, di) => (
               <button
                 key={day}
                 onClick={() => setActiveDay(day)}
-                className={`shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  const slot = e.dataTransfer.getData("slot") as PlanSlot;
+                  if (slot) moveMeal(slot, activeDay, day);
+                }}
+                className={`shrink-0 px-5 py-2.5 rounded-xl text-base font-bold transition-colors relative ${
                   activeDay === day
                     ? "bg-emerald-500 text-white"
                     : "bg-white/[0.04] text-zinc-400 border border-white/[0.08] hover:bg-white/[0.07]"
                 }`}
               >
                 {day.slice(0, 3)}
+                {(di % 7 === 2 || di % 7 === 5) && (
+                  <span className="absolute -top-1.5 -right-1.5 text-xs" title="Treat day — dessert included">🍰</span>
+                )}
               </button>
             ))}
           </div>
 
           <DayProgress plan={plan} day={activeDay} targets={targets} />
 
-          <div className="bg-[#141414] border border-white/[0.08] rounded-2xl overflow-hidden">
+          <motion.div
+            key={activeDay}
+            initial="hidden"
+            animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}
+            className="space-y-3"
+          >
             {PLAN_SLOTS.map((slot) => (
-              <MealRow
+              <motion.div
                 key={slot}
-                slot={slot}
-                meal={plan[activeDay][slot]}
-                dosha={dosha}
-                onSwap={() => handleSwap(slot)}
-                swapping={swappingSlot === slot}
-              />
+                variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } }}
+              >
+                <div
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData("slot", slot)}
+                  title="Drag onto a day tab to move this meal"
+                  className="bg-[#141414] border border-white/[0.08] rounded-2xl overflow-hidden hover:border-emerald-500/25 hover:shadow-lg hover:shadow-emerald-950/30 transition-all"
+                >
+                  <MealRow
+                    slot={slot}
+                    meal={plan[activeDay][slot]}
+                    dosha={dosha}
+                    onSwap={() => handleSwap(slot)}
+                    servings={servings}
+                    swapping={swappingSlot === slot}
+                  />
+                </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       )}
 
