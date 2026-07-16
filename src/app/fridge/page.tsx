@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, X, Plus, Sparkles, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -23,6 +23,18 @@ const SUGGESTIONS = ["Paneer", "Eggs", "Spinach", "Tomatoes", "Onion", "Lentils"
 export default function FridgePage() {
   const [input, setInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+
+  useEffect(() => {
+    try { setIngredients(JSON.parse(localStorage.getItem("sattvic-fridge") ?? "[]")); } catch {}
+  }, []);
+
+  // persist fridge contents — the shopping list cross-references them
+  // (skip the very first run so the empty initial state doesn't clobber storage)
+  const loaded = useRef(false);
+  useEffect(() => {
+    if (!loaded.current) { loaded.current = true; return; }
+    localStorage.setItem("sattvic-fridge", JSON.stringify(ingredients));
+  }, [ingredients]);
   const [results, setResults] = useState<FridgeMeal[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -48,7 +60,7 @@ export default function FridgePage() {
       const res = await fetch("/api/ai/fridge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ingredients: ingredients.join(", ") }),
+        body: JSON.stringify({ ingredients: ingredients.join(", "), jain: localStorage.getItem("sattvic-jain") === "1" }),
       });
       const data = await res.json();
       setResults(Array.isArray(data) ? data : []);

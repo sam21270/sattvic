@@ -45,7 +45,7 @@ export function ActivityRings({
             const gap = 10;
             const r = center - strokeWidth / 2 - i * (strokeWidth + gap);
             const circumference = 2 * Math.PI * r;
-            const pct = Math.min(ring.value / ring.max, 1);
+            const pct = Math.min((ring.value || 0) / (ring.max || 1), 1);
             const dash = pct * circumference;
             return (
               <g key={ring.label}>

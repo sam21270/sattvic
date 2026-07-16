@@ -16,6 +16,7 @@ export interface Meal {
   sourceUrl?: string;
   isHighProtein: boolean;
   isLowCarb: boolean;
+  mealTime?: "breakfast" | "lunch" | "dinner" | "snack";
 }
 
 export interface MealPlan {

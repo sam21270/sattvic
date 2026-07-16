@@ -5,7 +5,7 @@ const MODEL = "llama-3.3-70b-versatile";
 
 export async function POST(req: NextRequest) {
   try {
-    const { ingredients } = await req.json();
+    const { ingredients, jain = false } = await req.json();
 
     const completion = await groq.chat.completions.create({
       model: MODEL,
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `You are a creative vegetarian chef. The user has these ingredients: ${ingredients}
+          content: `You are a creative vegetarian chef. The user has these ingredients: ${ingredients}${jain ? "\n\nSTRICT JAIN DIET: absolutely no onion, garlic, ginger, potato, carrot, radish, beetroot or any root vegetable; no mushrooms or fungi; no eggs; no honey." : ""}
 
 Suggest exactly 3 vegetarian meals they can make RIGHT NOW using mostly these ingredients (they can use basic pantry staples like salt, oil, spices).
 

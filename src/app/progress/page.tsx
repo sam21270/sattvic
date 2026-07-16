@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { AIFoodLog } from "@/components/ui/AIFoodLog";
 
 interface DayEntry {
   date: string;
@@ -149,6 +150,13 @@ export default function ProgressPage() {
           </button>
         </div>
 
+        {/* AI food log — type what you ate, AI counts macros */}
+        <AIFoodLog
+          onTotalsChange={({ calories, protein }) =>
+            setForm((f) => ({ ...f, calories: calories ? String(calories) : f.calories, protein: protein ? String(protein) : f.protein }))
+          }
+        />
+
         {/* log form */}
         {showForm && (
           <motion.div
@@ -266,6 +274,43 @@ export default function ProgressPage() {
                   </span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* full history */}
+        {entries.length > 0 && (
+          <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
+            <h3 className="text-sm font-semibold text-zinc-300 mb-3">Full history</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-zinc-600 uppercase tracking-wider">
+                    <th className="pb-2 pr-3 font-semibold">Date</th>
+                    <th className="pb-2 pr-3 font-semibold">Weight</th>
+                    <th className="pb-2 pr-3 font-semibold">Calories</th>
+                    <th className="pb-2 pr-3 font-semibold">Protein</th>
+                    <th className="pb-2 pr-3 font-semibold">Water</th>
+                    <th className="pb-2 pr-3 font-semibold">Burned</th>
+                    <th className="pb-2 font-semibold">Mood</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...entries].sort((a, b) => b.date.localeCompare(a.date)).map((e) => (
+                    <tr key={e.date} className="border-t border-white/[0.05] text-zinc-300">
+                      <td className="py-2.5 pr-3 whitespace-nowrap text-zinc-400">
+                        {new Date(e.date).toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" })}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums">{e.weight ? `${e.weight} kg` : "—"}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">{e.calories ? `${e.calories} kcal` : "—"}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">{e.protein ? `${e.protein}g` : "—"}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">{e.water ? `${e.water} ml` : "—"}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">{e.workout ? `${e.workout} kcal` : "—"}</td>
+                      <td className="py-2.5">{e.mood ? MOOD_MAP[e.mood].emoji : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

@@ -9,7 +9,7 @@ import { DAILY_B12_MCG, DAILY_IRON_MG } from "@/lib/micronutrients";
 import { MacroRing } from "@/components/ui/MacroRing";
 import { MacroBar } from "@/components/ui/MacroBar";
 import { SattvicScore } from "@/components/ui/SattvicScore";
-import { MealLogger } from "@/components/ui/MealLogger";
+import { AIFoodLog } from "@/components/ui/AIFoodLog";
 import { ActivityRings } from "@/components/ui/ActivityRings";
 import { WaterTracker } from "@/components/ui/WaterTracker";
 import { StreakFire } from "@/components/ui/StreakFire";
@@ -144,7 +144,6 @@ function Dashboard() {
     return () => clearTimeout(t);
   }, [log.mealsLogged]); // eslint-disable-line
 
-  const handleLogChange = useCallback((newLog: DayLog) => setLog(newLog), []);
 
   const remaining = Math.max(targets.calories - log.calories, 0);
   const streak = history.filter((h) => h.score >= 50).length;
@@ -243,7 +242,9 @@ function Dashboard() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.55 }}>
-          <MealLogger log={log} onChange={handleLogChange} />
+          {/* ponytail: free-form AI logging replaced the 5-slot MealLogger —
+              "1 banana, 1 cup poha, 3 biscuits" any time, any number of meals */}
+          <AIFoodLog onTotalsChange={(t) => setLog((l) => ({ ...l, ...t }))} />
         </motion.div>
       </div>
 
@@ -286,7 +287,7 @@ function Dashboard() {
           <WaterTracker
             current={water}
             goal={WATER_GOAL}
-            onAdd={(ml) => setWater((w) => Math.min(w + ml, WATER_GOAL * 1.5))}
+            onAdd={(ml) => setWater((w) => Math.max(0, Math.min(w + ml, WATER_GOAL * 1.5)))}
           />
         </motion.div>
 
