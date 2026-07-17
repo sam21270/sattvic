@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { aiErrorResponse } from "@/lib/ai/errors";
 import { generateMealSuggestions } from "@/lib/ai/groq";
 
 export async function POST(req: NextRequest) {
@@ -8,6 +9,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ suggestions });
   } catch (error) {
     console.error("AI suggestion error:", error);
-    return NextResponse.json({ error: "Failed to generate suggestions" }, { status: 500 });
+    return aiErrorResponse(error, "Failed to generate suggestions");
   }
 }
