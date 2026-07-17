@@ -37,20 +37,20 @@ export function ResumeBanner() {
   if (!resume || dismissed || pathname !== "/") return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-3 bg-[#141414] border border-emerald-500/30 rounded-2xl pl-5 pr-3 py-3 shadow-2xl shadow-black/50">
-      <p className="text-sm text-zinc-300">
+    <div className="fixed bottom-4 sm:bottom-6 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[150] flex items-center gap-3 bg-[#141414] border border-emerald-500/30 rounded-2xl pl-4 sm:pl-5 pr-2 sm:pr-3 py-3 shadow-2xl shadow-black/50 sm:w-max">
+      <p className="text-sm text-zinc-300 shrink-0 hidden sm:block">
         Pick up where you left off?
       </p>
       <Link
         href={resume}
-        className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+        className="flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors flex-1 sm:flex-initial whitespace-nowrap"
       >
-        {PAGE_NAMES[resume]} <ArrowRight className="w-3.5 h-3.5" />
+        <span className="sm:hidden">Continue to </span>{PAGE_NAMES[resume]} <ArrowRight className="w-3.5 h-3.5 shrink-0" />
       </Link>
       <button
         onClick={() => setDismissed(true)}
         aria-label="Dismiss"
-        className="text-zinc-600 hover:text-zinc-300 transition-colors p-1"
+        className="text-zinc-600 hover:text-zinc-300 transition-colors p-2 shrink-0"
       >
         <X className="w-4 h-4" />
       </button>

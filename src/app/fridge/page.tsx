@@ -132,7 +132,7 @@ export default function FridgePage() {
                 key={item}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium px-3 py-1.5 rounded-full"
+                className="flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-sm font-medium px-3 py-1.5 rounded-full"
               >
                 {item}
                 <button onClick={() => removeIngredient(item)} className="hover:text-rose-500 transition-colors">
@@ -143,7 +143,7 @@ export default function FridgePage() {
           </div>
         )}
 
-        {error && <p className="text-sm text-rose-600 bg-rose-50 px-4 py-2 rounded-xl">{error}</p>}
+        {error && <p className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/25 px-4 py-2 rounded-xl">{error}</p>}
 
         <button
           onClick={handleGenerate}
@@ -210,7 +210,7 @@ export default function FridgePage() {
                   {/* uses from fridge */}
                   <div className="flex flex-wrap gap-1.5">
                     {meal.usesFrom.map((f) => (
-                      <span key={f} className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">
+                      <span key={f} className="text-xs bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-medium">
                         ✓ {f}
                       </span>
                     ))}

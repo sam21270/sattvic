@@ -71,7 +71,7 @@ function MacrosCalculator() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white">AI Macro Calculator</h1>
         <p className="text-zinc-500 mt-1">Get personalized daily macro targets based on your body and goals.</p>
@@ -133,7 +133,7 @@ function MacrosCalculator() {
                 className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-colors ${
                   form.goal === g.value
                     ? "bg-emerald-600 text-white border-emerald-600"
-                    : "bg-white text-zinc-400 border-white/[0.1] hover:bg-white/[0.03]"
+                    : "bg-white/[0.04] text-zinc-400 border-white/[0.1] hover:bg-white/[0.08] hover:text-zinc-200"
                 }`}
               >
                 {g.label}
@@ -150,7 +150,7 @@ function MacrosCalculator() {
                 type="button"
                 onClick={() => setPace("gentle")}
                 className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-colors text-left ${
-                  pace === "gentle" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-zinc-400 border-white/[0.1] hover:bg-white/[0.03]"
+                  pace === "gentle" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white/[0.04] text-zinc-400 border-white/[0.1] hover:bg-white/[0.08] hover:text-zinc-200"
                 }`}
               >
                 🌱 Ease me in
@@ -160,7 +160,7 @@ function MacrosCalculator() {
                 type="button"
                 onClick={() => setPace("aggressive")}
                 className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-colors text-left ${
-                  pace === "aggressive" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-zinc-400 border-white/[0.1] hover:bg-white/[0.03]"
+                  pace === "aggressive" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white/[0.04] text-zinc-400 border-white/[0.1] hover:bg-white/[0.08] hover:text-zinc-200"
                 }`}
               >
                 🔥 Aggressive
@@ -170,7 +170,7 @@ function MacrosCalculator() {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/25 px-3 py-2 rounded-lg">{error}</p>}
 
         <button
           type="submit"
@@ -187,11 +187,11 @@ function MacrosCalculator() {
           <h2 className="font-semibold text-zinc-100">Your Daily Targets</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
-              { label: "Calories", value: result.calories, unit: "kcal", color: "bg-orange-50 text-orange-700" },
-              { label: "Protein", value: result.protein, unit: "g", color: "bg-blue-50 text-blue-700" },
-              { label: "Carbs", value: result.carbs, unit: "g", color: "bg-amber-50 text-amber-700" },
-              { label: "Fat", value: result.fat, unit: "g", color: "bg-rose-50 text-rose-700" },
-              { label: "Fiber", value: result.fiber, unit: "g", color: "bg-emerald-50 text-emerald-700" },
+              { label: "Calories", value: result.calories, unit: "kcal", color: "bg-orange-500/10 text-orange-300 border border-orange-500/20" },
+              { label: "Protein", value: result.protein, unit: "g", color: "bg-blue-500/10 text-blue-300 border border-blue-500/20" },
+              { label: "Carbs", value: result.carbs, unit: "g", color: "bg-amber-500/10 text-amber-300 border border-amber-500/20" },
+              { label: "Fat", value: result.fat, unit: "g", color: "bg-rose-500/10 text-rose-300 border border-rose-500/20" },
+              { label: "Fiber", value: result.fiber, unit: "g", color: "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20" },
             ].map((m) => (
               <div key={m.label} className={`rounded-xl p-3 text-center ${m.color}`}>
                 <p className="text-2xl font-bold">{m.value}</p>

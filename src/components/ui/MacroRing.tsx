@@ -24,7 +24,7 @@ const CIRC = 2 * Math.PI * R;
 
 export function MacroRing({ calories, calorieTarget, segments }: MacroRingProps) {
   const [animated, setAnimated] = useState(false);
-  const pct = Math.min(calories / calorieTarget, 1);
+  const pct = Math.min((calories || 0) / (calorieTarget || 1), 1);
 
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 200);
@@ -32,7 +32,8 @@ export function MacroRing({ calories, calorieTarget, segments }: MacroRingProps)
   }, []);
 
   // build arc segments
-  const total = segments.reduce((s, seg) => s + seg.value, 0);
+  // guard against 0/0 → NaN when nothing is logged yet
+  const total = segments.reduce((s, seg) => s + seg.value, 0) || 1;
   let offset = CIRC * 0.25; // start at top
 
   return (
