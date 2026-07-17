@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Flame, Droplets, TrendingUp, PartyPopper, AlertCircle } from "lucide-react";
+import { Flame, Droplets, TrendingUp, PartyPopper, AlertCircle, Check } from "lucide-react";
 import { WeekHistory } from "@/components/ui/WeekHistory";
 import { DAILY_B12_MCG, DAILY_IRON_MG } from "@/lib/micronutrients";
 import { MacroRing } from "@/components/ui/MacroRing";
@@ -343,6 +344,34 @@ function Dashboard() {
         <h2 className="font-bold text-zinc-100 text-lg mb-6">Today&apos;s Macros</h2>
         <MacroRing calories={log.calories} calorieTarget={targets.calories} segments={liveSegments} />
       </motion.div>
+
+      {/* save state + route to history — logging already persists on every
+          change, so this confirms it rather than offering a no-op button */}
+      <div className="bg-emerald-500/[0.07] border border-emerald-500/20 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+            <Check className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-zinc-100">
+              {log.mealsLogged > 0
+                ? `Today's progress is saved — score ${breakdown?.total ?? 0}/100`
+                : "Today's progress saves automatically"}
+            </p>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {log.mealsLogged > 0
+                ? `${log.mealsLogged} meal${log.mealsLogged !== 1 ? "s" : ""}, ${log.calories} kcal and ${water} ml logged. No save button needed.`
+                : "Log a meal above and it's stored on this device instantly."}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/progress"
+          className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors shrink-0 whitespace-nowrap"
+        >
+          <TrendingUp className="w-4 h-4" /> See full history
+        </Link>
+      </div>
 
       {/* reset */}
       <ResetSection />

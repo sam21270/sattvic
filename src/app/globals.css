@@ -49,8 +49,11 @@
   --border:    rgba(0,0,0,0.08);
   --border2:   rgba(0,0,0,0.14);
   --fg:        #1a1a1a;
-  --fg-muted:  #57534e;
-  --fg-subtle: #a8a29e;
+  /* Measured against --bg (#f8f6f1) and --surface (#fff); all clear WCAG AA 4.5:1.
+     The old --fg-subtle (#a8a29e) scored 2.34:1 and failed everywhere it was used. */
+  --fg-muted:  #57534e;   /* 7.1 / 7.6 */
+  --fg-subtle: #6b655f;   /* 5.3 / 5.8 */
+  --fg-faint:  #736c65;   /* 4.8 / 5.2 — dimmest tier that still passes */
 }
 
 /* ── Tailwind v4 theme mapping ────────────────────────────────── */
@@ -130,6 +133,25 @@ body {
   animation: grain 8s steps(1) infinite;
 }
 
+/* ── Primary button contrast (both themes) ───────────────────────
+   White text on bg-emerald-500 measures 2.47:1 and on emerald-600 3.65:1 —
+   both fail WCAG AA (4.5:1) on the app's most-used control. emerald-700 keeps
+   the brand hue and clears it at 4.9:1. Tinted classes (bg-emerald-500/10 etc)
+   are separate selectors and are untouched.
+   ponytail: one block, delete it to revert the brand green. */
+.bg-emerald-500 { background-color: #047857; }
+.bg-emerald-600 { background-color: #047857; }
+.hover\:bg-emerald-400:hover { background-color: #059669; }
+.hover\:bg-emerald-500:hover { background-color: #059669; }
+.hover\:bg-emerald-700:hover { background-color: #065f46; }
+
+/* ── Dark-mode secondary text ────────────────────────────────────
+   Tailwind's zinc-500 (#71717a) scores 3.8–4.1 and zinc-600 (#52525b) only
+   2.4–2.6 on our near-black surfaces — both fail AA. These keep the same
+   visual hierarchy while passing on --bg, --surface and the #0f0f0f cards. */
+[data-theme="dark"] .text-zinc-500 { color: #8a8a93; }
+[data-theme="dark"] .text-zinc-600 { color: #7e7e87; }
+
 /* ── Semantic overrides for hardcoded Tailwind classes ────────── */
 /* These override the old hardcoded hex/zinc classes in light mode */
 [data-theme="light"] .text-white       { color: var(--fg) !important; }
@@ -137,12 +159,42 @@ body {
 [data-theme="light"] .text-zinc-200    { color: #292524 !important; }
 [data-theme="light"] .text-zinc-400    { color: var(--fg-muted) !important; }
 [data-theme="light"] .text-zinc-500    { color: var(--fg-subtle) !important; }
-[data-theme="light"] .text-zinc-600    { color: #a8a29e !important; }
+[data-theme="light"] .text-zinc-600    { color: var(--fg-faint) !important; }
 
 [data-theme="light"] .bg-\[\#0a0a0a\] { background-color: var(--bg) !important; }
 [data-theme="light"] .bg-\[\#0e0e0e\] { background-color: #f0ede8 !important; }
 [data-theme="light"] .bg-\[\#141414\] { background-color: var(--surface) !important; }
 [data-theme="light"] .bg-\[\#111111\] { background-color: var(--surface) !important; }
+/* Real content surface that was missing its override: the flip-card back was
+   staying dark while .text-white flipped to dark — invisible text.
+   ponytail: overrides are whack-a-mole; the real fix is semantic tokens in the
+   components. Do that when the next hardcoded hex slips through. */
+[data-theme="light"] .bg-\[\#0f0f0f\] { background-color: var(--surface) !important; }
+
+/* Decorative "screenshot" mocks (terminal, roadmap previews) are meant to look
+   like a dark app screen in BOTH themes. Keep them dark and opt their contents
+   out of the light-mode text remap, or they'd render dark-on-dark. */
+[data-theme="light"] .dark-panel,
+[data-theme="light"] .dark-panel .bg-\[\#111\],
+[data-theme="light"] .dark-panel .bg-\[\#0e0e0e\] { background-color: #141414 !important; }
+[data-theme="light"] .dark-panel .text-white,
+[data-theme="light"] .dark-panel .text-zinc-100 { color: #f1f0ed !important; }
+[data-theme="light"] .dark-panel .text-zinc-200 { color: #e4e4e7 !important; }
+[data-theme="light"] .dark-panel .text-zinc-300 { color: #d4d4d8 !important; }
+[data-theme="light"] .dark-panel .text-zinc-400 { color: #a1a1aa !important; }
+[data-theme="light"] .dark-panel .text-zinc-500,
+[data-theme="light"] .dark-panel .text-zinc-600 { color: #8a8a93 !important; }
+[data-theme="light"] .dark-panel .text-emerald-300,
+[data-theme="light"] .dark-panel .text-emerald-400,
+[data-theme="light"] .dark-panel .text-emerald-500 { color: #34d399 !important; }
+[data-theme="light"] .dark-panel .text-rose-300,
+[data-theme="light"] .dark-panel .text-rose-400   { color: #fb7185 !important; }
+[data-theme="light"] .dark-panel .text-amber-300,
+[data-theme="light"] .dark-panel .text-amber-400  { color: #fbbf24 !important; }
+[data-theme="light"] .dark-panel .text-violet-300,
+[data-theme="light"] .dark-panel .text-violet-400 { color: #a78bfa !important; }
+[data-theme="light"] .dark-panel .text-blue-400,
+[data-theme="light"] .dark-panel .text-sky-400    { color: #38bdf8 !important; }
 
 [data-theme="light"] .bg-white\/\[0\.03\]  { background-color: rgba(0,0,0,0.03) !important; }
 [data-theme="light"] .bg-white\/\[0\.06\]  { background-color: rgba(0,0,0,0.06) !important; }
@@ -158,13 +210,77 @@ body {
 
 [data-theme="light"] .bg-zinc-800 { background-color: #e7e3dc !important; }
 
+/* Accent text: the -300/-400 shades are tuned for dark surfaces and drop to
+   ~1.7:1 on light tinted chips (e.g. text-sky-300 on bg-sky-500/15).
+   Remap to the -700 shades, which clear AA on both white and tinted panels.
+   ponytail: 15 rules here beat editing 210 call sites. */
+[data-theme="light"] .text-emerald-300,
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-500 { color: #047857 !important; }
+[data-theme="light"] .text-rose-300,
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-rose-500    { color: #be123c !important; }
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-500   { color: #b45309 !important; }
+[data-theme="light"] .text-orange-300,
+[data-theme="light"] .text-orange-400,
+[data-theme="light"] .text-orange-500  { color: #c2410c !important; }
+[data-theme="light"] .text-violet-300,
+[data-theme="light"] .text-violet-400  { color: #6d28d9 !important; }
+[data-theme="light"] .text-sky-300,
+[data-theme="light"] .text-sky-400     { color: #0369a1 !important; }
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-blue-400    { color: #1d4ed8 !important; }
+[data-theme="light"] .text-pink-400    { color: #be185d !important; }
+/* emerald-600 is too light for 10px labels on --bg */
+[data-theme="light"] .text-emerald-600 { color: #046c4e !important; }
+
+/* Solid accent fills keep white text in light mode. .text-white is remapped to
+   the dark foreground above (correct on cards), which would otherwise put dark
+   text on a dark green button. Covers both same-element (button has both
+   classes) and descendant (label inside a filled parent). */
+[data-theme="light"] .bg-emerald-400.text-white,
+[data-theme="light"] .bg-emerald-500.text-white,
+[data-theme="light"] .bg-emerald-600.text-white,
+[data-theme="light"] .bg-emerald-700.text-white,
+[data-theme="light"] .bg-amber-500.text-white,
+[data-theme="light"] .bg-orange-500.text-white,
+[data-theme="light"] .bg-rose-500.text-white,
+[data-theme="light"] .bg-violet-500.text-white,
+[data-theme="light"] .bg-emerald-400 .text-white,
+[data-theme="light"] .bg-emerald-500 .text-white,
+[data-theme="light"] .bg-emerald-600 .text-white,
+[data-theme="light"] .bg-emerald-700 .text-white { color: #ffffff !important; }
+
+/* Text sitting on a dark pill over a photo must opt out of the remap above:
+   use a literal hex (text-[#6ee7b7]) at the call site — attribute selectors
+   like [class*="bg-black/"] get dropped by the Tailwind v4 build. */
+
 /* Navbar in light */
 [data-theme="light"] .bg-\[\#0a0a0a\]\/80 { background-color: rgba(248,246,241,0.85) !important; }
 
-/* Terminal stays dark always (it's a mock terminal) */
-[data-theme="light"] .bg-\[\#0e0e0e\].border {
-  background-color: #1a1a1a !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+/* Mock terminal keeps a lifted shadow on the light page (its colours are
+   handled by the .dark-panel block above, which also fixes its text). */
+[data-theme="light"] .dark-panel { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+
+/* Browser-mock title bar belongs to the dark mock, not the page */
+[data-theme="light"] .dark-panel-bar { background-color: #1c1c1c !important; }
+[data-theme="light"] .dark-panel-bar .text-zinc-500,
+[data-theme="light"] .dark-panel-bar .text-zinc-600 { color: #8a8a93 !important; }
+
+/* Accent "ink" for text that sits on the page background: bright in dark mode,
+   darkened in light mode so it clears AA. Referenced from inline styles that
+   CSS classes can't reach (see JourneyRoadmap step badges). */
+:root {
+  --ink-8b5cf6: #8b5cf6; --ink-10b981: #10b981; --ink-f59e0b: #f59e0b;
+  --ink-38bdf8: #38bdf8; --ink-f43f5e: #f43f5e; --ink-a78bfa: #a78bfa;
+  --ink-f97316: #f97316; --ink-ef4444: #ef4444;
+}
+[data-theme="light"] {
+  --ink-8b5cf6: #6d28d9; --ink-10b981: #047857; --ink-f59e0b: #b45309;
+  --ink-38bdf8: #0369a1; --ink-f43f5e: #be123c; --ink-a78bfa: #6d28d9;
+  --ink-f97316: #c2410c; --ink-ef4444: #b91c1c;
 }
 
 /* Input fields */
@@ -200,12 +316,8 @@ body {
 [data-theme="light"] .border-violet-700\/40  { border-color: #c4b5fd !important; }
 [data-theme="light"] .border-rose-700\/40    { border-color: #fda4af !important; }
 [data-theme="light"] .border-emerald-700\/40 { border-color: #6ee7b7 !important; }
-[data-theme="light"] .text-violet-300  { color: #7c3aed !important; }
-[data-theme="light"] .text-violet-400  { color: #7c3aed !important; }
-[data-theme="light"] .text-rose-300    { color: #e11d48 !important; }
-[data-theme="light"] .text-rose-400    { color: #e11d48 !important; }
-[data-theme="light"] .text-emerald-300 { color: #059669 !important; }
-[data-theme="light"] .text-emerald-400 { color: #059669 !important; }
+/* accent text remap lives above (the -700 shades) — the -600 duplicates that
+   used to sit here scored 3.5:1 and lost to nothing but source order */
 [data-theme="light"] .bg-violet-500\/20  { background-color: #ede9fe !important; }
 [data-theme="light"] .bg-rose-500\/20    { background-color: #ffe4e6 !important; }
 [data-theme="light"] .bg-emerald-500\/20 { background-color: #d1fae5 !important; }
