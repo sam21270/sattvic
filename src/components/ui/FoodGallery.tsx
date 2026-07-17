@@ -69,7 +69,7 @@ function GalleryPhoto({ photo, index }: { photo: typeof photos[0]; index: number
 
 export function FoodGallery() {
   return (
-    <section className="py-24 px-4" style={{ background: "#0d0d0d" }}>
+    <section className="py-24 px-4" style={{ background: "var(--gallery-bg)" }}>
       <div className="max-w-6xl mx-auto space-y-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

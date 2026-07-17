@@ -34,6 +34,7 @@
 :root {
   --bg:        #0a0a0a;
   --surface:   #141414;
+  --gallery-bg: #0d0d0d;   /* food-gallery band; flips in light mode below */
   --surface2:  rgba(255,255,255,0.03);
   --border:    rgba(255,255,255,0.07);
   --border2:   rgba(255,255,255,0.12);
@@ -49,6 +50,7 @@
   --border:    rgba(0,0,0,0.08);
   --border2:   rgba(0,0,0,0.14);
   --fg:        #1a1a1a;
+  --gallery-bg: #f0ede8;   /* soft off-white so the gallery matches the page */
   /* Measured against --bg (#f8f6f1) and --surface (#fff); all clear WCAG AA 4.5:1.
      The old --fg-subtle (#a8a29e) scored 2.34:1 and failed everywhere it was used. */
   --fg-muted:  #57534e;   /* 7.1 / 7.6 */
@@ -133,6 +135,10 @@ body {
   animation: grain 8s steps(1) infinite;
 }
 
+/* The moving card-border glow reads as an intense colour smudge on white
+   cards. Dim it hard in light mode; it's pure decoration. */
+[data-theme="light"] .border-beam-glow { opacity: 0.18 !important; }
+
 /* ── Primary button contrast (both themes) ───────────────────────
    White text on bg-emerald-500 measures 2.47:1 and on emerald-600 3.65:1 —
    both fail WCAG AA (4.5:1) on the app's most-used control. emerald-700 keeps
@@ -157,6 +163,8 @@ body {
 [data-theme="light"] .text-white       { color: var(--fg) !important; }
 [data-theme="light"] .text-zinc-100    { color: var(--fg) !important; }
 [data-theme="light"] .text-zinc-200    { color: #292524 !important; }
+[data-theme="light"] .text-zinc-300    { color: #3f3a35 !important; }  /* logged-meal names were near-white on white */
+[data-theme="light"] .text-zinc-700    { color: #a8a29e !important; }  /* delete icons, dividers */
 [data-theme="light"] .text-zinc-400    { color: var(--fg-muted) !important; }
 [data-theme="light"] .text-zinc-500    { color: var(--fg-subtle) !important; }
 [data-theme="light"] .text-zinc-600    { color: var(--fg-faint) !important; }
