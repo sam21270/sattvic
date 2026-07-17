@@ -621,18 +621,13 @@ function MealPlanner() {
     setSwappingSlot(null);
   }
 
-  const allMeals = Object.values(plan).flatMap((day) => Object.values(day).filter((m): m is Meal => m !== null));
-  const daysWithMeals = DAYS.filter((d) => Object.values(plan[d]).some((m) => m !== null)).length || 1;
-  const totals = allMeals.reduce(
-    (acc, m) => ({ calories: acc.calories + m.calories, protein: acc.protein + m.protein, carbs: acc.carbs + m.carbs, fat: acc.fat + m.fat }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
-  );
-  const avg = {
-    calories: Math.round(totals.calories / daysWithMeals),
-    protein: Math.round(totals.protein / daysWithMeals),
-    carbs: Math.round(totals.carbs / daysWithMeals),
-    fat: Math.round(totals.fat / daysWithMeals),
-  };
+  // Stats follow the selected day, not a weekly average
+  const avg = Object.values(plan[activeDay] ?? {})
+    .filter((m): m is Meal => m !== null)
+    .reduce(
+      (acc, m) => ({ calories: acc.calories + m.calories, protein: acc.protein + m.protein, carbs: acc.carbs + m.carbs, fat: acc.fat + m.fat }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
 
   const doshaLabel = dosha ? `${dosha.charAt(0).toUpperCase()}${dosha.slice(1)}` : null;
   const doshaBadge = dosha ? DOSHA_BADGE[dosha.toLowerCase() as Dosha] : null;
@@ -741,7 +736,7 @@ function MealPlanner() {
         </div>
       </div>
 
-      {/* weekly avg stats */}
+      {/* selected day's stats */}
       {hasMeals && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
@@ -751,7 +746,7 @@ function MealPlanner() {
             { label: "Fat", emoji: "🥑", actual: avg.fat, target: targets.fat, unit: "g", tint: "from-rose-500/10" },
           ].map((s) => (
             <div key={s.label} className={`bg-gradient-to-br ${s.tint} to-[#141414] border border-white/[0.08] rounded-2xl p-4 space-y-1`}>
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{s.emoji} {s.label} / day (avg)</p>
+              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{s.emoji} {s.label} · {activeDay.slice(0, 3)}</p>
               <p className="text-2xl font-bold">
                 <span className={statColor(s.actual, s.target)}>{s.actual}</span>
                 <span className="text-zinc-600 text-sm font-medium"> / {s.target}{s.unit}</span>
