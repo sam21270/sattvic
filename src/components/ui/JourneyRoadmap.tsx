@@ -9,7 +9,7 @@ import { ArrowRight } from "lucide-react";
 
 function QuizPreview() {
   return (
-    <div className="bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 space-y-4 select-none">
+    <div className="dark-panel bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 space-y-4 select-none">
       <div className="flex items-center justify-between">
         <span className="text-[11px] text-zinc-500 font-medium">Step 2 of 7</span>
         <div className="flex gap-1">
@@ -40,7 +40,7 @@ function QuizPreview() {
 
 function MacrosPreview() {
   return (
-    <div className="bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none">
+    <div className="dark-panel bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none">
       <p className="text-[11px] text-zinc-500 mb-4 font-medium">Your daily targets</p>
       <div className="flex items-center gap-5">
         <div className="relative shrink-0">
@@ -86,7 +86,7 @@ function MacrosPreview() {
 
 function MealPlannerPreview() {
   return (
-    <div className="bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none">
+    <div className="dark-panel bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none">
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs font-bold text-white">Monday · AI Generated</p>
         <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 rounded-full">1,360 kcal</span>
@@ -116,7 +116,7 @@ function MealPlannerPreview() {
 
 function DashboardPreview() {
   return (
-    <div className="bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none space-y-4">
+    <div className="dark-panel bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none space-y-4">
       <div className="flex items-center gap-4">
         <div className="relative">
           <svg viewBox="0 0 64 64" className="w-16 h-16 -rotate-90">
@@ -156,7 +156,7 @@ function DashboardPreview() {
 
 function JunkPreview() {
   return (
-    <div className="bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none space-y-4">
+    <div className="dark-panel bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none space-y-4">
       <div>
         <p className="text-[10px] text-zinc-500 mb-2 font-medium uppercase tracking-widest">I&apos;m craving…</p>
         <div className="flex flex-wrap gap-1.5">
@@ -183,7 +183,7 @@ function JunkPreview() {
 
 function SocialPreview() {
   return (
-    <div className="bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none space-y-2">
+    <div className="dark-panel bg-[#111] border border-white/[0.08] rounded-b-2xl p-5 select-none space-y-2">
       <p className="text-xs font-bold text-white mb-3">This week&apos;s leaderboard</p>
       {[
         { emoji: "🧘", name: "priya_eats", score: 840, crown: true },
@@ -213,7 +213,7 @@ const STEPS = [
     label: "Discover your Dosha",
     desc: "Take a 7-question Ayurvedic quiz to find out if you're Vata, Pitta, or Kapha. Your result unlocks a nutrition plan tailored to your body type, energy, and digestion.",
     href: "/dosha", cta: "Take the quiz",
-    accent: "#8b5cf6", accentMuted: "rgba(139,92,246,0.12)", accentBorder: "rgba(139,92,246,0.25)",
+    accent: "#8b5cf6", accentInk: "var(--ink-8b5cf6)", accentMuted: "rgba(139,92,246,0.12)", accentBorder: "rgba(139,92,246,0.25)",
     Preview: QuizPreview,
   },
   {
@@ -221,7 +221,7 @@ const STEPS = [
     label: "Calculate your macros",
     desc: "Enter your stats and goal — lose fat, build muscle, or maintain. Get your exact daily calorie, protein, carb and fat targets calculated instantly.",
     href: "/macros", cta: "Set my targets",
-    accent: "#10b981", accentMuted: "rgba(16,185,129,0.10)", accentBorder: "rgba(16,185,129,0.25)",
+    accent: "#10b981", accentInk: "var(--ink-10b981)", accentMuted: "rgba(16,185,129,0.10)", accentBorder: "rgba(16,185,129,0.25)",
     Preview: MacrosPreview,
   },
   {
@@ -229,7 +229,7 @@ const STEPS = [
     label: "Generate your meal plan",
     desc: "One click fills your full week with balanced vegetarian meals — breakfast, lunch and dinner — perfectly matched to your macro targets. Regenerate any day.",
     href: "/meal-planner", cta: "Plan my week",
-    accent: "#f59e0b", accentMuted: "rgba(245,158,11,0.10)", accentBorder: "rgba(245,158,11,0.25)",
+    accent: "#f59e0b", accentInk: "var(--ink-f59e0b)", accentMuted: "rgba(245,158,11,0.10)", accentBorder: "rgba(245,158,11,0.25)",
     Preview: MealPlannerPreview,
   },
   {
@@ -237,7 +237,7 @@ const STEPS = [
     label: "Track daily & earn your score",
     desc: "Log meals, watch your Sattvic Score update live, track water intake, workouts, and activity rings. Maintain streaks to unlock badges and climb the leaderboard.",
     href: "/dashboard", cta: "Open dashboard",
-    accent: "#38bdf8", accentMuted: "rgba(56,189,248,0.10)", accentBorder: "rgba(56,189,248,0.25)",
+    accent: "#38bdf8", accentInk: "var(--ink-38bdf8)", accentMuted: "rgba(56,189,248,0.10)", accentBorder: "rgba(56,189,248,0.25)",
     Preview: DashboardPreview,
   },
   {
@@ -245,7 +245,7 @@ const STEPS = [
     label: "Satisfy cravings — the healthy way",
     desc: "Got a craving? Type it in. Get an Ayurvedic vegetarian version that hits the same spot with a fraction of the calories. No guilt, full flavour.",
     href: "/junk", cta: "Try Healthy Junk",
-    accent: "#f43f5e", accentMuted: "rgba(244,63,94,0.10)", accentBorder: "rgba(244,63,94,0.25)",
+    accent: "#f43f5e", accentInk: "var(--ink-f43f5e)", accentMuted: "rgba(244,63,94,0.10)", accentBorder: "rgba(244,63,94,0.25)",
     Preview: JunkPreview,
   },
   {
@@ -253,7 +253,7 @@ const STEPS = [
     label: "Compete with friends",
     desc: "Create your profile, add friends, and compare weekly scores on the leaderboard. Take on challenges, earn bonus points, and keep each other accountable.",
     href: "/social", cta: "Go social",
-    accent: "#a78bfa", accentMuted: "rgba(167,139,250,0.10)", accentBorder: "rgba(167,139,250,0.25)",
+    accent: "#a78bfa", accentInk: "var(--ink-a78bfa)", accentMuted: "rgba(167,139,250,0.10)", accentBorder: "rgba(167,139,250,0.25)",
     Preview: SocialPreview,
   },
 ];
@@ -264,7 +264,7 @@ function BrowserShell({ href, accent, children }: { href: string; accent: string
   return (
     <div className="rounded-2xl overflow-hidden" style={{ boxShadow: `0 24px 80px -12px ${accent}25` }}>
       {/* title bar */}
-      <div className="bg-[#1c1c1c] border border-white/[0.08] border-b-0 rounded-t-2xl px-4 py-2.5 flex items-center gap-2.5">
+      <div className="dark-panel-bar bg-[#1c1c1c] border border-white/[0.08] border-b-0 rounded-t-2xl px-4 py-2.5 flex items-center gap-2.5">
         <div className="flex gap-1.5 shrink-0">
           <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
           <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
@@ -301,7 +301,7 @@ function StepCard({ step, index }: { step: typeof STEPS[0]; index: number }) {
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm shrink-0"
-            style={{ background: step.accentMuted, color: step.accent, border: `1px solid ${step.accentBorder}` }}
+            style={{ background: step.accentMuted, color: step.accentInk, border: `1px solid ${step.accentBorder}` }}
           >
             {step.num}
           </div>
@@ -318,7 +318,7 @@ function StepCard({ step, index }: { step: typeof STEPS[0]; index: number }) {
         <Link
           href={step.href}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-sm group transition-all hover:opacity-90 hover:-translate-y-0.5"
-          style={{ background: step.accentMuted, color: step.accent, border: `1px solid ${step.accentBorder}` }}
+          style={{ background: step.accentMuted, color: step.accentInk, border: `1px solid ${step.accentBorder}` }}
         >
           {step.cta}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

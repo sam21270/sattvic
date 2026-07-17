@@ -73,7 +73,9 @@ export function FlipCard({ meal }: { meal: Meal }) {
             {/* viral source badge — bottom left */}
             {viralTag && (
               <div className="absolute bottom-3 left-3">
-                <span className="text-[10px] bg-black/70 backdrop-blur-sm text-emerald-400 border border-emerald-500/40 px-2.5 py-1 rounded-full font-bold">
+                {/* pinned on a photo: keep the dark pill + light text in both
+                    themes, so use a literal hex the light-mode remap skips */}
+                <span className="text-[10px] bg-black/70 backdrop-blur-sm text-[#6ee7b7] border border-emerald-500/40 px-2.5 py-1 rounded-full font-bold">
                   🔥 {viralTag}
                 </span>
               </div>
@@ -81,12 +83,12 @@ export function FlipCard({ meal }: { meal: Meal }) {
             {/* protein / carb badges — top right */}
             <div className="absolute top-3 right-3 flex flex-col gap-1.5">
               {meal.isHighProtein && (
-                <span className="text-[10px] bg-blue-500/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full font-bold shadow">
+                <span className="text-[10px] bg-blue-700/95 backdrop-blur-sm text-white px-2.5 py-1 rounded-full font-bold shadow">
                   High Protein
                 </span>
               )}
               {meal.isLowCarb && (
-                <span className="text-[10px] bg-amber-500/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full font-bold shadow">
+                <span className="text-[10px] bg-amber-700/95 backdrop-blur-sm text-white px-2.5 py-1 rounded-full font-bold shadow">
                   Low Carb
                 </span>
               )}
@@ -116,7 +118,7 @@ export function FlipCard({ meal }: { meal: Meal }) {
             </div>
 
             <div className="flex items-center justify-between pt-0.5">
-              <div className="flex items-center gap-1.5 text-xs text-zinc-600">
+              <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                 <Clock className="w-3 h-3" />
                 {meal.prepTime} min
               </div>
@@ -177,7 +179,7 @@ export function FlipCard({ meal }: { meal: Meal }) {
             )}
           </div>
 
-          <div className="flex gap-3 mt-4 pt-4 border-t border-white/[0.06] text-xs text-zinc-600">
+          <div className="flex gap-3 mt-4 pt-4 border-t border-white/[0.06] text-xs text-zinc-400">
             <span>{meal.calories} kcal</span>
             <span className="text-zinc-700">·</span>
             <span>{meal.protein}g protein</span>

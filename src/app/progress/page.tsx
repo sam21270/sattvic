@@ -216,21 +216,21 @@ export default function ProgressPage() {
         {latest && (
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Weight", value: latest.weight, unit: " kg", icon: Scale, color: "#8b5cf6", key: "weight", invert: true },
-              { label: "Calories", value: latest.calories, unit: " kcal", icon: Flame, color: "#ef4444", key: "calories" },
-              { label: "Protein", value: latest.protein, unit: "g", icon: Dumbbell, color: "#10b981", key: "protein" },
-              { label: "Water", value: latest.water, unit: " ml", icon: Droplets, color: "#38bdf8", key: "water" },
-            ].map(({ label, value, unit, icon: Icon, color, key, invert }) => {
+              { label: "Weight", value: latest.weight, unit: " kg", icon: Scale, cls: "text-violet-400", key: "weight", invert: true },
+              { label: "Calories", value: latest.calories, unit: " kcal", icon: Flame, cls: "text-rose-400", key: "calories" },
+              { label: "Protein", value: latest.protein, unit: "g", icon: Dumbbell, cls: "text-emerald-400", key: "protein" },
+              { label: "Water", value: latest.water, unit: " ml", icon: Droplets, cls: "text-sky-400", key: "water" },
+            ].map(({ label, value, unit, icon: Icon, cls, key, invert }) => {
               const d = delta(key as keyof DayEntry);
               return (
                 <div key={label} className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-zinc-500 flex items-center gap-1">
-                      <Icon className="w-3 h-3" style={{ color }} />{label}
+                      <Icon className={`w-3 h-3 ${cls}`} />{label}
                     </span>
                     {d !== null && <Chip val={d} unit={unit.trim()} invert={invert} />}
                   </div>
-                  <div className="text-xl font-black" style={{ color }}>
+                  <div className={`text-xl font-black ${cls}`}>
                     {value ?? "—"}<span className="text-sm font-normal text-zinc-500">{value ? unit : ""}</span>
                   </div>
                 </div>
@@ -242,14 +242,16 @@ export default function ProgressPage() {
         {/* charts */}
         <div className="space-y-3">
           {[
-            { label: "Weight trend", data: weights, color: "#8b5cf6", unit: "kg" },
-            { label: "Daily calories", data: calories, color: "#ef4444", unit: "kcal" },
-            { label: "Protein intake", data: proteins, color: "#10b981", unit: "g" },
-            { label: "Water intake", data: waters, color: "#38bdf8", unit: "ml" },
-          ].map(({ label, data, color, unit }) => (
+            // `cls` drives the label (theme-aware via globals.css); `color`
+            // stays a literal hex for the SVG stroke, which needs no remap.
+            { label: "Weight trend", data: weights, color: "#8b5cf6", cls: "text-violet-400", unit: "kg" },
+            { label: "Daily calories", data: calories, color: "#ef4444", cls: "text-rose-400", unit: "kcal" },
+            { label: "Protein intake", data: proteins, color: "#10b981", cls: "text-emerald-400", unit: "g" },
+            { label: "Water intake", data: waters, color: "#38bdf8", cls: "text-sky-400", unit: "ml" },
+          ].map(({ label, data, color, cls, unit }) => (
             <div key={label} className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold" style={{ color }}>{label}</span>
+                <span className={`text-sm font-semibold ${cls}`}>{label}</span>
                 {data.length > 0 && (
                   <span className="text-xs text-zinc-500">
                     avg {Math.round(data.reduce((a, b) => a + b, 0) / data.length)} {unit}

@@ -48,7 +48,7 @@ export function AnimatedTerminal() {
       <div className="absolute -inset-6 bg-emerald-500/10 rounded-[2.5rem] blur-3xl pointer-events-none" />
 
       {/* terminal window */}
-      <div className="relative bg-[#0e0e0e] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="dark-panel relative bg-[#0e0e0e] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
 
         {/* title bar */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06] bg-white/[0.03]">
