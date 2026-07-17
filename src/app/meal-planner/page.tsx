@@ -213,10 +213,10 @@ function GroceryModal({ plan, servings, onClose }: { plan: WeekPlan; servings: n
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
-        <div className="sticky top-0 bg-[#141414] border-b border-white/[0.08] px-6 py-4 flex items-center justify-between rounded-t-3xl z-10">
-          <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-emerald-400" />
+        <div className="sticky top-0 bg-[#141414] border-b border-white/[0.08] px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-t-3xl z-10">
+          <div className="min-w-0">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 whitespace-nowrap">
+              <ShoppingCart className="w-5 h-5 text-emerald-400 shrink-0" />
               Weekly Shopping List
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -227,25 +227,25 @@ function GroceryModal({ plan, servings, onClose }: { plan: WeekPlan; servings: n
               {servings > 1 && <span className="text-emerald-400 ml-1">· for {servings} people</span>}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <a
               href={`https://wa.me/?text=${encodeURIComponent(
                 "🛒 SATTVIC weekly shopping list\n\n" +
                 Object.entries(list).map(([cat, items]) => `${cat}\n${items.map((i) => `• ${i}`).join("\n")}`).join("\n\n")
               )}`}
               target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-2 rounded-lg hover:bg-emerald-500/20 transition-colors whitespace-nowrap"
             >
               Share
             </a>
             <button
               onClick={copyAll}
-              className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-2 rounded-lg hover:bg-white/[0.08] transition-colors whitespace-nowrap"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied!" : "Copy all"}
             </button>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
+            <button onClick={onClose} aria-label="Close" className="w-9 h-9 rounded-full bg-white/[0.05] flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0 ml-auto sm:ml-0">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -412,13 +412,13 @@ function MealRow({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-orange-400 font-semibold">{meal.calories} kcal</span>
-            <span className="text-blue-400 font-semibold">{meal.protein}g protein</span>
-            <span className="hidden sm:flex items-center gap-1 text-zinc-500">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 text-xs sm:text-sm">
+            <span className="text-orange-400 font-semibold whitespace-nowrap">{meal.calories} kcal</span>
+            <span className="text-blue-400 font-semibold whitespace-nowrap">{meal.protein}g protein</span>
+            <span className="hidden sm:flex items-center gap-1 text-zinc-500 whitespace-nowrap">
               <Clock className="w-3.5 h-3.5" />{meal.prepTime} min
             </span>
-            <span className="flex items-center gap-1 text-rose-400 text-xs font-semibold">
+            <span className="flex items-center gap-1 text-rose-400 text-xs font-semibold whitespace-nowrap">
               <PlayCircle className="w-3.5 h-3.5" />video
             </span>
           </div>

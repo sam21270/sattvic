@@ -201,7 +201,7 @@ function Dashboard() {
       </motion.div>
 
       {/* stat chips */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
           { label: "Net Calories", value: netCalories, unit: "kcal", icon: Flame,     iconColor: "text-orange-400", glowColor: "bg-orange-500/10" },
           { label: "Water",        value: water,       unit: "ml",   icon: Droplets,  iconColor: "text-sky-400",    glowColor: "bg-sky-500/10"    },
