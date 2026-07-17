@@ -19,14 +19,14 @@ export function BorderBeam({
       style={{ zIndex: 10 }}
     >
       <div
-        className="absolute"
+        className="border-beam-glow absolute"
         style={{
           width: size,
           height: size,
           borderRadius: "50%",
           background: `radial-gradient(circle, ${colorFrom}, ${colorTo}, transparent 70%)`,
           filter: "blur(6px)",
-          opacity: 0.8,
+          opacity: 0.6,
           animation: `border-beam ${duration}s linear infinite`,
           offsetPath: `rect(0 100% 100% 0 round inherit)`,
           offsetRotate: "0deg",
