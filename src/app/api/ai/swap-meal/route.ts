@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { aiErrorResponse } from "@/lib/ai/errors";
 import { generateSingleMeal } from "@/lib/ai/groq";
 
 export async function POST(req: NextRequest) {
@@ -8,6 +9,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ meal });
   } catch (error) {
     console.error("Swap meal error:", error);
-    return NextResponse.json({ error: "Failed to generate replacement meal" }, { status: 500 });
+    return aiErrorResponse(error, "Failed to generate replacement meal");
   }
 }

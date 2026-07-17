@@ -11,9 +11,27 @@ import { ResumeBanner } from "@/components/ui/ResumeBanner";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+const DESCRIPTION =
+  "Type what you ate in plain language and let AI count the macros. Personalised vegetarian meal plans, Ayurvedic dosha matching, Jain mode, and a shopping list that knows what's already in your fridge.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sattvic.vercel.app"),
   title: "SATTVIC — Premium Vegetarian Meal Planner",
-  description: "Personalized vegetarian meal planning, macro tracking, and Ayurvedic nutrition — designed around your body.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "SATTVIC — Eat with intention",
+    description: DESCRIPTION,
+    url: "https://sattvic.vercel.app",
+    siteName: "SATTVIC",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "SATTVIC — Premium Vegetarian Meal Planner" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SATTVIC — Eat with intention",
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 // Renders at true device width on phones; zoom stays enabled for accessibility.

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
+import { aiErrorResponse } from "@/lib/ai/errors";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -54,6 +55,6 @@ Return ONLY valid JSON, no markdown:
     return NextResponse.json(json);
   } catch (error) {
     console.error("Recipe import error:", error);
-    return NextResponse.json({ error: "Couldn't read that — try pasting the recipe text directly" }, { status: 500 });
+    return aiErrorResponse(error, "Couldn't read that — try pasting the recipe text directly");
   }
 }

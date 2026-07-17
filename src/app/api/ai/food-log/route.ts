@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
+import { aiErrorResponse } from "@/lib/ai/errors";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -47,6 +48,6 @@ All numbers are integers. If an item is ambiguous, assume the most common Indian
     return NextResponse.json(JSON.parse(json));
   } catch (error) {
     console.error("Food log error:", error);
-    return NextResponse.json({ error: "Failed to analyze food" }, { status: 500 });
+    return aiErrorResponse(error, "Failed to analyze food");
   }
 }

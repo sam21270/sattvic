@@ -8,17 +8,21 @@ import { Leaf, CalendarDays, BookOpen, Calculator, LayoutDashboard, Refrigerator
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
-  { href: "/meal-planner",label: "Meal Planner", icon: CalendarDays },
-  { href: "/recipes",     label: "Recipes",      icon: BookOpen },
-  { href: "/macros",      label: "Macros",       icon: Calculator },
-  { href: "/dosha",       label: "Dosha Quiz",   icon: Flower2 },
+  { href: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard, primary: true },
+  { href: "/meal-planner",label: "Meal Planner", icon: CalendarDays,   primary: true },
+  { href: "/recipes",     label: "Recipes",      icon: BookOpen,       primary: true },
+  { href: "/macros",      label: "Macros",       icon: Calculator,     primary: true },
+  { href: "/dosha",       label: "Dosha Quiz",   icon: Flower2,        primary: true },
+  { href: "/progress",    label: "Progress",     icon: TrendingUp,     primary: true },
   { href: "/fridge",      label: "My Fridge",    icon: Refrigerator },
   { href: "/junk",        label: "Healthy Junk", icon: Pizza },
   { href: "/workout",     label: "Workout",      icon: Dumbbell },
-  { href: "/progress",    label: "Progress",     icon: TrendingUp },
   { href: "/social",      label: "Social",       icon: Users },
 ];
+
+// Ten links don't fit the 1280px container without colliding with sign-in,
+// so the desktop bar shows the primary six and the menu holds everything.
+const primaryLinks = navLinks.filter((l) => l.primary);
 
 export function Navbar() {
   const pathname = usePathname();
@@ -75,9 +79,9 @@ export function Navbar() {
             <span className="text-lg font-bold text-white tracking-tight">SATTVIC</span>
           </Link>
 
-          {/* desktop nav — hidden below xl where 10 links stop fitting */}
-          <div className="hidden xl:flex items-center gap-0.5 min-w-0">
-            {navLinks.map(({ href, label, icon: Icon }) => (
+          {/* desktop nav — primary links only; the menu button holds the rest */}
+          <div className="hidden lg:flex items-center gap-0.5 min-w-0">
+            {primaryLinks.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -99,7 +103,7 @@ export function Navbar() {
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
-              className="xl:hidden w-11 h-11 flex items-center justify-center rounded-xl text-zinc-300 hover:bg-white/[0.06] transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded-xl text-zinc-300 hover:bg-white/[0.06] transition-colors"
             >
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -111,11 +115,11 @@ export function Navbar() {
       {open && (
         <>
           <div
-            className="xl:hidden fixed inset-0 top-16 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 top-16 bg-black/60 backdrop-blur-sm z-40"
             onClick={() => setOpen(false)}
           />
-          <div className="xl:hidden fixed top-16 inset-x-0 z-50 bg-[#0f0f0f] border-b border-white/[0.08] max-h-[calc(100dvh-4rem)] overflow-y-auto" data-lenis-prevent>
-            <div className="px-4 py-3 grid grid-cols-2 gap-2">
+          <div className="fixed top-16 inset-x-0 z-50 bg-[#0f0f0f] border-b border-white/[0.08] max-h-[calc(100dvh-4rem)] overflow-y-auto" data-lenis-prevent>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
               {navLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}

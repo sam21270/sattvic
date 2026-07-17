@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { aiErrorResponse } from "@/lib/ai/errors";
 import Groq from "groq-sdk";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -40,7 +41,7 @@ Rules:
     if (!jsonMatch) throw new Error("No JSON");
     const data = JSON.parse(jsonMatch[0]);
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: "Could not estimate nutrition" }, { status: 500 });
+  } catch (error) {
+    return aiErrorResponse(error, "Could not estimate nutrition");
   }
 }
