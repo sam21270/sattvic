@@ -693,10 +693,10 @@ function DoshaQuiz() {
 
               {inJourney && (
                 <Link
-                  href="/macros?journey=1"
+                  href="/dashboard?journey=1"
                   className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white py-3.5 rounded-2xl hover:bg-emerald-400 transition-colors font-semibold"
                 >
-                  Next: Calculate your macros <ArrowRight className="w-4 h-4" />
+                  Go to your dashboard <ArrowRight className="w-4 h-4" />
                 </Link>
               )}
 

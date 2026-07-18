@@ -128,6 +128,8 @@ export function SattvicScore({ breakdown, history, insight, insightLoading }: Sa
         <div className="flex-1 w-full space-y-3">
           <p className="text-xs font-bold uppercase tracking-widest text-zinc-600">Score Breakdown</p>
           {breakdownItems.map((item, i) => {
+            // Dosha is optional — hide the row entirely if the quiz wasn't taken
+            if (item.key === "dosha" && !breakdown.hasDosha) return null;
             const val = breakdown[item.key];
             const pct = (val / item.max) * 100;
             return (
