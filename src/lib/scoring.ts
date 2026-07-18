@@ -19,6 +19,7 @@ export interface ScoreBreakdown {
   balance: number;   // max 20 (meals logged)
   dosha: number;     // max 15
   streak: number;    // max 10
+  hasDosha: boolean; // false → dosha excluded, score rescaled out of 85
   label: string;
   color: string;
 }
@@ -124,18 +125,22 @@ function getColor(grade: string): string {
 
 export function calculateScore(log: DayLog, history: HistoryEntry[] = [], targets: ScoreTargets = TARGETS): ScoreBreakdown {
   // No meals logged yet — don't show a fake score
+  const hasDosha = !!log.dosha;
   if (log.mealsLogged === 0) {
     const streak = scoreStreak(history);
-    return { total: 0, grade: "D", calorie: 0, protein: 0, balance: 0, dosha: 0, streak, label: "Log your first meal", color: getColor("D") };
+    return { total: 0, grade: "D", calorie: 0, protein: 0, balance: 0, dosha: 0, streak, hasDosha, label: "Log your first meal", color: getColor("D") };
   }
   const calorie = scoreCalories(log.calories, targets.calories);
   const protein = scoreProtein(log.protein, targets.protein);
   const balance = scoreMeals(log.mealsLogged);
-  const dosha   = scoreDosha(log);
+  const dosha   = hasDosha ? scoreDosha(log) : 0;
   const streak  = scoreStreak(history);
-  const total   = Math.min(calorie + protein + balance + dosha + streak, 100);
+  // Dosha is an optional add-on: without it, rescale the other 85 points to 100
+  // so skipping the quiz never caps your grade.
+  const raw     = calorie + protein + balance + streak + dosha;
+  const total   = Math.min(Math.round(hasDosha ? raw : (raw / 85) * 100), 100);
   const grade   = getGrade(total);
-  return { total, grade, calorie, protein, balance, dosha, streak, label: getLabel(total), color: getColor(grade) };
+  return { total, grade, calorie, protein, balance, dosha, streak, hasDosha, label: getLabel(total), color: getColor(grade) };
 }
 
 export function getTodayKey(): string {

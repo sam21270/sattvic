@@ -229,7 +229,7 @@ export default function HomePage() {
               >
                 <MagneticButton strength={0.4}>
                   <Link
-                    href="/dosha?journey=1"
+                    href="/macros?journey=1"
                     className="group relative flex items-center gap-3 bg-emerald-500 text-white pl-5 pr-7 py-4 rounded-2xl font-bold text-base hover:bg-emerald-400 transition-all duration-300 shadow-xl shadow-emerald-900/50 w-fit"
                   >
                     <span className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/20">
@@ -238,7 +238,7 @@ export default function HomePage() {
                     </span>
                     <span className="flex flex-col items-start leading-tight">
                       <span>Start the Journey</span>
-                      <span className="text-[11px] font-medium text-emerald-100/90">Quiz → Macros → Meal Plan → Dashboard</span>
+                      <span className="text-[11px] font-medium text-emerald-100/90">Macros → Meal Plan → Dashboard</span>
                     </span>
                   </Link>
                 </MagneticButton>
@@ -255,7 +255,8 @@ export default function HomePage() {
                     href="/dosha"
                     className="group flex items-center gap-2 bg-white/[0.06] text-zinc-200 px-6 py-3 rounded-2xl font-semibold text-sm border border-white/10 hover:border-white/20 hover:bg-white/[0.09] transition-all duration-300"
                   >
-                    Find your Dosha
+                    Take the Dosha quiz
+                    <span className="text-[10px] text-zinc-500 font-normal">optional</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </MagneticButton>
