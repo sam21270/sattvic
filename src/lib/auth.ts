@@ -4,6 +4,9 @@ import { connectDB } from "@/lib/db/mongoose";
 import UserModel from "@/models/User";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // NextAuth v5 rejects the sign-in host unless it trusts it; on Vercel the
+  // host is dynamic, so trust it explicitly to avoid UntrustedHost errors.
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
