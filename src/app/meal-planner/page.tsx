@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import {
   Sparkles, ArrowRight, ShieldCheck, Clock, PlayCircle,
   ExternalLink, ChevronDown, ChevronUp, RefreshCw,
-  Flame, Beef, Wheat, Droplets, ShoppingCart, Copy, Check, X
+  Flame, Beef, Wheat, Droplets, ShoppingCart, Copy, Check, X, TrendingUp
 } from "lucide-react";
 import { Meal, MacroTargets } from "@/types";
 import { buildWeekPlan, swapSlot, buildEmptyWeek, PLAN_SLOTS, PlanSlot, WeekPlan } from "@/lib/mealPlan";
@@ -677,7 +677,14 @@ function MealPlanner() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/progress"
+            className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 px-4 py-2.5 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm"
+          >
+            <TrendingUp className="w-4 h-4" />
+            Log meals
+          </Link>
           {hasMeals && (
             <button
               onClick={() => setShowGrocery(true)}
