@@ -63,6 +63,7 @@ function MacrosCalculator() {
       if (!res.ok) throw new Error(data.error);
       setResult(data);
       localStorage.setItem("sattvic-macro-targets", JSON.stringify(data));
+      localStorage.setItem("sattvic-macros-date", new Date().toISOString()); // drives the weekly "update your weight" nudge
     } catch (err: any) {
       setError(err.message ?? "Something went wrong");
     } finally {

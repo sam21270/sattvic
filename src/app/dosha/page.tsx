@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -219,6 +219,11 @@ function DoshaQuiz() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [apiError, setApiError] = useState("");
+  // Returning user who already has a dosha — offer to skip re-taking the quiz.
+  const [savedDosha, setSavedDosha] = useState<string | null>(null);
+  useEffect(() => {
+    try { setSavedDosha(localStorage.getItem("sattvic-dosha")); } catch {}
+  }, []);
 
   const currentQ = questions[step - 1];
   const progress = step === 0 ? 0 : (step / TOTAL_STEPS) * 100;
@@ -257,6 +262,7 @@ function DoshaQuiz() {
       setResult(data);
       setStep(TOTAL_STEPS + 1);
       localStorage.setItem("sattvic-dosha", data.dosha);
+      localStorage.setItem("sattvic-dosha-full", JSON.stringify(data)); // so returning users see it without re-quizzing
       localStorage.setItem("sattvic-allergies", JSON.stringify(allAllergies));
       localStorage.setItem("sattvic-conditions", JSON.stringify(conditions.filter((c) => c !== "none")));
     } catch (err: any) {
@@ -327,6 +333,30 @@ function DoshaQuiz() {
           {/* ── INTRO ─────────────────────────── */}
           {step === 0 && (
             <motion.div key="intro" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="space-y-12">
+              {/* Returning user — skip the quiz */}
+              {savedDosha && (
+                <div className="bg-emerald-500/[0.08] border border-emerald-500/25 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold text-white">You already know your dosha — you&apos;re {savedDosha} {doshaEmoji[savedDosha as keyof typeof doshaEmoji] ?? "🌿"}</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">No need to retake it. Jump straight to your meal plan, or retake below if things have changed.</p>
+                  </div>
+                  <Link
+                    href="/meal-planner"
+                    className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors shrink-0 whitespace-nowrap"
+                  >
+                    Go to Meal Planner <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
+
+              {inJourney && (
+                <div className="text-center">
+                  <Link href="/macros?journey=1" className="text-sm text-zinc-500 hover:text-zinc-300 underline transition-colors">
+                    Skip the quiz for now →
+                  </Link>
+                </div>
+              )}
+
               <div className="text-center space-y-4">
                 <p className="text-xs font-bold tracking-widest text-emerald-500 uppercase">5,000 year old science · modern nutrition</p>
                 <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-tight">
@@ -693,10 +723,10 @@ function DoshaQuiz() {
 
               {inJourney && (
                 <Link
-                  href="/dashboard?journey=1"
+                  href="/macros?journey=1"
                   className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white py-3.5 rounded-2xl hover:bg-emerald-400 transition-colors font-semibold"
                 >
-                  Go to your dashboard <ArrowRight className="w-4 h-4" />
+                  Next: Calculate your macros <ArrowRight className="w-4 h-4" />
                 </Link>
               )}
 
