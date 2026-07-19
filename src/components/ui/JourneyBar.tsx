@@ -5,13 +5,13 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
-// Macros is the foundation (targets drive planning + tracking). The Dosha quiz
-// is an optional add-on, so it sits last and is skippable.
+// The guided journey leads with the Dosha quiz, but it's skippable — the app
+// works fully without it (see the "Skip for now" link on the dosha page).
 const STEPS = [
+  { path: "/dosha", label: "Dosha" },
   { path: "/macros", label: "Macros" },
   { path: "/meal-planner", label: "Meal Plan" },
   { path: "/dashboard", label: "Dashboard" },
-  { path: "/dosha", label: "Dosha (optional)" },
 ];
 
 function JourneyBarInner() {

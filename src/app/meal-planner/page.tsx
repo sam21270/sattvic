@@ -574,6 +574,7 @@ function MealPlanner() {
   const [activeDay, setActiveDay] = useState(DAYS[0]);
   const [swappingSlot, setSwappingSlot] = useState<PlanSlot | null>(null);
   const [showGrocery, setShowGrocery] = useState(false);
+  const [macrosStale, setMacrosStale] = useState(false); // macros >7 days old → nudge a re-check
 
   const hasMeals = Object.values(plan).some((day) => Object.values(day).some((m) => m !== null));
 
@@ -588,6 +589,11 @@ function MealPlanner() {
       const d = localStorage.getItem("sattvic-dosha");
       if (d) setDosha(d);
       setJain(localStorage.getItem("sattvic-jain") === "1");
+      const macrosDate = localStorage.getItem("sattvic-macros-date");
+      if (macrosDate) {
+        const days = (Date.now() - new Date(macrosDate).getTime()) / 86400000;
+        setMacrosStale(days >= 7);
+      }
     } catch {}
   }, []);
 
@@ -635,6 +641,18 @@ function MealPlanner() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* weekly check-in: macros are a week+ old, weight may have changed */}
+      {macrosStale && (
+        <div className="bg-amber-500/[0.08] border border-amber-500/25 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-sm text-amber-200/90">
+            <span className="font-bold text-amber-300">It&apos;s been over a week.</span> Weigh in and update your macros so next week&apos;s plan stays accurate.
+          </p>
+          <Link href="/macros" className="flex items-center justify-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0 whitespace-nowrap">
+            Update my macros <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
       {/* header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
