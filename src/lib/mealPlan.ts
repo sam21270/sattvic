@@ -32,10 +32,23 @@ export function buildEmptyWeek(days: string[]): WeekPlan {
   return plan;
 }
 
+// Scale the leading quantity in an ingredient string to a real, tidy number
+// (e.g. "200g paneer" ×1.3 → "260g paneer", "2 rotis" ×1.3 → "3 rotis").
+// This replaces the old "(1.2x portion)" label with actual amounts.
+function scaleIngredient(ing: string, scale: number): string {
+  return ing.replace(/^(\d+(?:\.\d+)?)/, (m) => {
+    const n = parseFloat(m) * scale;
+    if (n >= 20) return String(Math.round(n / 5) * 5);   // grams/ml → nearest 5
+    if (n >= 3)  return String(Math.round(n));            // medium counts → whole
+    return String(Math.round(n * 2) / 2);                 // small counts → nearest 0.5
+  });
+}
+
 function toMeal(p: PoolMeal, scale = 1): Meal {
   const round = (n: number) => Math.round(n * scale);
+  const scaled = scale > 1.05;
   return {
-    name: scale > 1.05 ? `${p.name} (${scale.toFixed(1)}x portion)` : p.name,
+    name: p.name,
     description: p.description,
     calories: round(p.calories),
     protein: round(p.protein),
@@ -43,7 +56,7 @@ function toMeal(p: PoolMeal, scale = 1): Meal {
     fat: round(p.fat),
     fiber: round(p.fiber),
     prepTime: p.prepTime,
-    ingredients: scale > 1.05 ? [...p.ingredients, `Scale all quantities ×${scale.toFixed(1)} for this portion`] : p.ingredients,
+    ingredients: scaled ? p.ingredients.map((i) => scaleIngredient(i, scale)) : p.ingredients,
     instructions: p.instructions,
     tags: p.tags,
     image: p.image,
