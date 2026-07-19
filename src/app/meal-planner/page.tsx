@@ -863,12 +863,12 @@ function MealPlanner() {
         </div>
       )}
 
-      {inJourney && hasMeals && (
+      {hasMeals && (
         <Link
-          href="/dashboard?journey=1"
+          href={inJourney ? "/dashboard?journey=1" : "/dashboard"}
           className="flex items-center justify-center gap-2 bg-emerald-500 text-white py-3.5 rounded-2xl font-semibold hover:bg-emerald-400 transition-colors"
         >
-          Next: Go to your dashboard <ArrowRight className="w-4 h-4" />
+          {inJourney ? "Next: Go to your dashboard" : "Track today on your dashboard"} <ArrowRight className="w-4 h-4" />
         </Link>
       )}
 
