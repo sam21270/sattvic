@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import Link from "next/link";
+import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, ChevronUp, ChevronDown, CalendarDays } from "lucide-react";
 import { AIFoodLog } from "@/components/ui/AIFoodLog";
 
 interface DayEntry {
@@ -141,13 +142,22 @@ export default function ProgressPage() {
               <p className="text-sm text-zinc-500">{streaks} day{streaks !== 1 ? "s" : ""} logged · keep going!</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Log today
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href="/meal-planner"
+              className="flex items-center gap-2 px-4 py-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm"
+            >
+              <CalendarDays className="w-4 h-4" />
+              Meal Plan
+            </Link>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-colors text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Log today
+            </button>
+          </div>
         </div>
 
         {/* AI food log — type what you ate, AI counts macros */}
