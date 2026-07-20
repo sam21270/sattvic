@@ -366,6 +366,106 @@ const SAMPLE_MEALS: Meal[] = [
     ],
     tags: ["TikTok 2024", "Breakfast", "High Protein"], isHighProtein: true, isLowCarb: false,
   },
+  {
+    _id: "21",
+    name: "Gigi Hadid Pasta", mealTime: "dinner",
+    description: "The creamy spicy vodka-less rosé pasta that took over TikTok. Tomato, a little cream, chilli and parmesan — restaurant energy from a supermodel's story in 20 minutes.",
+    image: "https://images.unsplash.com/photo-1608219992759-8d74ed8d76eb?w=600&h=400&fit=crop&q=80",
+    calories: 540, protein: 16, carbs: 68, fat: 22, fiber: 4, prepTime: 20,
+    ingredients: ["200g pasta (rigatoni)", "2 tbsp olive oil", "1 shallot, minced", "3 garlic cloves", "3 tbsp tomato paste", "½ cup double cream", "¼ tsp chilli flakes", "30g parmesan, grated", "Fresh basil", "Salt & pepper"],
+    instructions: [
+      "Boil pasta in salted water; reserve ½ cup pasta water before draining.",
+      "Soften shallot and garlic in olive oil over medium heat, 3-4 min.",
+      "Add tomato paste and chilli flakes, fry 2 min until it darkens.",
+      "Stir in cream, simmer 2 min to a rosé sauce.",
+      "Add pasta, parmesan and a splash of pasta water; toss until glossy.",
+      "Finish with basil, more parmesan and black pepper."
+    ],
+    tags: ["TikTok Viral", "Italian", "Comfort"], isHighProtein: false, isLowCarb: false,
+  },
+  {
+    _id: "22",
+    name: "Crispy Chickpea Shawarma Bowl", mealTime: "lunch",
+    description: "Spiced roasted chickpeas, garlic tahini and pickled onion in a bowl — the plant-based shawarma that blew up on food YouTube. Meal-prep gold, packed with fibre.",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop&q=80",
+    calories: 430, protein: 18, carbs: 52, fat: 17, fiber: 12, prepTime: 30,
+    ingredients: ["2 cans chickpeas, drained", "2 tbsp olive oil", "2 tsp cumin", "2 tsp smoked paprika", "1 tsp turmeric", "1 tsp garlic powder", "3 tbsp tahini", "1 lemon", "1 red onion", "2 tbsp vinegar", "Cooked rice or greens to serve"],
+    instructions: [
+      "Preheat oven to 220°C / 425°F.",
+      "Pat chickpeas dry, toss with oil and all spices, spread on a tray.",
+      "Roast 25 min, shaking halfway, until crispy.",
+      "Thinly slice onion, cover with vinegar and a pinch of salt; leave to quick-pickle.",
+      "Whisk tahini with lemon juice, a crushed garlic clove and water until pourable.",
+      "Build bowls: rice or greens, chickpeas, pickled onion, a heavy drizzle of garlic tahini."
+    ],
+    tags: ["YouTube Classic", "Mediterranean", "High Protein"], isHighProtein: true, isLowCarb: false,
+  },
+  {
+    _id: "23",
+    name: "TikTok Baked Oats", mealTime: "breakfast",
+    description: "Blended oats baked until they taste like cake for breakfast. The viral 'you won't believe it's healthy' recipe — chocolate-chip version below.",
+    image: "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?w=600&h=400&fit=crop&q=80",
+    calories: 350, protein: 14, carbs: 55, fat: 9, fiber: 7, prepTime: 30,
+    ingredients: ["½ cup rolled oats", "1 ripe banana", "1 egg (or 1 flax egg)", "60ml milk of choice", "1 tsp baking powder", "1 tbsp maple syrup", "2 tbsp chocolate chips", "Pinch of salt"],
+    instructions: [
+      "Preheat oven to 180°C / 350°F and grease a small ramekin.",
+      "Blend oats, banana, egg, milk, baking powder, syrup and salt until smooth.",
+      "Stir in half the chocolate chips, pour into the ramekin, top with the rest.",
+      "Bake 20-25 min until risen and set in the middle.",
+      "Eat warm — it's gooey like a molten mug cake."
+    ],
+    tags: ["TikTok Viral", "Breakfast", "Quick"], isHighProtein: false, isLowCarb: false,
+  },
+  {
+    _id: "24",
+    name: "Rajma Chawal", mealTime: "lunch",
+    description: "North India's ultimate comfort meal — red kidney beans simmered in a spiced onion-tomato gravy over rice. Sunday-lunch nostalgia in a bowl, quietly high in plant protein.",
+    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
+    calories: 460, protein: 19, carbs: 74, fat: 9, fiber: 14, prepTime: 40,
+    ingredients: ["1 can (or 1.5 cups soaked) kidney beans", "2 onions, finely chopped", "3 tomatoes, pureed", "1 tbsp ginger-garlic paste", "1 tsp cumin seeds", "1 tsp garam masala", "1 tsp red chilli powder", "½ tsp turmeric", "2 tbsp oil or ghee", "Cooked basmati rice, coriander"],
+    instructions: [
+      "Heat oil, crackle cumin seeds, add onions and fry to golden brown.",
+      "Add ginger-garlic paste, cook 1 min, then tomato puree and dry spices.",
+      "Cook the masala down until oil separates, 8-10 min.",
+      "Add beans with a cup of water, simmer 15-20 min, mashing a few beans to thicken.",
+      "Adjust salt, finish with garam masala and coriander.",
+      "Serve hot over basmati rice."
+    ],
+    tags: ["Indian", "Comfort", "High Protein"], isHighProtein: true, isLowCarb: false,
+  },
+  {
+    _id: "25",
+    name: "Whipped Feta & Honey Dip", mealTime: "snack",
+    description: "The Instagram appetiser everyone screenshots — airy whipped feta under hot honey and chilli. Five minutes, looks like a restaurant plated it.",
+    image: "https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=600&h=400&fit=crop&q=80",
+    calories: 240, protein: 9, carbs: 12, fat: 18, fiber: 1, prepTime: 5,
+    ingredients: ["150g feta", "3 tbsp Greek yoghurt", "2 tbsp honey", "¼ tsp chilli flakes", "Olive oil", "Warm pita or crackers to serve"],
+    instructions: [
+      "Blend feta and yoghurt in a food processor until light and fluffy, 1 min.",
+      "Spread onto a plate with the back of a spoon, making swooshes.",
+      "Warm honey with chilli flakes for 20 seconds until runny.",
+      "Drizzle honey over, add a little olive oil and extra chilli.",
+      "Serve with warm pita."
+    ],
+    tags: ["Instagram Viral", "Mediterranean", "Quick"], isHighProtein: false, isLowCarb: true,
+  },
+  {
+    _id: "26",
+    name: "Peanut Tofu Stir-Fry", mealTime: "dinner",
+    description: "Crispy tofu in a glossy peanut-soy-lime sauce with crunchy veg. A weeknight YouTube staple that converts tofu skeptics — big protein, big flavour.",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop&q=80",
+    calories: 400, protein: 26, carbs: 24, fat: 22, fiber: 5, prepTime: 25,
+    ingredients: ["350g firm tofu, cubed", "1 tbsp cornflour", "2 tbsp peanut butter", "2 tbsp soy sauce", "1 tbsp maple syrup", "1 lime, juiced", "1 tsp sriracha", "2 garlic cloves", "1 red pepper", "Broccoli florets", "Neutral oil, crushed peanuts"],
+    instructions: [
+      "Press tofu 10 min, cube, toss in cornflour and a pinch of salt.",
+      "Fry tofu in oil until crisp on all sides; set aside.",
+      "Whisk peanut butter, soy, maple, lime juice, sriracha and a splash of water.",
+      "Stir-fry garlic, pepper and broccoli on high heat 3-4 min.",
+      "Return tofu, pour sauce over, toss 1 min until everything is coated and glossy.",
+      "Top with crushed peanuts; serve with rice."
+    ],
+    tags: ["YouTube Classic", "Asian", "High Protein"], isHighProtein: true, isLowCarb: false,
+  },
 ];
 
 const VIRAL_TAGS = ["TikTok Viral", "TikTok", "TikTok 2024", "Reddit Viral", "Reddit Favourite", "Instagram", "Instagram Viral", "YouTube Classic", "NYT Cooking"];
@@ -430,7 +530,7 @@ export default function RecipesPage() {
         <h1 className="text-3xl font-bold text-white tracking-tight">Recipes people actually make.</h1>
         <p className="text-zinc-500 mt-1">
           Viral hits from TikTok, Instagram, Reddit & YouTube — all vegetarian, all tried and tested.
-          Tap any card to flip for the full recipe.
+          Tap any card for the full recipe and a link to watch it.
         </p>
       </div>
 
