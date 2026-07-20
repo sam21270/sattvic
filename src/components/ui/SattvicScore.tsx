@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { ScoreBreakdown, HistoryEntry } from "@/lib/scoring";
+import { ScoreBreakdown, HistoryEntry, dayKey } from "@/lib/scoring";
 
 const SIZE = 200;
 const STROKE = 16;
@@ -37,12 +37,11 @@ function AnimatedNumber({ value }: { value: number }) {
 
 function WeekChart({ history }: { history: HistoryEntry[] }) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const today = new Date();
 
   const last7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
-    const key = d.toISOString().slice(0, 10);
+    // shift by the same 4am rollover as dayKey so labels match the logical day
+    const d = new Date(Date.now() - (6 - i) * 86400000 - 4 * 3600000);
+    const key = dayKey(6 - i);
     const entry = history.find((h) => h.date === key);
     return { label: days[d.getDay() === 0 ? 6 : d.getDay() - 1], score: entry?.score ?? null, isToday: i === 6 };
   });

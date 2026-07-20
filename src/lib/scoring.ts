@@ -143,8 +143,18 @@ export function calculateScore(log: DayLog, history: HistoryEntry[] = [], target
   return { total, grade, calorie, protein, balance, dosha, streak, hasDosha, label: getLabel(total), color: getColor(grade) };
 }
 
+// Logical day key in LOCAL time, rolling over at 4am — a 1am snack belongs to
+// the previous evening, and keys match the date the user sees (never UTC).
+// Pass days-ago as a number, or a Date to key an arbitrary timestamp.
+export function dayKey(from: Date | number = 0): string {
+  const t = typeof from === "number" ? Date.now() - from * 86400000 : from.getTime();
+  const d = new Date(t - 4 * 3600000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 export function getTodayKey(): string {
-  return new Date().toISOString().slice(0, 10);
+  return dayKey();
 }
 
 export function loadHistory(): HistoryEntry[] {

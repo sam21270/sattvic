@@ -24,6 +24,11 @@ const SLOT_SHARE: Record<PlanSlot, number> = {
 
 export type WeekPlan = Record<string, Record<PlanSlot, Meal | null>>;
 
+// Locked slots the planner must keep as-is on regenerate: day → slot → meal name.
+export type LockedMeals = Record<string, Partial<Record<PlanSlot, string>>>;
+
+const POOL_BY_NAME = new Map(MEAL_POOL.map((m) => [m.name, m]));
+
 export function buildEmptyWeek(days: string[]): WeekPlan {
   const plan: WeekPlan = {};
   for (const day of days) {
@@ -173,16 +178,15 @@ function pickBest(
   dosha: string | null = null,
   weekUseCount: Map<string, number> | null = null
 ): PoolMeal {
-  let best = candidates[0];
-  let bestScore = Infinity;
-  for (const c of candidates) {
-    const score = scoreCandidate(c, targetCal, targetProtein, usedBasesToday, dosha, weekUseCount);
-    if (score < bestScore) {
-      bestScore = score;
-      best = c;
-    }
-  }
-  return best;
+  // Rank by score, then pick at random among the few near-best candidates. The
+  // scoring (macros, dosha, variety) still decides who's eligible — this only
+  // breaks ties so "Regenerate" / "Reshuffle this day" produce a fresh plan each
+  // press instead of the same deterministic pick every time.
+  const scored = candidates
+    .map((c) => ({ c, s: scoreCandidate(c, targetCal, targetProtein, usedBasesToday, dosha, weekUseCount) }))
+    .sort((a, b) => a.s - b.s);
+  const top = scored.slice(0, Math.min(3, scored.length));
+  return top[Math.floor(Math.random() * top.length)].c;
 }
 
 function dayTotals(day: Record<PlanSlot, PoolMeal | null>) {
@@ -202,7 +206,8 @@ function repairDayForProtein(
   day: Record<PlanSlot, PoolMeal | null>,
   pool: PoolMeal[],
   targets: MacroTargets,
-  recentDays: Set<string>[]
+  recentDays: Set<string>[],
+  lockedSlots: Set<PlanSlot> = new Set()
 ) {
   const maxCalories = targets.calories * 1.15;
   const minCalories = targets.calories * 0.85;
@@ -213,7 +218,7 @@ function repairDayForProtein(
     if (totals.protein >= targets.protein * 0.97) break;
 
     const slotsByProteinDensity = PLAN_SLOTS
-      .filter((s) => day[s] !== null)
+      .filter((s) => day[s] !== null && !lockedSlots.has(s))
       .sort((a, b) => {
         const da = day[a]!.protein / day[a]!.calories;
         const db = day[b]!.protein / day[b]!.calories;
@@ -257,7 +262,8 @@ export function buildWeekPlan(
   conditions: string[] = [],
   dosha: string | null = null,
   fast: FastType = "none",
-  jain = false
+  jain = false,
+  locked: LockedMeals = {}
 ): WeekPlan {
   let pool = filterFasting(filterPool(allergies, conditions), fast);
   if (jain) pool = filterJain(pool);
@@ -283,8 +289,21 @@ export function buildWeekPlan(
     const dayPool: Record<PlanSlot, PoolMeal | null> = {
       breakfast: null, lunch: null, dinner: null, snack1: null, snack2: null,
     };
+    const lockedSlots = new Set<PlanSlot>();
 
     for (const slot of PLAN_SLOTS) {
+      // Locked slot: keep the exact meal the user pinned, but still register it
+      // in the freshness/variety trackers so other days plan around it.
+      const lockedName = locked[day]?.[slot];
+      const lockedMeal = lockedName ? POOL_BY_NAME.get(lockedName) : undefined;
+      if (lockedMeal) {
+        dayPool[slot] = lockedMeal;
+        lockedSlots.add(slot);
+        usedToday.add(lockedMeal.name);
+        baseIngredients(lockedMeal).forEach((b) => usedBasesToday.add(b));
+        continue;
+      }
+
       const type = SLOT_TO_TYPE[slot];
       let candidates = freshCandidates(pool, type, usedToday, recentDays);
 
@@ -311,7 +330,7 @@ export function buildWeekPlan(
       baseIngredients(chosen).forEach((b) => usedBasesToday.add(b));
     }
 
-    repairDayForProtein(dayPool, pool, targets, recentDays);
+    repairDayForProtein(dayPool, pool, targets, recentDays, lockedSlots);
 
     // Record what names were used today for future days' freshness check
     const todayNames = new Set(
@@ -387,4 +406,35 @@ export function swapSlot(
     usedBasesToday
   );
   return toMeal(chosen);
+}
+
+// Reshuffle a single day while leaving every other day untouched. Implemented by
+// locking all other days (and any slots the user pinned on this day), then
+// rebuilding — so the fresh day still respects week-wide variety and the locks.
+export function regenerateDay(
+  plan: WeekPlan,
+  targetDay: string,
+  targets: MacroTargets,
+  allergies: string[] = [],
+  conditions: string[] = [],
+  dosha: string | null = null,
+  fast: FastType = "none",
+  jain = false,
+  userLocked: LockedMeals = {}
+): WeekPlan {
+  const days = Object.keys(plan);
+  const locked: LockedMeals = {};
+  for (const d of days) {
+    if (d === targetDay) {
+      if (userLocked[d]) locked[d] = userLocked[d];
+      continue;
+    }
+    const slots: Partial<Record<PlanSlot, string>> = {};
+    for (const s of PLAN_SLOTS) {
+      const name = plan[d]?.[s]?.name;
+      if (name) slots[s] = name;
+    }
+    locked[d] = slots;
+  }
+  return buildWeekPlan(days, targets, allergies, conditions, dosha, fast, jain, locked);
 }

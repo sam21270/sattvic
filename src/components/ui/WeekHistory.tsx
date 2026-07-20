@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Trash2, CalendarDays } from "lucide-react";
+import { dayKey } from "@/lib/scoring";
 
 interface LoggedMeal {
   name: string;
@@ -14,11 +15,19 @@ interface LoggedMeal {
   portion: string;
 }
 
+interface AiMeal {
+  text: string;
+  time?: string;
+  totals: { calories: number; protein: number; carbs: number; fat: number };
+}
+
 interface DayRecord {
   date: string; // YYYY-MM-DD
   label: string; // "Monday 30 Jun"
   meals: Partial<Record<string, LoggedMeal | null>>;
+  ai: AiMeal[];
   totals: { calories: number; protein: number; carbs: number; fat: number };
+  onTarget: boolean;
 }
 
 const SLOT_EMOJI: Record<string, string> = {
@@ -32,11 +41,10 @@ const SLOTS = ["breakfast", "snack1", "lunch", "snack2", "dinner"];
 function getPast7Days(): { date: string; label: string }[] {
   const days = [];
   for (let i = 1; i <= 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const date = d.toISOString().slice(0, 10);
+    // same 4am rollover shift as dayKey so the label matches the logical day
+    const d = new Date(Date.now() - i * 86400000 - 4 * 3600000);
     const label = d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
-    days.push({ date, label });
+    days.push({ date: dayKey(i), label });
   }
   return days;
 }
@@ -46,26 +54,32 @@ export function WeekHistory() {
   const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => {
+    let target = 2000;
+    try {
+      target = JSON.parse(localStorage.getItem("sattvic-macro-targets") ?? "null")?.calories ?? 2000;
+    } catch {}
     const past = getPast7Days();
     const loaded: DayRecord[] = [];
     for (const { date, label } of past) {
       try {
         const meals = JSON.parse(localStorage.getItem(`sattvic-meals-${date}`) ?? "null");
-        if (!meals) continue;
-        const totals = Object.values(meals).reduce(
-          (acc: { calories: number; protein: number; carbs: number; fat: number }, m: unknown) => {
-            if (!m) return acc;
-            const meal = m as LoggedMeal;
-            return {
-              calories: acc.calories + meal.calories,
-              protein:  acc.protein  + meal.protein,
-              carbs:    acc.carbs    + meal.carbs,
-              fat:      acc.fat      + meal.fat,
-            };
-          },
+        const ai: AiMeal[] = JSON.parse(localStorage.getItem(`sattvic-foodlog-${date}`) ?? "[]");
+        if (!meals && !ai.length) continue;
+        const totals = [
+          ...(Object.values(meals ?? {}).filter(Boolean) as LoggedMeal[]),
+          ...ai.map((m) => m.totals),
+        ].reduce(
+          (acc, m) => ({
+            calories: acc.calories + m.calories,
+            protein:  acc.protein  + m.protein,
+            carbs:    acc.carbs    + m.carbs,
+            fat:      acc.fat      + m.fat,
+          }),
           { calories: 0, protein: 0, carbs: 0, fat: 0 }
         );
-        loaded.push({ date, label, meals, totals });
+        // on target = within ±10% of the daily calorie target
+        const onTarget = Math.abs(totals.calories - target) <= target * 0.1;
+        loaded.push({ date, label, meals: meals ?? {}, ai, totals, onTarget });
       } catch {}
     }
     setRecords(loaded);
@@ -73,6 +87,7 @@ export function WeekHistory() {
 
   function deleteDay(date: string) {
     localStorage.removeItem(`sattvic-meals-${date}`);
+    localStorage.removeItem(`sattvic-foodlog-${date}`);
     setRecords((r) => r.filter((d) => d.date !== date));
   }
 
@@ -80,15 +95,18 @@ export function WeekHistory() {
 
   return (
     <div className="bg-[#141414] border border-white/[0.07] rounded-3xl p-6 space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <CalendarDays className="w-5 h-5 text-emerald-400" />
         <h2 className="font-bold text-zinc-100 text-lg">Past 7 Days</h2>
+        <span className="ml-auto text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
+          {records.filter((d) => d.onTarget).length} of {records.length} logged day{records.length !== 1 ? "s" : ""} on calorie target
+        </span>
       </div>
 
       <div className="space-y-2">
         {records.map((day) => {
           const isOpen = open === day.date;
-          const mealCount = Object.values(day.meals).filter(Boolean).length;
+          const mealCount = Object.values(day.meals).filter(Boolean).length + day.ai.length;
           return (
             <div key={day.date} className="rounded-2xl border border-white/[0.07] overflow-hidden">
               {/* collapsed row */}
@@ -103,6 +121,9 @@ export function WeekHistory() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-[11px] font-bold rounded-full px-2 py-0.5 ${day.onTarget ? "text-emerald-400 bg-emerald-500/10" : "text-zinc-500 bg-white/[0.04]"}`}>
+                    {day.onTarget ? "✓ on target" : "off target"}
+                  </span>
                   <div className="flex gap-1.5">
                     {[
                       { val: day.totals.calories, label: "kcal", color: "text-orange-400" },
@@ -146,6 +167,16 @@ export function WeekHistory() {
                             </div>
                           );
                         })}
+                        {day.ai.map((m, idx) => (
+                          <div key={`ai-${idx}`} className="flex items-center gap-3 py-1">
+                            <span className="text-base w-6 text-center shrink-0">✨</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-600 w-16 shrink-0">AI log</span>
+                            <span className="flex-1 text-sm text-zinc-300 font-medium truncate">{m.text}</span>
+                            <span className="text-xs text-zinc-600 shrink-0">{m.totals.calories} kcal</span>
+                            <span className="text-xs text-blue-400 shrink-0">{m.totals.protein}g P</span>
+                            {m.time && <span className="text-[11px] text-zinc-600 shrink-0 italic">{m.time}</span>}
+                          </div>
+                        ))}
                       </div>
 
                       {/* macro summary */}
