@@ -470,6 +470,15 @@ const SAMPLE_MEALS: Meal[] = [
 
 const VIRAL_TAGS = ["TikTok Viral", "TikTok", "TikTok 2024", "Reddit Viral", "Reddit Favourite", "Instagram", "Instagram Viral", "YouTube Classic", "NYT Cooking"];
 
+// Deterministic weekly pick — same recipe for everyone all week, rotates on its
+// own, no backend. ponytail: swap for a rating-ranked pick after the DB lands.
+function recipeOfTheWeek(): Meal {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const week = Math.floor(((now.getTime() - start.getTime()) / 86400000 + start.getDay()) / 7);
+  return SAMPLE_MEALS[week % SAMPLE_MEALS.length];
+}
+
 export default function RecipesPage() {
   const [search, setSearch] = useState("");
   const [highProtein, setHighProtein] = useState(false);
@@ -511,6 +520,8 @@ export default function RecipesPage() {
     }
   }
 
+  const recipeOfWeek = recipeOfTheWeek();
+
   const filtered = [...imported, ...SAMPLE_MEALS].filter((m) => {
     const q = search.toLowerCase();
     const matchesSearch = !q || m.name.toLowerCase().includes(q) ||
@@ -532,6 +543,28 @@ export default function RecipesPage() {
           Viral hits from TikTok, Instagram, Reddit & YouTube — all vegetarian, all tried and tested.
           Tap any card for the full recipe and a link to watch it.
         </p>
+      </div>
+
+      {/* Recipe of the Week — rotates automatically, same for everyone */}
+      <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-emerald-500/50 via-emerald-500/10 to-transparent">
+        <div className="rounded-3xl bg-[#0f0f0f] p-5 sm:p-6 grid sm:grid-cols-[1fr_320px] gap-6 items-center">
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-3 py-1">
+              ⭐ Recipe of the Week
+            </span>
+            <h2 className="text-2xl font-bold text-white mt-3">{recipeOfWeek.name}</h2>
+            <p className="text-sm text-zinc-400 mt-1.5 line-clamp-3">{recipeOfWeek.description}</p>
+            <div className="flex gap-4 mt-4 text-xs">
+              <span className="text-orange-400 font-bold">{recipeOfWeek.calories} kcal</span>
+              <span className="text-blue-400 font-bold">{recipeOfWeek.protein}g protein</span>
+              <span className="text-zinc-400">{recipeOfWeek.prepTime} min</span>
+            </div>
+            <p className="text-[11px] text-zinc-600 mt-3">New pick every Monday — tap the card for the recipe.</p>
+          </div>
+          <div className="w-full max-w-[320px] mx-auto sm:mx-0">
+            <FlipCard meal={recipeOfWeek} />
+          </div>
+        </div>
       </div>
 
       {/* AI recipe import */}
