@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, ChevronUp, ChevronDown, CalendarDays } from "lucide-react";
-import { AIFoodLog } from "@/components/ui/AIFoodLog";
+import { loadTodayMeals } from "@/components/ui/AIFoodLog";
 import { WeekHistory } from "@/components/ui/WeekHistory";
 import { maintenanceFromStorage, weekPrediction, actualWeekChange, fmtKg } from "@/lib/weightProjection";
 import { dayKey } from "@/lib/scoring";
@@ -113,6 +113,7 @@ export default function ProgressPage() {
   }
 
   const [merged, setMerged] = useState<DayEntry[]>([]);
+  const [todayMeals, setTodayMeals] = useState<ReturnType<typeof loadTodayMeals>>([]);
 
   useEffect(() => {
     try {
@@ -122,7 +123,13 @@ export default function ProgressPage() {
     const m = maintenanceFromStorage();
     const p = m ? weekPrediction(m) : null;
     if (p) setForecast({ ...p, actual: actualWeekChange() });
+    setTodayMeals(loadTodayMeals());
   }, []);
+
+  const todayTotals = todayMeals.reduce(
+    (a, m) => ({ calories: a.calories + m.totals.calories, protein: a.protein + m.totals.protein }),
+    { calories: 0, protein: 0 }
+  );
 
   // Charts pull from EVERYTHING the app already tracks — food logs, dashboard
   // water/steps, workouts — so trends fill in without manual re-entry.
@@ -260,8 +267,39 @@ export default function ProgressPage() {
           </div>
         )}
 
-        {/* AI food log — type what you ate, AI counts macros */}
-        <AIFoodLog />
+        {/* today's meals — carried over from the dashboard, read-only here */}
+        {todayMeals.length > 0 ? (
+          <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-widest">Today&apos;s meals</h2>
+              <span className="text-xs font-semibold text-emerald-400">
+                {todayTotals.calories} kcal · {todayTotals.protein}g P
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {todayMeals.map((m) => (
+                <div key={m.id} className="flex items-center gap-3 text-sm">
+                  <span className="flex-1 text-zinc-300 truncate">{m.text}</span>
+                  <span className="text-zinc-500 shrink-0">{m.totals.calories} kcal</span>
+                  <span className="text-blue-400 shrink-0">{m.totals.protein}g P</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/dashboard" className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1">
+              <Plus className="w-3 h-3" /> Log more on the dashboard
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/dashboard"
+            className="block bg-white/[0.03] border border-dashed border-white/[0.12] rounded-2xl p-5 text-center hover:border-emerald-500/40 transition-colors"
+          >
+            <p className="text-sm text-zinc-400">No meals logged today yet.</p>
+            <p className="text-xs text-emerald-400 font-semibold mt-1 inline-flex items-center gap-1">
+              <Plus className="w-3 h-3" /> Log your meals on the dashboard
+            </p>
+          </Link>
+        )}
 
         {/* log form */}
         {showForm && (
