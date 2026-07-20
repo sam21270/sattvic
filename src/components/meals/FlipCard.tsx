@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock, X, Play } from "lucide-react";
+import { Clock, X, Play, Check, Plus } from "lucide-react";
 import { Meal } from "@/types";
+import { logMealToToday } from "@/components/ui/AIFoodLog";
 
 // Where to watch the recipe: a real sourceUrl/videoUrl wins; otherwise send the
 // user to a search on the platform it came from (its viral tag), which always
@@ -22,6 +23,16 @@ function watchLink(meal: Meal): { url: string; label: string } {
 export function FlipCard({ meal }: { meal: Meal }) {
   const [open, setOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [cooked, setCooked] = useState(false);
+
+  function cookIt() {
+    logMealToToday({
+      name: meal.name, calories: meal.calories, protein: meal.protein,
+      carbs: meal.carbs, fat: meal.fat, fiber: meal.fiber,
+    });
+    setCooked(true);
+    setTimeout(() => setCooked(false), 2500);
+  }
 
   const VIRAL_TAGS = ["TikTok Viral", "TikTok", "TikTok 2024", "Reddit Viral", "Reddit Favourite", "Instagram Viral", "NYT Cooking", "YouTube Classic"];
   const viralTag = meal.tags.find((t) => VIRAL_TAGS.includes(t));
@@ -179,13 +190,21 @@ export function FlipCard({ meal }: { meal: Meal }) {
                   <span>{meal.protein}g protein</span><span className="text-zinc-700">·</span>
                   <span>{meal.prepTime} min</span>
                 </div>
-                <a
-                  href={watch.url} target="_blank" rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-colors"
-                >
-                  <Play className="w-4 h-4 fill-current" /> {watch.label}
-                </a>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); cookIt(); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 font-bold rounded-xl transition-colors ${cooked ? "bg-emerald-600 text-white" : "bg-emerald-500 hover:bg-emerald-400 text-white"}`}
+                  >
+                    {cooked ? <><Check className="w-4 h-4" /> Added to today</> : <><Plus className="w-4 h-4" /> I cooked this</>}
+                  </button>
+                  <a
+                    href={watch.url} target="_blank" rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-white/[0.06] border border-white/[0.12] hover:bg-white/[0.1] text-zinc-200 font-bold rounded-xl transition-colors whitespace-nowrap"
+                  >
+                    <Play className="w-4 h-4 fill-current" /> {watch.label}
+                  </a>
+                </div>
               </div>
             </motion.div>
           </motion.div>
