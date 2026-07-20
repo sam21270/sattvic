@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Plus, Trash2, Check } from "lucide-react";
 import { getMicros } from "@/lib/micronutrients";
+import { dayKey } from "@/lib/scoring";
 
 interface FoodItem {
   name: string;
@@ -29,7 +30,7 @@ export interface LoggedMeal {
 }
 
 function todayKey() {
-  return `sattvic-foodlog-${new Date().toISOString().split("T")[0]}`;
+  return `sattvic-foodlog-${dayKey()}`;
 }
 
 export function loadTodayMeals(): LoggedMeal[] {
@@ -38,6 +39,24 @@ export function loadTodayMeals(): LoggedMeal[] {
   } catch {
     return [];
   }
+}
+
+// Log a planned meal straight into today's food log (used by the meal planner's
+// "I ate this" button). Writes the same shape the dashboard/progress read back.
+export function logMealToToday(meal: {
+  name: string; calories: number; protein: number; carbs: number; fat: number; fiber?: number;
+}): LoggedMeal {
+  const fiber = meal.fiber ?? 0;
+  const entry: LoggedMeal = {
+    id: Date.now().toString(36),
+    time: new Date().toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false }),
+    text: meal.name,
+    items: [{ name: meal.name, calories: meal.calories, protein: meal.protein, carbs: meal.carbs, fat: meal.fat, fiber }],
+    totals: { calories: meal.calories, protein: meal.protein, carbs: meal.carbs, fat: meal.fat, fiber },
+  };
+  const meals = loadTodayMeals();
+  localStorage.setItem(todayKey(), JSON.stringify([...meals, entry]));
+  return entry;
 }
 
 export interface FoodLogTotals {

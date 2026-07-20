@@ -7,10 +7,13 @@ import { useSearchParams } from "next/navigation";
 import {
   Sparkles, ArrowRight, ShieldCheck, Clock, PlayCircle,
   ExternalLink, ChevronDown, ChevronUp, RefreshCw,
-  Flame, Beef, Wheat, Droplets, ShoppingCart, Copy, Check, X, TrendingUp
+  Flame, Beef, Wheat, Droplets, ShoppingCart, Copy, Check, X, TrendingUp,
+  Lock, Utensils
 } from "lucide-react";
 import { Meal, MacroTargets } from "@/types";
-import { buildWeekPlan, swapSlot, buildEmptyWeek, PLAN_SLOTS, PlanSlot, WeekPlan } from "@/lib/mealPlan";
+import { buildWeekPlan, swapSlot, regenerateDay, buildEmptyWeek, PLAN_SLOTS, PlanSlot, WeekPlan, LockedMeals } from "@/lib/mealPlan";
+import { logMealToToday } from "@/components/ui/AIFoodLog";
+import { planWeeklyKg, latestWeight, fmtKg } from "@/lib/weightProjection";
 import { isMealGoodForDosha, DOSHA_BADGE, Dosha } from "@/lib/doshaRules";
 import { FastType, FAST_META } from "@/lib/fastingRules";
 import { CookMode } from "@/components/ui/CookMode";
@@ -352,6 +355,8 @@ function MealRow({
   onSwap,
   swapping,
   servings = 1,
+  locked = false,
+  onToggleLock,
 }: {
   slot: PlanSlot;
   meal: Meal | null;
@@ -359,15 +364,18 @@ function MealRow({
   onSwap: () => void;
   swapping: boolean;
   servings?: number;
+  locked?: boolean;
+  onToggleLock?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [cooking, setCooking] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [logged, setLogged] = useState(false);
   const fallback = FALLBACK_GRADIENTS[PLAN_SLOTS.indexOf(slot) % FALLBACK_GRADIENTS.length];
   const isGood = meal ? isMealGoodForDosha(meal.name, meal.tags, dosha) : false;
   const badge = dosha ? DOSHA_BADGE[dosha.toLowerCase() as Dosha] : null;
 
-  useEffect(() => { setImgError(false); setOpen(false); }, [meal?.name]);
+  useEffect(() => { setImgError(false); setOpen(false); setLogged(false); }, [meal?.name]);
 
   if (!meal) {
     return (
@@ -401,6 +409,11 @@ function MealRow({
             {meal.tags?.includes("Dessert") && (
               <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/25 normal-case tracking-normal">
                 🍰 Treat day
+              </span>
+            )}
+            {locked && (
+              <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 normal-case tracking-normal">
+                <Lock className="w-2.5 h-2.5" /> Locked
               </span>
             )}
           </p>
@@ -474,11 +487,35 @@ function MealRow({
                     <Flame className="w-3.5 h-3.5" />Cook this
                   </button>
                 )}
-                <button onClick={onSwap} disabled={swapping}
+                <button
+                  onClick={() => { logMealToToday(meal); setLogged(true); }}
+                  disabled={logged}
+                  className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+                    logged
+                      ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 cursor-default"
+                      : "text-white bg-emerald-600 hover:bg-emerald-500"
+                  }`}>
+                  {logged ? <Check className="w-3.5 h-3.5" /> : <Utensils className="w-3.5 h-3.5" />}
+                  {logged ? "Logged for today" : "I ate this"}
+                </button>
+                <button onClick={onSwap} disabled={swapping || locked}
+                  title={locked ? "Unlock to swap this meal" : undefined}
                   className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-lg hover:bg-white/[0.08] transition-colors disabled:opacity-50">
                   <RefreshCw className={`w-3.5 h-3.5 ${swapping ? "animate-spin" : ""}`} />
                   {swapping ? "Swapping…" : "Swap meal"}
                 </button>
+                {onToggleLock && (
+                  <button onClick={onToggleLock}
+                    title={locked ? "Unlock — regenerate may replace this" : "Lock — keep this meal when you regenerate"}
+                    className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                      locked
+                        ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/25 hover:bg-emerald-500/20"
+                        : "text-zinc-400 bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]"
+                    }`}>
+                    <Lock className="w-3.5 h-3.5" />
+                    {locked ? "Locked" : "Lock"}
+                  </button>
+                )}
                 {cooking && meal.instructions && (
                   <CookMode name={meal.name} steps={meal.instructions} onClose={() => setCooking(false)} />
                 )}
@@ -575,6 +612,11 @@ function MealPlanner() {
   const [swappingSlot, setSwappingSlot] = useState<PlanSlot | null>(null);
   const [showGrocery, setShowGrocery] = useState(false);
   const [macrosStale, setMacrosStale] = useState(false); // macros >7 days old → nudge a re-check
+  const [locks, setLocks] = useState<LockedMeals>({});
+  const [loaded, setLoaded] = useState(false); // guards persistence until initial load runs
+  const [regenDay, setRegenDay] = useState(false);
+  const [maintenance, setMaintenance] = useState<number | null>(null);
+  const [weightNow, setWeightNow] = useState<number | null>(null);
 
   const hasMeals = Object.values(plan).some((day) => Object.values(day).some((m) => m !== null));
 
@@ -582,6 +624,8 @@ function MealPlanner() {
     try {
       const t = JSON.parse(localStorage.getItem("sattvic-macro-targets") ?? "null");
       if (t) setTargets(t);
+      if (t?.maintenance) setMaintenance(t.maintenance);
+      setWeightNow(latestWeight());
       const a = JSON.parse(localStorage.getItem("sattvic-allergies") ?? "[]");
       setAllergies(a);
       const c = JSON.parse(localStorage.getItem("sattvic-conditions") ?? "[]");
@@ -594,8 +638,24 @@ function MealPlanner() {
         const days = (Date.now() - new Date(macrosDate).getTime()) / 86400000;
         setMacrosStale(days >= 7);
       }
+      // restore a previously generated week so it survives refresh
+      const savedPlan = JSON.parse(localStorage.getItem("sattvic-week-plan") ?? "null");
+      if (savedPlan) setPlan(savedPlan);
+      const savedLocks = JSON.parse(localStorage.getItem("sattvic-week-locks") ?? "null");
+      if (savedLocks) setLocks(savedLocks);
     } catch {}
+    setLoaded(true);
   }, []);
+
+  // persist the week + locks whenever they change (after the initial load)
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem("sattvic-week-plan", JSON.stringify(plan));
+  }, [plan, loaded]);
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem("sattvic-week-locks", JSON.stringify(locks));
+  }, [locks, loaded]);
 
   function toggleJain() {
     setJain((j) => {
@@ -605,10 +665,31 @@ function MealPlanner() {
   }
 
   function generatePlan() {
-    setPlan(buildWeekPlan(DAYS, targets, allergies, conditions, dosha, fast, jain));
+    setPlan(buildWeekPlan(DAYS, targets, allergies, conditions, dosha, fast, jain, locks));
   }
 
-  // Drag a meal row onto a day tab to swap it with that day's same slot
+  // Reshuffle just the active day, keeping every other day (and any locks) intact
+  function regenerateActiveDay() {
+    setRegenDay(true);
+    setPlan((p) => regenerateDay(p, activeDay, targets, allergies, conditions, dosha, fast, jain, locks));
+    setRegenDay(false);
+  }
+
+  const isLocked = (day: string, slot: PlanSlot) => Boolean(locks[day]?.[slot]);
+
+  // Lock keeps the current meal through regenerate; unlock removes the pin
+  function toggleLock(day: string, slot: PlanSlot) {
+    const name = plan[day]?.[slot]?.name;
+    setLocks((prev) => {
+      const daySlots = { ...(prev[day] ?? {}) };
+      if (daySlots[slot]) delete daySlots[slot];
+      else if (name) daySlots[slot] = name;
+      return { ...prev, [day]: daySlots };
+    });
+  }
+
+  // Drag a meal row onto a day tab to swap it with that day's same slot.
+  // Locks follow the meal so a pinned dish stays pinned after it moves.
   function moveMeal(slot: PlanSlot, fromDay: string, toDay: string) {
     if (fromDay === toDay) return;
     setPlan((p) => ({
@@ -616,6 +697,15 @@ function MealPlanner() {
       [fromDay]: { ...p[fromDay], [slot]: p[toDay][slot] },
       [toDay]:   { ...p[toDay],   [slot]: p[fromDay][slot] },
     }));
+    setLocks((prev) => {
+      const from = { ...(prev[fromDay] ?? {}) };
+      const to = { ...(prev[toDay] ?? {}) };
+      const fromName = from[slot];
+      const toName = to[slot];
+      if (toName) from[slot] = toName; else delete from[slot];
+      if (fromName) to[slot] = fromName; else delete to[slot];
+      return { ...prev, [fromDay]: from, [toDay]: to };
+    });
   }
 
   function handleSwap(slot: PlanSlot) {
@@ -623,6 +713,12 @@ function MealPlanner() {
     const newMeal = swapSlot(plan, activeDay, slot, targets, allergies, conditions, jain);
     if (newMeal) {
       setPlan((p) => ({ ...p, [activeDay]: { ...p[activeDay], [slot]: newMeal } }));
+      // if this slot was locked, keep it locked to the newly chosen meal
+      setLocks((prev) =>
+        prev[activeDay]?.[slot]
+          ? { ...prev, [activeDay]: { ...prev[activeDay], [slot]: newMeal.name } }
+          : prev
+      );
     }
     setSwappingSlot(null);
   }
@@ -787,6 +883,29 @@ function MealPlanner() {
         </div>
       )}
 
+      {/* projected weight if the plan is followed — plain 7700 kcal/kg math */}
+      {hasMeals && maintenance && (() => {
+        const kg = planWeeklyKg(
+          DAYS.map((d) => Object.values(plan[d] ?? {}).reduce((s, m) => s + (m?.calories ?? 0), 0)),
+          maintenance
+        );
+        if (kg === null) return null;
+        return (
+          <div className="bg-violet-500/[0.07] border border-violet-500/20 rounded-2xl px-5 py-4 flex items-center gap-3 flex-wrap">
+            <span className="text-2xl">⚖️</span>
+            <p className="text-sm text-zinc-300 flex-1 min-w-[200px]">
+              <span className="font-bold text-violet-300">Follow this plan → {fmtKg(kg)} this week</span>
+              {weightNow !== null && (
+                <span className="text-zinc-400"> · {weightNow} kg → <span className="font-bold text-white">{(weightNow + kg).toFixed(1)} kg</span></span>
+              )}
+              <span className="block text-xs text-zinc-500 mt-0.5">
+                vs your {maintenance} kcal/day maintenance — deterministic math, not a promise
+              </span>
+            </p>
+          </div>
+        );
+      })()}
+
       {/* empty state */}
       {!hasMeals && (
         <div className="text-center py-20 border border-dashed border-white/[0.1] rounded-3xl space-y-4">
@@ -835,6 +954,19 @@ function MealPlanner() {
             ))}
           </div>
 
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-zinc-300">{activeDay}</p>
+            <button
+              onClick={regenerateActiveDay}
+              disabled={regenDay}
+              title="Reshuffle only this day — other days and locked meals stay put"
+              className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 bg-white/[0.05] border border-white/[0.1] px-3 py-1.5 rounded-lg hover:bg-white/[0.08] transition-colors disabled:opacity-50 shrink-0"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${regenDay ? "animate-spin" : ""}`} />
+              Reshuffle this day
+            </button>
+          </div>
+
           <DayProgress plan={plan} day={activeDay} targets={targets} />
 
           <motion.div
@@ -862,6 +994,8 @@ function MealPlanner() {
                     onSwap={() => handleSwap(slot)}
                     servings={servings}
                     swapping={swappingSlot === slot}
+                    locked={isLocked(activeDay, slot)}
+                    onToggleLock={() => toggleLock(activeDay, slot)}
                   />
                 </div>
               </motion.div>

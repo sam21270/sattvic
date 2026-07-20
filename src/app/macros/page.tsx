@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Calculator, Loader2, ArrowRight } from "lucide-react";
 import { MacroTargets } from "@/types";
+import { dayKey } from "@/lib/scoring";
 
 const activityLevels = [
   { value: "sedentary", label: "Sedentary (desk job, no exercise)" },
@@ -64,6 +65,15 @@ function MacrosCalculator() {
       setResult(data);
       localStorage.setItem("sattvic-macro-targets", JSON.stringify(data));
       localStorage.setItem("sattvic-macros-date", new Date().toISOString()); // drives the weekly "update your weight" nudge
+      // seed the weight trend on Progress — the calculator already knows today's weight
+      try {
+        const prog = JSON.parse(localStorage.getItem("sattvic-progress") ?? "[]");
+        const today = dayKey();
+        const idx = prog.findIndex((e: { date: string }) => e.date === today);
+        if (idx >= 0) prog[idx].weight = Number(form.weight);
+        else prog.unshift({ date: today, weight: Number(form.weight) });
+        localStorage.setItem("sattvic-progress", JSON.stringify(prog));
+      } catch {}
     } catch (err: any) {
       setError(err.message ?? "Something went wrong");
     } finally {

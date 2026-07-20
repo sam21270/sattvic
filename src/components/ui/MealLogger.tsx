@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Check, Search, X, ChevronDown, PenLine, Trash2, Sparkles, Loader2 } from "lucide-react";
-import { DayLog } from "@/lib/scoring";
+import { DayLog, dayKey } from "@/lib/scoring";
 import { MEAL_POOL, PoolMeal } from "@/data/mealPool";
 import { getMicros } from "@/lib/micronutrients";
 
@@ -113,7 +113,7 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
   });
 
   const loggedCount = Object.values(meals).filter(Boolean).length;
-  const TODAY = new Date().toISOString().slice(0, 10);
+  const TODAY = dayKey();
 
   // Load persisted meals for today on mount
   useEffect(() => {

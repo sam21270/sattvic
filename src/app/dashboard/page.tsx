@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Flame, Droplets, TrendingUp, PartyPopper, AlertCircle, Check } from "lucide-react";
+import { Flame, Droplets, TrendingUp, PartyPopper, AlertCircle, Check, CalendarDays } from "lucide-react";
 import { WeekHistory } from "@/components/ui/WeekHistory";
 import { DAILY_B12_MCG, DAILY_IRON_MG } from "@/lib/micronutrients";
 import { MacroRing } from "@/components/ui/MacroRing";
@@ -15,13 +15,13 @@ import { ActivityRings } from "@/components/ui/ActivityRings";
 import { WaterTracker } from "@/components/ui/WaterTracker";
 import { StreakFire } from "@/components/ui/StreakFire";
 import { Confetti } from "@/components/ui/Confetti";
-import { calculateScore, loadHistory, saveToHistory, DayLog, ScoreBreakdown, HistoryEntry, ScoreTargets } from "@/lib/scoring";
+import { calculateScore, loadHistory, saveToHistory, dayKey, DayLog, ScoreBreakdown, HistoryEntry, ScoreTargets } from "@/lib/scoring";
 
 const DEFAULT_TARGETS: ScoreTargets = { calories: 2000, protein: 120, carbs: 200, fat: 65, fiber: 30 };
 const WATER_GOAL = 2500;
 
 const INITIAL_LOG: DayLog = {
-  date: new Date().toISOString().slice(0, 10),
+  date: dayKey(),
   calories: 0,
   protein: 0,
   carbs: 0,
@@ -72,7 +72,7 @@ function Dashboard() {
     const h = loadHistory();
     setHistory(h);
     // load persisted daily values
-    const today = new Date().toISOString().slice(0, 10);
+    const today = dayKey();
     try {
       const saved = JSON.parse(localStorage.getItem(`sattvic-day-${today}`) ?? "{}");
       if (saved.water) setWater(saved.water);
@@ -82,7 +82,7 @@ function Dashboard() {
     try {
       const wlog = JSON.parse(localStorage.getItem("sattvic-workout-log") ?? "[]");
       const todayKcal = wlog
-        .filter((e: any) => new Date(e.date).toISOString().slice(0, 10) === today)
+        .filter((e: any) => dayKey(new Date(e.date)) === today)
         .reduce((s: number, e: any) => s + e.calories, 0);
       setWorkoutCalories(todayKcal);
     } catch {}
@@ -98,11 +98,40 @@ function Dashboard() {
     } catch {}
   }, []);
 
-  // persist water + steps
+  // silent backstop persist — the Save button below is the visible act
+  const [savedAt, setSavedAt] = useState<string | null>(null);
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    localStorage.setItem(`sattvic-day-${today}`, JSON.stringify({ water, steps }));
+    localStorage.setItem(`sattvic-day-${dayKey()}`, JSON.stringify({ water, steps }));
   }, [water, steps]);
+
+  function saveDay() {
+    localStorage.setItem(`sattvic-day-${dayKey()}`, JSON.stringify({ water, steps }));
+    setSavedAt(new Date().toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" }));
+  }
+
+  // snapshot today's stats into the Progress tracker store
+  const [progressSaved, setProgressSaved] = useState(false);
+  function saveProgress() {
+    saveDay();
+    try {
+      const prog = JSON.parse(localStorage.getItem("sattvic-progress") ?? "[]");
+      const today = dayKey();
+      const idx = prog.findIndex((e: { date: string }) => e.date === today);
+      const entry = {
+        ...(idx >= 0 ? prog[idx] : {}),
+        date: today,
+        calories: log.calories || undefined,
+        protein: log.protein || undefined,
+        water: water || undefined,
+        workout: workoutCalories || undefined,
+      };
+      if (idx >= 0) prog[idx] = entry;
+      else prog.unshift(entry);
+      localStorage.setItem("sattvic-progress", JSON.stringify(prog));
+    } catch {}
+    setProgressSaved(true);
+    setTimeout(() => setProgressSaved(false), 2500);
+  }
 
   useEffect(() => {
     const h = loadHistory();
@@ -184,21 +213,31 @@ function Dashboard() {
       )}
 
       {/* header */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <p className="text-xs font-semibold text-zinc-600 uppercase tracking-widest mb-1">
-          {new Date().toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric" })}
-        </p>
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-white tracking-tight">{greeting()}, Sanika 👋</h1>
-          <StreakFire streak={streak} size="md" />
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+        className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-xs font-semibold text-zinc-600 uppercase tracking-widest mb-1">
+            {new Date().toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-white tracking-tight">{greeting()}, Sanika 👋</h1>
+            <StreakFire streak={streak} size="md" />
+          </div>
+          <p className="text-zinc-500 mt-1">
+            {log.mealsLogged === 0
+              ? "Log your first meal to start your Sattvic Score."
+              : remaining > 0
+              ? <>You have <span className="text-emerald-400 font-semibold">{remaining} kcal</span> left today.</>
+              : "🎉 You've hit your calorie target today!"}
+          </p>
         </div>
-        <p className="text-zinc-500 mt-1">
-          {log.mealsLogged === 0
-            ? "Log your first meal to start your Sattvic Score."
-            : remaining > 0
-            ? <>You have <span className="text-emerald-400 font-semibold">{remaining} kcal</span> left today.</>
-            : "🎉 You've hit your calorie target today!"}
-        </p>
+        <Link
+          href="/meal-planner"
+          className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 px-4 py-2.5 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm shrink-0"
+        >
+          <CalendarDays className="w-4 h-4" />
+          Meal Plan
+        </Link>
       </motion.div>
 
       {/* stat chips */}
@@ -267,13 +306,24 @@ function Dashboard() {
           {/* steps input */}
           <div className="w-full">
             <label className="text-xs text-zinc-500 mb-1 block">Today&apos;s steps</label>
-            <input
-              type="number"
-              placeholder="e.g. 8000"
-              value={steps || ""}
-              onChange={(e) => setSteps(Number(e.target.value))}
-              className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50"
-            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                placeholder="e.g. 8000"
+                value={steps || ""}
+                onChange={(e) => setSteps(Number(e.target.value))}
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50"
+              />
+              <button
+                onClick={saveDay}
+                className="px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-white text-sm font-bold rounded-xl transition-colors shrink-0"
+              >
+                Save
+              </button>
+            </div>
+            {savedAt && (
+              <p className="text-[11px] text-emerald-400 mt-1.5">✓ Saved {savedAt} · shows in your Progress tracker</p>
+            )}
           </div>
         </motion.div>
 
@@ -290,6 +340,15 @@ function Dashboard() {
             goal={WATER_GOAL}
             onAdd={(ml) => setWater((w) => Math.max(0, Math.min(w + ml, WATER_GOAL * 1.5)))}
           />
+          <button
+            onClick={saveDay}
+            className="w-full py-2.5 bg-sky-500 hover:bg-sky-400 text-white text-sm font-bold rounded-xl transition-colors mt-1"
+          >
+            Save
+          </button>
+          {savedAt && (
+            <p className="text-[11px] text-emerald-400 self-start">✓ Saved {savedAt} · shows in your Progress tracker</p>
+          )}
         </motion.div>
 
         {/* macro bars */}
@@ -365,12 +424,20 @@ function Dashboard() {
             </p>
           </div>
         </div>
-        <Link
-          href="/progress"
-          className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors shrink-0 whitespace-nowrap"
-        >
-          <TrendingUp className="w-4 h-4" /> See full history
-        </Link>
+        <div className="flex flex-col gap-2 shrink-0">
+          <button
+            onClick={saveProgress}
+            className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors whitespace-nowrap"
+          >
+            <Check className="w-4 h-4" /> {progressSaved ? "✓ Progress saved" : "Save progress"}
+          </button>
+          <Link
+            href="/progress"
+            className="flex items-center justify-center gap-2 bg-white/[0.06] border border-white/[0.1] hover:bg-white/[0.09] text-zinc-200 text-sm font-bold px-5 py-3 rounded-xl transition-colors whitespace-nowrap"
+          >
+            <TrendingUp className="w-4 h-4" /> See full history
+          </Link>
+        </div>
       </div>
 
       {/* reset */}

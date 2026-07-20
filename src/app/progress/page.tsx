@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, ChevronUp, ChevronDown, CalendarDays } from "lucide-react";
 import { AIFoodLog } from "@/components/ui/AIFoodLog";
+import { WeekHistory } from "@/components/ui/WeekHistory";
+import { maintenanceFromStorage, weekPrediction, actualWeekChange, fmtKg } from "@/lib/weightProjection";
+import { dayKey } from "@/lib/scoring";
 
 interface DayEntry {
   date: string;
@@ -16,6 +19,12 @@ interface DayEntry {
   mood?: 1 | 2 | 3 | 4 | 5;
 }
 
+// Date-only strings parse as UTC midnight — anchor to noon so the shown day
+// never shifts in negative-offset timezones.
+function fmtDate(date: string, opts: Intl.DateTimeFormatOptions) {
+  return new Date(`${date}T12:00:00`).toLocaleDateString("en", opts);
+}
+
 const MOOD_MAP: Record<number, { emoji: string; label: string }> = {
   1: { emoji: "😞", label: "Rough" },
   2: { emoji: "😐", label: "Okay" },
@@ -24,54 +33,124 @@ const MOOD_MAP: Record<number, { emoji: string; label: string }> = {
   5: { emoji: "🤩", label: "Amazing" },
 };
 
-function MiniSparkLine({ data, color }: { data: number[]; color: string }) {
-  if (data.length < 2) return <div className="h-10 flex items-center text-xs text-zinc-600">Not enough data</div>;
-
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const w = 100;
-  const h = 40;
-
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / range) * (h - 4) - 2;
-    return `${x},${y}`;
-  });
-
+// Bar per logged day, scaled from 0 — works from the very first log.
+// Bars climb from 0 on mount via a plain CSS height transition.
+function MiniBars({ data, color, unit }: { data: { date: string; value: number }[]; color: string; unit: string }) {
+  const [grow, setGrow] = useState(false);
+  useEffect(() => {
+    // setTimeout, not rAF — rAF never fires in background tabs, leaving bars at 0
+    const t = setTimeout(() => setGrow(true), 30);
+    return () => clearTimeout(t);
+  }, []);
+  if (data.length === 0)
+    return <div className="h-20 flex items-center text-xs text-zinc-600">No data yet — fills in as you log</div>;
+  const max = Math.max(...data.map((d) => d.value));
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-10" preserveAspectRatio="none">
-      <polyline
-        points={pts.join(" ")}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx={pts[pts.length - 1].split(",")[0]} cy={pts[pts.length - 1].split(",")[1]} r="2.5" fill={color} />
-    </svg>
+    <div className="flex items-end gap-1.5 h-20">
+      {data.map((d, i) => (
+        <div key={d.date} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0">
+          <span className="text-[9px] text-zinc-500 tabular-nums">{d.value}{data.length <= 7 ? ` ${unit}` : ""}</span>
+          <div
+            className="w-full rounded-t-md transition-[height] duration-700 ease-out"
+            style={{
+              backgroundColor: color,
+              height: grow ? Math.max((d.value / max) * 44, 3) : 0,
+              transitionDelay: `${i * 60}ms`,
+            }}
+          />
+          <span className="text-[9px] text-zinc-600">{fmtDate(d.date, { day: "numeric", month: "short" })}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
 export default function ProgressPage() {
   const [entries, setEntries] = useState<DayEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [forecast, setForecast] = useState<{ days: number; avgIntake: number; kg: number; actual: number | null } | null>(null);
+  // Everything pre-fills from existing logs — the form is glance-and-save.
   const [form, setForm] = useState({
     weight: "",
-    calories: "",
-    protein: "",
     water: "",
     workout: "",
     mood: 3 as 1 | 2 | 3 | 4 | 5,
   });
+
+  // ponytail: ~0.04 kcal per step (walking average) — good enough without body-weight math
+  function autoBurned(date: string): number {
+    let burned = 0;
+    try {
+      const day = JSON.parse(localStorage.getItem(`sattvic-day-${date}`) ?? "{}");
+      burned += Math.round((day.steps ?? 0) * 0.04);
+    } catch {}
+    try {
+      const wlog = JSON.parse(localStorage.getItem("sattvic-workout-log") ?? "[]");
+      burned += wlog
+        .filter((e: { date: string }) => dayKey(new Date(e.date)) === date)
+        .reduce((s: number, e: { calories: number }) => s + e.calories, 0);
+    } catch {}
+    return burned;
+  }
+
+  function openForm() {
+    if (showForm) return setShowForm(false);
+    const key = dayKey();
+    let day: { water?: number } = {};
+    try { day = JSON.parse(localStorage.getItem(`sattvic-day-${key}`) ?? "{}"); } catch {}
+    const today = entries.find((e) => e.date === key);
+    const lastWeight = [...entries].filter((e) => e.weight).sort((a, b) => a.date.localeCompare(b.date)).pop()?.weight;
+    const burned = today?.workout ?? autoBurned(key);
+    const weight = today?.weight ?? lastWeight;
+    const water = today?.water ?? day.water;
+    setForm({
+      weight: weight ? String(weight) : "",
+      water: water ? String(water) : "",
+      workout: burned ? String(burned) : "",
+      mood: today?.mood ?? 3,
+    });
+    setShowForm(true);
+  }
+
+  const [merged, setMerged] = useState<DayEntry[]>([]);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("sattvic-progress");
       if (saved) setEntries(JSON.parse(saved));
     } catch {}
+    const m = maintenanceFromStorage();
+    const p = m ? weekPrediction(m) : null;
+    if (p) setForecast({ ...p, actual: actualWeekChange() });
   }, []);
+
+  // Charts pull from EVERYTHING the app already tracks — food logs, dashboard
+  // water/steps, workouts — so trends fill in without manual re-entry.
+  useEffect(() => {
+    const byDate = new Map(entries.map((e) => [e.date, e]));
+    const out: DayEntry[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const date = dayKey(i);
+      const manual = byDate.get(date) ?? { date };
+      let cal = 0, prot = 0, water: number | undefined;
+      try {
+        const food = JSON.parse(localStorage.getItem(`sattvic-foodlog-${date}`) ?? "[]");
+        for (const m of food) { cal += m.totals?.calories ?? 0; prot += m.totals?.protein ?? 0; }
+      } catch {}
+      try { water = JSON.parse(localStorage.getItem(`sattvic-day-${date}`) ?? "{}").water || undefined; } catch {}
+      const burned = autoBurned(date);
+      const e: DayEntry = {
+        ...manual,
+        date,
+        calories: manual.calories ?? (cal || undefined),
+        protein: manual.protein ?? (prot || undefined),
+        water: manual.water ?? water,
+        workout: manual.workout ?? (burned || undefined),
+      };
+      if (e.weight || e.calories || e.protein || e.water || e.workout || e.mood) out.push(e);
+    }
+    setMerged(out);
+  }, [entries]);
 
   function save(newEntries: DayEntry[]) {
     setEntries(newEntries);
@@ -79,15 +158,15 @@ export default function ProgressPage() {
   }
 
   function logToday() {
-    const today = new Date().toISOString().split("T")[0];
+    const today = dayKey();
     const existing = entries.findIndex((e) => e.date === today);
+    // merge onto whatever the day already has — never wipe auto-derived data
     const entry: DayEntry = {
+      ...(existing >= 0 ? entries[existing] : {}),
       date: today,
-      weight: form.weight ? Number(form.weight) : undefined,
-      calories: form.calories ? Number(form.calories) : undefined,
-      protein: form.protein ? Number(form.protein) : undefined,
-      water: form.water ? Number(form.water) : undefined,
-      workout: form.workout ? Number(form.workout) : undefined,
+      weight: form.weight ? Number(form.weight) : entries[existing]?.weight,
+      water: form.water ? Number(form.water) : entries[existing]?.water,
+      workout: form.workout ? Number(form.workout) : entries[existing]?.workout,
       mood: form.mood,
     };
     const updated = existing >= 0
@@ -97,12 +176,14 @@ export default function ProgressPage() {
     setShowForm(false);
   }
 
-  // series data (last 14 entries)
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
-  const weights = sorted.map((e) => e.weight).filter(Boolean) as number[];
-  const calories = sorted.map((e) => e.calories).filter(Boolean) as number[];
-  const proteins = sorted.map((e) => e.protein).filter(Boolean) as number[];
-  const waters = sorted.map((e) => e.water).filter(Boolean) as number[];
+  // series data (last 14 days, auto-derived)
+  const sorted = merged;
+  const series = (key: keyof DayEntry) =>
+    sorted.filter((e) => e[key]).map((e) => ({ date: e.date, value: e[key] as number }));
+  const weights = series("weight");
+  const calories = series("calories");
+  const proteins = series("protein");
+  const waters = series("water");
 
   const latest = sorted[sorted.length - 1];
   const prev = sorted[sorted.length - 2];
@@ -125,7 +206,7 @@ export default function ProgressPage() {
     );
   }
 
-  const streaks = entries.length;
+  const streaks = merged.length;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pt-20 pb-16">
@@ -151,7 +232,7 @@ export default function ProgressPage() {
               Meal Plan
             </Link>
             <button
-              onClick={() => setShowForm(!showForm)}
+              onClick={openForm}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
@@ -160,12 +241,27 @@ export default function ProgressPage() {
           </div>
         </div>
 
+        {/* end-of-week forecast: predicted (from food logs) vs actual (scale) */}
+        {forecast && (
+          <div className="bg-violet-500/[0.07] border border-violet-500/20 rounded-2xl px-5 py-4 flex items-center gap-3 flex-wrap">
+            <span className="text-2xl">⚖️</span>
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-sm text-zinc-300">
+                <span className="font-bold text-violet-300">Predicted this week: {fmtKg(forecast.kg)}</span>
+                {forecast.actual !== null && (
+                  <span className="text-zinc-400"> · scale says <span className="font-bold text-white">{fmtKg(forecast.actual)}</span></span>
+                )}
+              </p>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                From {forecast.days} logged day{forecast.days !== 1 ? "s" : ""} averaging {forecast.avgIntake} kcal.
+                {forecast.actual === null && " Weigh in twice this week to compare against the scale."}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* AI food log — type what you ate, AI counts macros */}
-        <AIFoodLog
-          onTotalsChange={({ calories, protein }) =>
-            setForm((f) => ({ ...f, calories: calories ? String(calories) : f.calories, protein: protein ? String(protein) : f.protein }))
-          }
-        />
+        <AIFoodLog />
 
         {/* log form */}
         {showForm && (
@@ -175,13 +271,14 @@ export default function ProgressPage() {
             className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-5 space-y-4"
           >
             <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-widest">Today&apos;s check-in</h2>
+            <p className="text-xs text-zinc-500 -mt-2">
+              Already filled in from your logs — weight carries over, burned is calculated from your steps and workouts. Tweak anything, then save.
+            </p>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { key: "weight", label: "Weight (kg)", placeholder: "e.g. 68.5", icon: Scale },
-                { key: "calories", label: "Calories eaten", placeholder: "e.g. 1800", icon: Flame },
-                { key: "protein", label: "Protein (g)", placeholder: "e.g. 80", icon: Dumbbell },
                 { key: "water", label: "Water (ml)", placeholder: "e.g. 2000", icon: Droplets },
-                { key: "workout", label: "Calories burned", placeholder: "e.g. 300", icon: TrendingUp },
+                { key: "workout", label: "Calories burned", placeholder: "auto from steps", icon: TrendingUp },
               ].map(({ key, label, placeholder, icon: Icon }) => (
                 <div key={key}>
                   <label className="text-xs text-zinc-500 mb-1 flex items-center gap-1">
@@ -190,7 +287,7 @@ export default function ProgressPage() {
                   <input
                     type="number"
                     placeholder={placeholder}
-                    value={form[key as keyof typeof form] as string}
+                    value={form[key as "weight" | "water" | "workout"]}
                     onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                     className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/[0.1] rounded-xl text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
                   />
@@ -264,14 +361,17 @@ export default function ProgressPage() {
                 <span className={`text-sm font-semibold ${cls}`}>{label}</span>
                 {data.length > 0 && (
                   <span className="text-xs text-zinc-500">
-                    avg {Math.round(data.reduce((a, b) => a + b, 0) / data.length)} {unit}
+                    avg {Math.round(data.reduce((a, b) => a + b.value, 0) / data.length)} {unit}
                   </span>
                 )}
               </div>
-              <MiniSparkLine data={data} color={color} />
+              <MiniBars data={data} color={color} unit={unit} />
             </div>
           ))}
         </div>
+
+        {/* per-day meal history — read-only once the day has passed */}
+        <WeekHistory />
 
         {/* mood history */}
         {entries.some((e) => e.mood) && (
@@ -282,7 +382,7 @@ export default function ProgressPage() {
                 <div key={e.date} className="flex flex-col items-center gap-0.5">
                   <span className="text-xl">{e.mood ? MOOD_MAP[e.mood].emoji : "—"}</span>
                   <span className="text-[9px] text-zinc-600">
-                    {new Date(e.date).toLocaleDateString("en", { month: "short", day: "numeric" })}
+                    {fmtDate(e.date, { month: "short", day: "numeric" })}
                   </span>
                 </div>
               ))}
@@ -291,7 +391,7 @@ export default function ProgressPage() {
         )}
 
         {/* full history */}
-        {entries.length > 0 && (
+        {merged.length > 0 && (
           <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
             <h3 className="text-sm font-semibold text-zinc-300 mb-3">Full history</h3>
             <div className="overflow-x-auto">
@@ -308,10 +408,10 @@ export default function ProgressPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...entries].sort((a, b) => b.date.localeCompare(a.date)).map((e) => (
+                  {[...merged].sort((a, b) => b.date.localeCompare(a.date)).map((e) => (
                     <tr key={e.date} className="border-t border-white/[0.05] text-zinc-300">
                       <td className="py-2.5 pr-3 whitespace-nowrap text-zinc-400">
-                        {new Date(e.date).toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" })}
+                        {fmtDate(e.date, { weekday: "short", month: "short", day: "numeric" })}
                       </td>
                       <td className="py-2.5 pr-3 tabular-nums">{e.weight ? `${e.weight} kg` : "—"}</td>
                       <td className="py-2.5 pr-3 tabular-nums">{e.calories ? `${e.calories} kcal` : "—"}</td>
@@ -327,7 +427,7 @@ export default function ProgressPage() {
           </div>
         )}
 
-        {entries.length === 0 && !showForm && (
+        {merged.length === 0 && !showForm && (
           <div className="text-center py-16 text-zinc-500">
             <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="font-semibold">No data yet</p>
