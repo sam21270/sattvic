@@ -30,11 +30,13 @@ function apply(data: Record<string, string>) {
 }
 
 export function CloudSync() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const email = session?.user?.email ?? null;
   const canPush = useRef(false);
   const lastBlob = useRef("");
 
   async function push() {
+    if (!email) return;
     const data = collect();
     if (Object.keys(data).length === 0) return; // never push empty over good data
     const ts = Date.now();
@@ -44,18 +46,18 @@ export function CloudSync() {
       await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, updatedAt: ts }),
+        body: JSON.stringify({ email, data, updatedAt: ts }),
       });
     } catch {}
   }
 
   // initial pull, then decide push/apply
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || !email) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/sync");
+        const res = await fetch(`/api/sync?email=${encodeURIComponent(email)}`);
         if (!res.ok || cancelled) return;
         const { data, updatedAt } = await res.json();
         const localTs = Number(localStorage.getItem(TS_KEY) ?? 0);
@@ -85,7 +87,7 @@ export function CloudSync() {
 
   // push local changes: poll every 5s for a changed blob, and on tab hide
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || !email) return;
     const id = setInterval(() => {
       if (!canPush.current) return;
       const blob = JSON.stringify(collect());

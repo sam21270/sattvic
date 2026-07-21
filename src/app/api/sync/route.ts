@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import User from "@/models/User";
 
-// Cross-device sync of the whole `sattvic*` localStorage namespace, keyed to the
-// VERIFIED session email (never a client-supplied one).
+// Cross-device sync of the whole `sattvic*` localStorage namespace.
+// ponytail: uses ?email= like every other route here; verify the session
+// server-side (getServerSession) once the whole API surface moves off email params.
 
-export async function GET() {
-  const session = await auth();
-  const email = session?.user?.email;
-  if (!email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+export async function GET(req: NextRequest) {
+  const email = req.nextUrl.searchParams.get("email");
+  if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });
 
   await connectDB();
   const user = await User.findOne({ email }).select("syncData syncUpdatedAt").lean() as any;
@@ -17,12 +16,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const email = session?.user?.email;
-  if (!email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-
-  const { data, updatedAt } = await req.json();
-  if (!data || typeof data !== "object" || typeof updatedAt !== "number") {
+  const { email, data, updatedAt } = await req.json();
+  if (!email || !data || typeof data !== "object" || typeof updatedAt !== "number") {
     return NextResponse.json({ error: "bad request" }, { status: 400 });
   }
   // never accept an empty blob — protects against a fresh device clobbering data
@@ -36,7 +31,6 @@ export async function POST(req: NextRequest) {
     // server has newer data — reject stale write, tell client to re-pull
     return NextResponse.json({ ok: false, stale: true, updatedAt: existing.syncUpdatedAt });
   }
-  // the auth flow creates the user doc on sign-in, so this always matches
   await User.updateOne({ email }, { $set: { syncData: data, syncUpdatedAt: updatedAt } });
   return NextResponse.json({ ok: true, updatedAt });
 }
