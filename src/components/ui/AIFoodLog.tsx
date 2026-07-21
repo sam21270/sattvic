@@ -6,6 +6,18 @@ import { Sparkles, Loader2, Plus, Trash2, Check } from "lucide-react";
 import { getMicros } from "@/lib/micronutrients";
 import { dayKey } from "@/lib/scoring";
 
+interface KeyIngredient {
+  name: string;
+  qty: number;
+  unit: string;
+  adjustable?: boolean;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+}
+
 interface FoodItem {
   name: string;
   calories: number;
@@ -13,6 +25,7 @@ interface FoodItem {
   carbs: number;
   fat: number;
   fiber: number;
+  keyIngredients?: KeyIngredient[];
 }
 
 interface AnalyzedMeal {
@@ -98,6 +111,9 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
   const [error, setError] = useState("");
   const [pending, setPending] = useState<AnalyzedMeal | null>(null);
   const [meals, setMeals] = useState<LoggedMeal[]>([]);
+  // edited ingredient quantities, keyed "itemIdx:ingIdx"; and which editors are open
+  const [edits, setEdits] = useState<Record<string, number>>({});
+  const [openEditor, setOpenEditor] = useState<number | null>(null);
 
   useEffect(() => {
     const loaded = loadTodayMeals();
@@ -111,11 +127,36 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     onTotalsChange?.(sumMeals(next));
   }
 
+  // Recompute an item's macros from its ingredients scaled by any edited quantity.
+  // Ingredients carry macros at their assumed qty, so factor = editedQty / assumedQty.
+  function scaledItem(item: FoodItem, i: number): FoodItem {
+    if (!item.keyIngredients?.length) return item;
+    const t = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    item.keyIngredients.forEach((ing, j) => {
+      const f = ing.qty ? (edits[`${i}:${j}`] ?? ing.qty) / ing.qty : 1;
+      t.calories += ing.calories * f; t.protein += ing.protein * f;
+      t.carbs += ing.carbs * f; t.fat += ing.fat * f; t.fiber += (ing.fiber ?? 0) * f;
+    });
+    return {
+      ...item,
+      calories: Math.round(t.calories), protein: Math.round(t.protein),
+      carbs: Math.round(t.carbs), fat: Math.round(t.fat), fiber: Math.round(t.fiber),
+    };
+  }
+
+  const scaledItems = pending?.items.map(scaledItem) ?? [];
+  const liveTotals = scaledItems.reduce(
+    (a, it) => ({ calories: a.calories + it.calories, protein: a.protein + it.protein, carbs: a.carbs + it.carbs, fat: a.fat + it.fat, fiber: a.fiber + it.fiber }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+  );
+
   async function analyze() {
     if (!text.trim() || loading) return;
     setLoading(true);
     setError("");
     setPending(null);
+    setEdits({});
+    setOpenEditor(null);
     try {
       const res = await fetch("/api/ai/food-log", {
         method: "POST",
@@ -139,17 +180,13 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
       id: Date.now().toString(36),
       time: new Date().toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false }),
       text: text.trim(),
-      items: pending.items,
-      totals: {
-        calories: pending.totals.calories,
-        protein: pending.totals.protein,
-        carbs: pending.totals.carbs,
-        fat: pending.totals.fat,
-        fiber: pending.totals.fiber,
-      },
+      items: scaledItems,   // includes any ingredient-quantity edits
+      totals: liveTotals,
     };
     persist([...meals, meal]);
     setPending(null);
+    setEdits({});
+    setOpenEditor(null);
     setText("");
   }
 
@@ -219,19 +256,55 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
             className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 space-y-3"
           >
             <div className="space-y-2">
-              {pending.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-300">{item.name}</span>
-                  <span className="text-zinc-500 text-xs tabular-nums">
-                    {item.calories} kcal · {item.protein}g P
-                  </span>
-                </div>
-              ))}
+              {scaledItems.map((item, i) => {
+                const adjustable = pending.items[i].keyIngredients?.some((g) => g.adjustable);
+                return (
+                  <div key={i}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-zinc-300">{item.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-zinc-500 text-xs tabular-nums">{item.calories} kcal · {item.protein}g P</span>
+                        {adjustable && (
+                          <button
+                            onClick={() => setOpenEditor(openEditor === i ? null : i)}
+                            className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300"
+                          >
+                            {openEditor === i ? "Done" : "Adjust ▾"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {/* editable key ingredients — assumed quantities pre-filled */}
+                    {openEditor === i && pending.items[i].keyIngredients && (
+                      <div className="mt-2 mb-1 pl-2 border-l-2 border-emerald-500/30 space-y-1.5">
+                        <p className="text-[11px] text-zinc-500">Tweak what actually moves the calories — we&apos;ve assumed typical amounts.</p>
+                        {pending.items[i].keyIngredients!.map((ing, j) =>
+                          ing.adjustable === false ? null : (
+                            <div key={j} className="flex items-center gap-2 text-xs">
+                              <span className="flex-1 text-zinc-300 capitalize">{ing.name}</span>
+                              <input
+                                type="number" step="0.5" min="0"
+                                value={edits[`${i}:${j}`] ?? ing.qty}
+                                onChange={(e) => setEdits((p) => ({ ...p, [`${i}:${j}`]: Number(e.target.value) }))}
+                                className="w-16 px-2 py-1 bg-white/[0.06] border border-white/[0.12] rounded-lg text-white text-xs text-right focus:outline-none focus:border-emerald-500/50"
+                              />
+                              <span className="w-12 text-zinc-500">{ing.unit}</span>
+                              <span className="w-16 text-right text-zinc-500 tabular-nums">
+                                {Math.round(ing.calories * ((edits[`${i}:${j}`] ?? ing.qty) / (ing.qty || 1)))} kcal
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-white/[0.07] text-sm">
               <span className="font-bold text-white">Total</span>
               <span className="font-bold text-emerald-400 tabular-nums">
-                {pending.totals.calories} kcal · {pending.totals.protein}g P · {pending.totals.carbs}g C · {pending.totals.fat}g F
+                {liveTotals.calories} kcal · {liveTotals.protein}g P · {liveTotals.carbs}g C · {liveTotals.fat}g F
               </span>
             </div>
             {pending.note && <p className="text-xs text-zinc-500 italic">{pending.note}</p>}
