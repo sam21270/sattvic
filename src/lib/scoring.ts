@@ -88,14 +88,20 @@ function scoreDosha(log: DayLog): number {
   return 8;
 }
 
-function scoreStreak(history: HistoryEntry[]): number {
-  if (history.length === 0) return 0;
+// Consecutive good days (score ≥ 50) ending today (or yesterday, if today
+// isn't logged yet). One definition used by BOTH the dashboard and profile so
+// the number can't disagree between pages. Uses dayKey so it respects the 4am
+// rollover and local time.
+export function currentStreak(history: HistoryEntry[]): number {
+  const good = new Set(history.filter((h) => h.score >= 50).map((h) => h.date));
+  let i = good.has(dayKey(0)) ? 0 : 1; // start from today, else yesterday
   let streak = 0;
-  const sorted = [...history].sort((a, b) => b.date.localeCompare(a.date));
-  for (const entry of sorted) {
-    if (entry.score >= 50) streak++;
-    else break;
-  }
+  while (good.has(dayKey(i))) { streak++; i++; }
+  return streak;
+}
+
+function scoreStreak(history: HistoryEntry[]): number {
+  const streak = currentStreak(history);
   if (streak >= 7) return 10;
   if (streak >= 4) return 7;
   if (streak >= 2) return 4;
