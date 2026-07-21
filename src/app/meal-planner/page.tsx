@@ -73,10 +73,14 @@ const PREP_WORDS = new Set([
   "to", "serve", "taste", "garnish", "optional", "and", "or", "&", "for", "of",
   "crumbled", "pinch", "square", "squares", "shavings", "slivered", "pods",
   "overnight", "splash", "drizzle", "handful", "bunch", "zest", "juice",
+  // temperatures & timing that leak in from prep instructions, not groceries
+  "cold", "hot", "warm", "chilled", "lukewarm", "boiling", "iced", "room", "temperature",
+  "hours", "hour", "minutes", "minute", "mins", "min", "day", "days", "seconds",
+  "ahead", "start", "before", "after", "cooking", "needed", "required",
 ]);
 
 // Not things you buy
-const SKIP_ITEMS = new Set(["water", "ice", "warm water", "hot water", "ice cubes"]);
+const SKIP_ITEMS = new Set(["water", "ice", "warm water", "hot water", "cold water", "ice cubes"]);
 
 // Canonical buy-able items: first keyword match wins
 const CANONICAL: [string, string][] = [
@@ -130,6 +134,7 @@ function canonicalItem(raw: string): string | null {
   const words = cleaned.split(/\s+/).filter((w) => !PREP_WORDS.has(w));
   if (words.length === 0) return null;
   const name = words.join(" ").replace(/^[-–—.,\s]+|[-–—.,\s]+$/g, "").trim();
+  if (SKIP_ITEMS.has(name.toLowerCase())) return null; // e.g. "cold water" → "water"
   return name.length > 2 ? name[0].toUpperCase() + name.slice(1) : null;
 }
 

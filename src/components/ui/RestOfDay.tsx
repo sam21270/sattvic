@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Loader2, Plus, Check, Target } from "lucide-react";
 import { logMealToToday, loadTodayMeals } from "@/components/ui/AIFoodLog";
 
@@ -81,6 +82,18 @@ export function RestOfDay({
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-zinc-300">{m.name}</p>
                 <p className="text-[11px] text-zinc-600 tabular-nums">{m.calories} kcal · {m.protein}g protein</p>
+                <div className="flex gap-3 mt-1">
+                  <a
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(m.name + " recipe")}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300"
+                  >
+                    ▶ Watch recipe
+                  </a>
+                  <Link href="/recipes" className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-300">
+                    Browse recipes
+                  </Link>
+                </div>
               </div>
               <button
                 onClick={() => { logMealToToday({ name: m.name, calories: m.calories, protein: m.protein, carbs: 0, fat: 0 }); setLogged((p) => ({ ...p, [i]: true })); }}
