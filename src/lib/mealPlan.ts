@@ -129,7 +129,9 @@ function scoreCandidate(
   targetProtein: number,
   usedBasesToday: Set<string>,
   dosha: string | null = null,
-  weekUseCount: Map<string, number> | null = null
+  weekUseCount: Map<string, number> | null = null,
+  recentBases: Set<string> | null = null,
+  baseWeekCount: Map<string, number> | null = null
 ): number {
   const calGap = (targetCal - c.calories) / targetCal;
   const calPenalty = calGap > 0 ? calGap * 1.1 : Math.abs(calGap) * 0.7;
@@ -138,11 +140,17 @@ function scoreCandidate(
   // Base-ingredient repeat within the same day — heavy penalty
   const bases = baseIngredients(c);
   const baseRepeatPenalty = bases.some((b) => usedBasesToday.has(b)) ? 5 : 0;
+  // Same base on either of the last 2 days — softer, so paneer/tofu don't cluster
+  const crossDayBasePenalty = recentBases && bases.some((b) => recentBases.has(b)) ? 2.5 : 0;
+  // Same base used a lot across the week — spreads protein sources out
+  const baseWeekPenalty = baseWeekCount
+    ? bases.reduce((s, b) => s + (baseWeekCount.get(b) ?? 0), 0) * 0.6
+    : 0;
   const doshaPenalty = doshaScoreAdjustment(c.name, c.tags, dosha);
   // Week-level variety: each prior appearance this week costs heavily, so the
   // plan explores the pool instead of settling into a repeating cycle.
   const weekRepeatPenalty = (weekUseCount?.get(c.name) ?? 0) * 3;
-  return calPenalty + proteinPenalty + baseRepeatPenalty + doshaPenalty + weekRepeatPenalty;
+  return calPenalty + proteinPenalty + baseRepeatPenalty + crossDayBasePenalty + baseWeekPenalty + doshaPenalty + weekRepeatPenalty;
 }
 
 // Returns candidates filtered by hard cross-day diversity rules.
@@ -176,14 +184,16 @@ function pickBest(
   targetProtein: number,
   usedBasesToday: Set<string>,
   dosha: string | null = null,
-  weekUseCount: Map<string, number> | null = null
+  weekUseCount: Map<string, number> | null = null,
+  recentBases: Set<string> | null = null,
+  baseWeekCount: Map<string, number> | null = null
 ): PoolMeal {
   // Rank by score, then pick at random among the few near-best candidates. The
   // scoring (macros, dosha, variety) still decides who's eligible — this only
   // breaks ties so "Regenerate" / "Reshuffle this day" produce a fresh plan each
   // press instead of the same deterministic pick every time.
   const scored = candidates
-    .map((c) => ({ c, s: scoreCandidate(c, targetCal, targetProtein, usedBasesToday, dosha, weekUseCount) }))
+    .map((c) => ({ c, s: scoreCandidate(c, targetCal, targetProtein, usedBasesToday, dosha, weekUseCount, recentBases, baseWeekCount) }))
     .sort((a, b) => a.s - b.s);
   const top = scored.slice(0, Math.min(3, scored.length));
   return top[Math.floor(Math.random() * top.length)].c;
@@ -212,10 +222,19 @@ function repairDayForProtein(
   const maxCalories = targets.calories * 1.15;
   const minCalories = targets.calories * 0.85;
   const blockedCrossDay = new Set([...recentDays[0] ?? [], ...recentDays[1] ?? []]);
+  // Bases eaten on the last 2 days — the boost pass avoids repeating them so it
+  // doesn't keep reaching for paneer (the highest-protein base) every day.
+  const recentBases = new Set<string>();
+  for (const name of blockedCrossDay) {
+    const m = POOL_BY_NAME.get(name);
+    if (m) baseIngredients(m).forEach((b) => recentBases.add(b));
+  }
 
   for (let pass = 0; pass < 6; pass++) {
     const totals = dayTotals(day);
-    if (totals.protein >= targets.protein * 0.97) break;
+    // Being within ~12g of the protein target is good enough — chasing the last
+    // few grams is what forced paneer into every slot. Variety over perfection.
+    if (targets.protein - totals.protein <= 12) break;
 
     const slotsByProteinDensity = PLAN_SLOTS
       .filter((s) => day[s] !== null && !lockedSlots.has(s))
@@ -244,7 +263,16 @@ function repairDayForProtein(
       });
       if (candidates.length === 0) continue;
 
-      const better = candidates.reduce((best, c) => (c.protein > best.protein ? c : best), candidates[0]);
+      // Prefer swaps that DON'T repeat a base already on the plate today or in the
+      // last 2 days; only fall back to base-repeaters if variety leaves nothing.
+      const usedBasesInDay = new Set(
+        PLAN_SLOTS.filter((s) => s !== slot && day[s]).flatMap((s) => baseIngredients(day[s]!))
+      );
+      const avoid = new Set([...usedBasesInDay, ...recentBases]);
+      const fresh = candidates.filter((m) => !baseIngredients(m).some((b) => avoid.has(b)));
+      const pickFrom = fresh.length > 0 ? fresh : candidates;
+
+      const better = pickFrom.reduce((best, c) => (c.protein > best.protein ? c : best), pickFrom[0]);
       if (better.protein > current.protein) {
         day[slot] = better;
         improved = true;
@@ -271,9 +299,11 @@ export function buildWeekPlan(
 
   // Track names used on each completed day for cross-day freshness checks
   const dayNameSets: Set<string>[] = []; // index 0 = first day, etc.
+  const dayBaseSets: Set<string>[] = []; // bases used per day, for base-variety
 
   // Count of appearances across the whole week so far — drives variety
   const weekUseCount = new Map<string, number>();
+  const baseWeekCount = new Map<string, number>(); // base → times used this week
 
   for (let di = 0; di < days.length; di++) {
     const day = days[di];
@@ -285,6 +315,10 @@ export function buildWeekPlan(
       dayNameSets[di - 1] ?? new Set(),
       dayNameSets[di - 2] ?? new Set(),
     ];
+    const recentBases = new Set<string>([
+      ...(dayBaseSets[di - 1] ?? []),
+      ...(dayBaseSets[di - 2] ?? []),
+    ]);
 
     const dayPool: Record<PlanSlot, PoolMeal | null> = {
       breakfast: null, lunch: null, dinner: null, snack1: null, snack2: null,
@@ -322,7 +356,9 @@ export function buildWeekPlan(
         targets.protein * SLOT_SHARE[slot],
         usedBasesToday,
         dosha,
-        weekUseCount
+        weekUseCount,
+        recentBases,
+        baseWeekCount
       );
 
       dayPool[slot] = chosen;
@@ -338,6 +374,13 @@ export function buildWeekPlan(
     );
     dayNameSets.push(todayNames);
     todayNames.forEach((n) => weekUseCount.set(n, (weekUseCount.get(n) ?? 0) + 1));
+
+    // record today's bases for cross-day + week base-variety
+    const todayBases = new Set<string>(
+      PLAN_SLOTS.flatMap((s) => (dayPool[s] ? baseIngredients(dayPool[s]!) : []))
+    );
+    dayBaseSets.push(todayBases);
+    todayBases.forEach((b) => baseWeekCount.set(b, (baseWeekCount.get(b) ?? 0) + 1));
 
     // Scale portions uniformly if calorie target can't be reached with this pool
     const totals = dayTotals(dayPool);
