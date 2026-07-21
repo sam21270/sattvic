@@ -27,6 +27,9 @@ export interface IUser extends Document {
   doshaResult: object | null;
   scoreHistory: { date: string; score: number; grade: string }[];
   totalScore: number;
+  // cross-device sync: the whole `sattvic*` localStorage namespace as a blob
+  syncData: Record<string, string> | null;
+  syncUpdatedAt: number;
   createdAt: Date;
 }
 
@@ -56,6 +59,8 @@ const UserSchema = new Schema<IUser>(
     doshaResult:    { type: Schema.Types.Mixed, default: null },
     scoreHistory:   [{ date: String, score: Number, grade: String }],
     totalScore:     { type: Number, default: 0 },
+    syncData:       { type: Schema.Types.Mixed, default: null },
+    syncUpdatedAt:  { type: Number, default: 0 },
   },
   { timestamps: true }
 );
