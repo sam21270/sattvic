@@ -10,6 +10,9 @@ export function SmoothScroll() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Native scroll is smoother on touch devices — Lenis's RAF loop only adds
+    // jank and fights momentum scrolling on phones. Desktop keeps the smooth feel.
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
