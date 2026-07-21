@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { LogOut, Flame, Trophy, Star, Shield } from "lucide-react";
 import { ALL_BADGES, getBadge } from "@/lib/badges";
+import { loadHistory, currentStreak } from "@/lib/scoring";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -35,8 +36,16 @@ export default function ProfilePage() {
   const user = session!.user as any;
   const earnedBadges: string[] = userData.badges ?? [];
   const scoreHistory: any[] = userData.scoreHistory ?? [];
-  const avgScore = userData.totalScore ?? 0;
   const doshaResult = userData.doshaResult;
+
+  // Derive streak + avg score from the SAME local history the dashboard uses,
+  // so the two pages agree. Falls back to the DB value if there's no local data.
+  // ponytail: swap to the synced DB fields once localStorage→Mongo sync lands.
+  const history = loadHistory();
+  const streak = history.length ? currentStreak(history) : (userData.streak ?? 0);
+  const avgScore = history.length
+    ? Math.round(history.reduce((a, h) => a + h.score, 0) / history.length)
+    : (userData.totalScore ?? 0);
 
   const doshaColors: Record<string, string> = {
     Vata:  "bg-violet-50 border-violet-200 text-violet-700",
@@ -85,7 +94,7 @@ export default function ProfilePage() {
       {/* stats row */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { icon: Flame,   label: "Current Streak",  value: `${userData.streak ?? 0} days`,   color: "text-orange-500", bg: "bg-orange-50" },
+          { icon: Flame,   label: "Current Streak",  value: `${streak} days`,   color: "text-orange-500", bg: "bg-orange-50" },
           { icon: Star,    label: "Avg Sattvic Score",value: `${avgScore} / 100`,              color: "text-emerald-600", bg: "bg-emerald-50" },
           { icon: Trophy,  label: "Badges Earned",   value: `${earnedBadges.length} / ${ALL_BADGES.length}`, color: "text-violet-600", bg: "bg-violet-50" },
         ].map((s, i) => (

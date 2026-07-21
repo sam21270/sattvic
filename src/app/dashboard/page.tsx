@@ -16,7 +16,7 @@ import { ActivityRings } from "@/components/ui/ActivityRings";
 import { WaterTracker } from "@/components/ui/WaterTracker";
 import { StreakFire } from "@/components/ui/StreakFire";
 import { Confetti } from "@/components/ui/Confetti";
-import { calculateScore, loadHistory, saveToHistory, dayKey, DayLog, ScoreBreakdown, HistoryEntry, ScoreTargets } from "@/lib/scoring";
+import { calculateScore, loadHistory, saveToHistory, dayKey, currentStreak, DayLog, ScoreBreakdown, HistoryEntry, ScoreTargets } from "@/lib/scoring";
 
 const DEFAULT_TARGETS: ScoreTargets = { calories: 2000, protein: 120, carbs: 200, fat: 65, fiber: 30 };
 const WATER_GOAL = 2500;
@@ -177,7 +177,7 @@ function Dashboard() {
 
 
   const remaining = Math.max(targets.calories - log.calories, 0);
-  const streak = history.filter((h) => h.score >= 50).length;
+  const streak = currentStreak(history);
   const netCalories = log.calories - workoutCalories;
 
   const liveSegments = segments.map((s, i) => ({
