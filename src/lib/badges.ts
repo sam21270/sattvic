@@ -1,3 +1,5 @@
+import { dayKey, currentStreak, HistoryEntry } from "./scoring";
+
 export interface Badge {
   id: string;
   emoji: string;
@@ -23,6 +25,49 @@ export const ALL_BADGES: Badge[] = [
 
 export function getBadge(id: string): Badge | undefined {
   return ALL_BADGES.find((b) => b.id === id);
+}
+
+// Evaluate badges from what's actually in localStorage, so they light up for
+// things the user has already done. Client-only (guards against SSR).
+// ponytail: this is the local mirror of the server award path in /api/user —
+// merge/replace once localStorage→Mongo sync lands.
+export function computeLocalBadges(): string[] {
+  if (typeof window === "undefined") return [];
+  const read = <T,>(k: string, fallback: T): T => {
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) as T : fallback; } catch { return fallback; }
+  };
+
+  const history = read<HistoryEntry[]>("sattvic_history", []);
+  const targets = read<{ protein?: number } | null>("sattvic-macro-targets", null);
+  const targetProtein = targets?.protein ?? 120;
+
+  const todayMeals = read<unknown[]>(`sattvic-foodlog-${dayKey(0)}`, []);
+  const hasMealEver = todayMeals.length > 0 || history.length > 0;
+  const peakScore = history.reduce((m, h) => Math.max(m, h.score ?? 0), 0);
+
+  // consecutive recent days meeting ≥90% of the protein goal
+  let proteinStreak = 0;
+  for (let i = 0; i < 30; i++) {
+    const meals = read<{ totals?: { protein?: number } }[]>(`sattvic-foodlog-${dayKey(i)}`, []);
+    if (meals.length === 0) { if (i === 0) continue; else break; } // today may be empty
+    const p = meals.reduce((s, m) => s + (m.totals?.protein ?? 0), 0);
+    if (p >= targetProtein * 0.9) proteinStreak++; else break;
+  }
+
+  const fridge = read<unknown[]>("sattvic-fridge", []);
+  const weekPlan = localStorage.getItem("sattvic-week-plan");
+
+  return checkNewBadges([], {
+    mealsLoggedToday: hasMealEver ? 1 : 0,
+    doshaSet: !!localStorage.getItem("sattvic-dosha"),
+    streak: currentStreak(history),
+    score: peakScore,
+    proteinStreak,
+    usedFridge: Array.isArray(fridge) ? fridge.length > 0 : !!fridge,
+    calculatedMacros: !!targets,
+    usedShield: false, // no local signal yet
+    weekPlanned: !!weekPlan && weekPlan !== "null",
+  });
 }
 
 export function checkNewBadges(

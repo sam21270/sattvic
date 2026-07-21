@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { LogOut, Flame, Trophy, Star, Shield } from "lucide-react";
-import { ALL_BADGES, getBadge } from "@/lib/badges";
+import { ALL_BADGES, getBadge, computeLocalBadges } from "@/lib/badges";
 import { loadHistory, currentStreak } from "@/lib/scoring";
 
 export default function ProfilePage() {
@@ -34,7 +34,8 @@ export default function ProfilePage() {
   }
 
   const user = session!.user as any;
-  const earnedBadges: string[] = userData.badges ?? [];
+  // DB badges ∪ badges evaluated from local activity (the DB isn't synced yet)
+  const earnedBadges: string[] = Array.from(new Set([...(userData.badges ?? []), ...computeLocalBadges()]));
   const scoreHistory: any[] = userData.scoreHistory ?? [];
   const doshaResult = userData.doshaResult;
 
