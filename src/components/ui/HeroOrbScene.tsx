@@ -259,6 +259,9 @@ export default function HeroOrbScene() {
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
+  // Phones can't afford a WebGL particle scene — fall back to the same static
+  // glow the loader uses. Keeps the hero pretty without torching the GPU.
+  const isTouch = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -267,11 +270,15 @@ export default function HeroOrbScene() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  if (isTouch) {
+    return <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_30%,rgba(16,185,129,0.08)_0%,transparent_70%)]" aria-hidden />;
+  }
+
   return (
     <div className="absolute inset-0 pointer-events-none" aria-hidden>
       <Canvas
         gl={{ alpha: true, antialias: true }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         camera={{ position: [0, 0, 5], fov: 42 }}
       >
         <NutrientCore reducedMotion={reducedMotion} />
