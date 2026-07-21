@@ -11,6 +11,7 @@ import { MacroRing } from "@/components/ui/MacroRing";
 import { MacroBar } from "@/components/ui/MacroBar";
 import { SattvicScore } from "@/components/ui/SattvicScore";
 import { AIFoodLog } from "@/components/ui/AIFoodLog";
+import { RestOfDay } from "@/components/ui/RestOfDay";
 import { ActivityRings } from "@/components/ui/ActivityRings";
 import { WaterTracker } from "@/components/ui/WaterTracker";
 import { StreakFire } from "@/components/ui/StreakFire";
@@ -287,6 +288,9 @@ function Dashboard() {
           <AIFoodLog onTotalsChange={(t) => setLog((l) => ({ ...l, ...t }))} />
         </motion.div>
       </div>
+
+      {/* rest-of-day suggestions — appears once something's logged */}
+      <RestOfDay consumed={{ calories: log.calories, protein: log.protein }} targets={{ calories: targets.calories, protein: targets.protein }} />
 
       {/* activity + water row */}
       <div className="grid lg:grid-cols-3 gap-6">
