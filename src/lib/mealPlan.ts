@@ -29,6 +29,10 @@ export type LockedMeals = Record<string, Partial<Record<PlanSlot, string>>>;
 
 const POOL_BY_NAME = new Map(MEAL_POOL.map((m) => [m.name, m]));
 
+// Opt-in daily protein scoop: which pool meal, and which snack slot it fills.
+const PROTEIN_SHAKE_NAME = "Whey Protein Shake";
+const SHAKE_SLOT: PlanSlot = "snack1";
+
 export function buildEmptyWeek(days: string[]): WeekPlan {
   const plan: WeekPlan = {};
   for (const day of days) {
@@ -291,10 +295,14 @@ export function buildWeekPlan(
   dosha: string | null = null,
   fast: FastType = "none",
   jain = false,
-  locked: LockedMeals = {}
+  locked: LockedMeals = {},
+  proteinShake = false
 ): WeekPlan {
   let pool = filterFasting(filterPool(allergies, conditions), fast);
   if (jain) pool = filterJain(pool);
+  // opt-in daily scoop: the shake fills one snack slot, easing the protein the
+  // food has to carry (fewer paneer repeats). Respects allergy/jain filtering.
+  const shakeMeal = proteinShake ? pool.find((m) => m.name === PROTEIN_SHAKE_NAME) : undefined;
   const plan = buildEmptyWeek(days);
 
   // Track names used on each completed day for cross-day freshness checks
@@ -329,7 +337,9 @@ export function buildWeekPlan(
       // Locked slot: keep the exact meal the user pinned, but still register it
       // in the freshness/variety trackers so other days plan around it.
       const lockedName = locked[day]?.[slot];
-      const lockedMeal = lockedName ? POOL_BY_NAME.get(lockedName) : undefined;
+      let lockedMeal = lockedName ? POOL_BY_NAME.get(lockedName) : undefined;
+      // pin the daily protein shake into a snack slot, unless the user pinned it
+      if (!lockedMeal && shakeMeal && slot === SHAKE_SLOT) lockedMeal = shakeMeal;
       if (lockedMeal) {
         dayPool[slot] = lockedMeal;
         lockedSlots.add(slot);
@@ -463,7 +473,8 @@ export function regenerateDay(
   dosha: string | null = null,
   fast: FastType = "none",
   jain = false,
-  userLocked: LockedMeals = {}
+  userLocked: LockedMeals = {},
+  proteinShake = false
 ): WeekPlan {
   const days = Object.keys(plan);
   const locked: LockedMeals = {};
@@ -479,5 +490,5 @@ export function regenerateDay(
     }
     locked[d] = slots;
   }
-  return buildWeekPlan(days, targets, allergies, conditions, dosha, fast, jain, locked);
+  return buildWeekPlan(days, targets, allergies, conditions, dosha, fast, jain, locked, proteinShake);
 }

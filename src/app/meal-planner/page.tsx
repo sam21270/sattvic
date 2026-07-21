@@ -612,6 +612,7 @@ function MealPlanner() {
   const [dosha, setDosha] = useState<string | null>(null);
   const [fast, setFast] = useState<FastType>("none");
   const [jain, setJain] = useState(false);
+  const [proteinShake, setProteinShake] = useState(false);
   const [servings, setServings] = useState(1);
   const [activeDay, setActiveDay] = useState(DAYS[0]);
   const [swappingSlot, setSwappingSlot] = useState<PlanSlot | null>(null);
@@ -638,6 +639,7 @@ function MealPlanner() {
       const d = localStorage.getItem("sattvic-dosha");
       if (d) setDosha(d);
       setJain(localStorage.getItem("sattvic-jain") === "1");
+      setProteinShake(localStorage.getItem("sattvic-protein-shake") === "1");
       const macrosDate = localStorage.getItem("sattvic-macros-date");
       if (macrosDate) {
         const days = (Date.now() - new Date(macrosDate).getTime()) / 86400000;
@@ -669,14 +671,21 @@ function MealPlanner() {
     });
   }
 
+  function toggleProteinShake() {
+    setProteinShake((v) => {
+      localStorage.setItem("sattvic-protein-shake", v ? "0" : "1");
+      return !v;
+    });
+  }
+
   function generatePlan() {
-    setPlan(buildWeekPlan(DAYS, targets, allergies, conditions, dosha, fast, jain, locks));
+    setPlan(buildWeekPlan(DAYS, targets, allergies, conditions, dosha, fast, jain, locks, proteinShake));
   }
 
   // Reshuffle just the active day, keeping every other day (and any locks) intact
   function regenerateActiveDay() {
     setRegenDay(true);
-    setPlan((p) => regenerateDay(p, activeDay, targets, allergies, conditions, dosha, fast, jain, locks));
+    setPlan((p) => regenerateDay(p, activeDay, targets, allergies, conditions, dosha, fast, jain, locks, proteinShake));
     setRegenDay(false);
   }
 
@@ -843,6 +852,24 @@ function MealPlanner() {
         {jain && (
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full border bg-amber-500/10 text-amber-300/90 border-amber-500/25">
             No root veg · no fungi · no eggs · no honey
+          </span>
+        )}
+
+        {/* Optional daily protein scoop — eases the protein food has to carry */}
+        <button
+          onClick={toggleProteinShake}
+          title="Adds one protein shake a day (have it in water, oats or a smoothie). Makes hitting your protein target easier with less repetition."
+          className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold border transition-colors ${
+            proteinShake
+              ? "bg-blue-500/15 text-blue-300 border-blue-500/40"
+              : "bg-[#141414] text-zinc-400 border-white/[0.08] hover:border-white/[0.2]"
+          }`}
+        >
+          🥤 Daily protein scoop {proteinShake ? "on" : "off"}
+        </button>
+        {proteinShake && (
+          <span className="text-xs font-semibold px-3 py-1.5 rounded-full border bg-blue-500/10 text-blue-300/90 border-blue-500/25">
+            +1 shake/day · have it in water, oats or a smoothie
           </span>
         )}
 
