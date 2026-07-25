@@ -30,6 +30,31 @@
 .animate-orb-3 { animation: orb-3 26s ease-in-out infinite; }
 .animate-orb-4 { animation: orb-4 20s ease-in-out infinite; }
 
+/* ── Pulse landing (round 4) ──────────────────────────────────────
+   Dark-only, always-on aesthetic. Uses literal-hex / CSS-var colours so the
+   light-mode remaps (which target .text-white / .text-zinc-*) never touch it. */
+:root {
+  --pulse-lime:  #c2f04a;
+  --pulse-cyan:  #2fe0e6;
+  --pulse-amber: #f6a623;
+}
+.font-display {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-weight: 800;
+  font-stretch: 125%;         /* Archivo variable width axis → the wide poster look */
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+.pulse-serif { font-family: var(--font-serif), Georgia, serif; }
+.pulse-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+@keyframes breathe { 0%,100% { opacity: .45; transform: scale(1); } 50% { opacity: .8; transform: scale(1.05); } }
+.animate-breathe { animation: breathe 9s ease-in-out infinite; }
+
 /* ── Design tokens ────────────────────────────────────────────── */
 :root {
   --bg:        #0a0a0a;
