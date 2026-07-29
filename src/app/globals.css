@@ -107,6 +107,9 @@
 
 /* ── Design tokens ────────────────────────────────────────────── */
 :root {
+  /* Native controls (range tracks, selects, scrollbars) follow this. Without
+     it the browser painted dark tracks on the light page. */
+  color-scheme: dark;
   --bg:        #0a0a0a;
   --surface:   #141414;
   --gallery-bg: #0d0d0d;   /* food-gallery band; flips in light mode below */
@@ -121,6 +124,7 @@
 [data-theme="light"] {
   /* Cinematic warm-paper palette — same tokens the landing page uses, so every
      app page reads as the same design. */
+  color-scheme: light;
   --bg:        #faf7f1;
   --surface:   #fffdf8;
   --surface2:  rgba(26,24,21,0.02);
@@ -331,6 +335,7 @@ body {
 [data-theme="light"] .hover\:bg-emerald-500:hover { background-color: #2c5620 !important; }
 [data-theme="light"] .bg-emerald-500\/10,
 [data-theme="light"] .bg-emerald-500\/20 { background-color: rgba(63,122,46,.12) !important; }
+[data-theme="light"] .accent-emerald-500 { accent-color: #3f7a2e; }
 [data-theme="light"] .border-emerald-500\/20,
 [data-theme="light"] .border-emerald-500\/30 { border-color: rgba(63,122,46,.28) !important; }
 
