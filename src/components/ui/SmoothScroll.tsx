@@ -13,17 +13,21 @@ export function SmoothScroll() {
     // Native scroll is smoother on touch devices — Lenis's RAF loop only adds
     // jank and fights momentum scrolling on phones. Desktop keeps the smooth feel.
     if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
+    // The landing page drives its pinned phone stage and week rail off real
+    // scroll position; Lenis's inertia lags those pins behind the pointer.
+    if (pathname === "/") return;
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     });
     lenisInstance = lenis;
 
+    let rafId = 0;
     const raf = (time: number) => {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     };
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     // keep scroll limits in sync when content height changes without a
     // route change (e.g. generating a meal plan, opening an accordion) —
@@ -32,11 +36,12 @@ export function SmoothScroll() {
     ro.observe(document.body);
 
     return () => {
+      cancelAnimationFrame(rafId);
       ro.disconnect();
       lenis.destroy();
       lenisInstance = null;
     };
-  }, []);
+  }, [pathname]);
 
   // resync scroll limits + jump to top on every client-side route change,
   // otherwise Lenis keeps the previous page's cached scroll height and can

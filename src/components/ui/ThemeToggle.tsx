@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
 
 export function ThemeToggle() {
+  const pathname = usePathname();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
 
@@ -23,6 +25,7 @@ export function ThemeToggle() {
   }
 
   if (!mounted) return null;
+  if (pathname === "/") return null;   // landing is light-only by design
 
   const isDark = theme === "dark";
 

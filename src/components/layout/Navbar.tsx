@@ -68,6 +68,9 @@ export function Navbar() {
       </button>
     );
 
+  // The cinematic landing has its own cream nav; the app chrome would clash.
+  if (pathname === "/") return null;
+
   return (
     <nav className="sattvic-nav backdrop-blur-md border-b sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -55,6 +55,56 @@
 @keyframes breathe { 0%,100% { opacity: .45; transform: scale(1); } 50% { opacity: .8; transform: scale(1.05); } }
 .animate-breathe { animation: breathe 9s ease-in-out infinite; }
 
+/* ── Cinematic landing (v5) ───────────────────────────────────────
+   Warm-paper, light-only marketing page. Scoped under .sat-landing so it
+   never touches the app's dark theme. Keyframes are sat-* prefixed. */
+@keyframes sat-marq   { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes sat-dolly  { 0% { transform: translateZ(-2000px); } 100% { transform: translateZ(700px); } }
+@keyframes sat-line   { 0% { opacity: 0; } 5%,28% { opacity: 1; } 33%,100% { opacity: 0; } }
+@keyframes sat-cue    { 0%,100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(7px); opacity: 1; } }
+@keyframes sat-rise   { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes sat-zoomthru { 0% { transform: scale(1.16); opacity: .4; } 38% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.04); opacity: 1; } }
+@keyframes sat-soften { from { opacity: 0; transform: translateY(40px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes sat-swell  { from { transform: scale(.82); opacity: .35; } to { transform: scale(1); opacity: 1; } }
+
+.sat-landing a { color: #1a1815; text-decoration: none; transition: color .4s ease; }
+.sat-landing a:hover { color: #e0431e; }
+
+.sat-landing [data-reveal] { animation: sat-rise 1s cubic-bezier(.2,.8,.2,1) both; }
+.sat-landing [data-reveal-delay="70"]  { animation-delay: .07s; }
+.sat-landing [data-reveal-delay="80"]  { animation-delay: .08s; }
+.sat-landing [data-reveal-delay="90"]  { animation-delay: .09s; }
+.sat-landing [data-reveal-delay="140"] { animation-delay: .14s; }
+.sat-landing [data-reveal-delay="210"] { animation-delay: .21s; }
+.sat-landing [data-reveal-delay="280"] { animation-delay: .28s; }
+.sat-landing [data-reveal-delay="350"] { animation-delay: .35s; }
+@supports (animation-timeline: view()) {
+  .sat-landing [data-reveal] { animation: sat-soften 1s cubic-bezier(.2,.8,.2,1) both; animation-timeline: view(); animation-range: entry 4% entry 70%; animation-delay: 0s; }
+  .sat-landing [data-zoom]   { animation: sat-zoomthru linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  .sat-landing [data-swell]  { animation: sat-swell linear both; animation-timeline: view(); animation-range: entry 10% cover 46%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sat-landing [data-reveal], .sat-landing [data-zoom], .sat-landing [data-swell] { animation: none; }
+  .sat-dolly, .sat-hline, .sat-cue, .sat-marq-row { animation: none !important; }
+}
+
+/* Desktop-first spec: below 860px hide the nav links and the stage's step
+   column, letting the phone screens carry the story. ponytail: a proper
+   mobile pass (stack copy above phone, static hero plate) is a follow-up. */
+@media (max-width: 860px) {
+  .sat-nav-links { display: none !important; }
+  .sat-stage-grid { grid-template-columns: 1fr !important; }
+  .sat-stage-grid > div:first-child { display: none !important; }
+}
+
+/* hover lifts (React inline styles can't do :hover) */
+.sat-lift            { transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .6s ease, background .45s ease, color .45s ease; }
+.sat-lift:hover      { transform: translateY(-3px); }
+.sat-lift-sm:hover   { transform: translateY(-1px); }
+.sat-pill-dark:hover { background: #e0431e !important; color: #fff !important; }
+.sat-taste           { transition: transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .6s ease; }
+.sat-taste:hover     { transform: translateY(-8px); box-shadow: 0 24px 50px rgba(26,24,21,.22); }
+
 /* ── Design tokens ────────────────────────────────────────────── */
 :root {
   --bg:        #0a0a0a;
