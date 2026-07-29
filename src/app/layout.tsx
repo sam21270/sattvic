@@ -41,20 +41,20 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a0a0a",
+  themeColor: "#faf7f1",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${instrumentSerif.variable} ${jakarta.variable} h-full antialiased`} data-theme="dark" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${instrumentSerif.variable} ${jakarta.variable} h-full antialiased`} data-theme="light" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('sattvic-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();`,
+            __html: `(function(){var t=localStorage.getItem('sattvic-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();`,
           }}
         />
       </head>
-      <body className="min-h-full bg-[#0a0a0a] text-zinc-100">
+      <body className="min-h-full bg-bg text-fg">
         <Providers>
           <SmoothScroll />
           <Navbar />

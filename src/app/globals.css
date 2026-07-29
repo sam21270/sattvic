@@ -119,18 +119,20 @@
 }
 
 [data-theme="light"] {
-  --bg:        #f8f6f1;
-  --surface:   #ffffff;
-  --surface2:  rgba(0,0,0,0.02);
-  --border:    rgba(0,0,0,0.08);
-  --border2:   rgba(0,0,0,0.14);
-  --fg:        #1a1a1a;
-  --gallery-bg: #f0ede8;   /* soft off-white so the gallery matches the page */
+  /* Cinematic warm-paper palette — same tokens the landing page uses, so every
+     app page reads as the same design. */
+  --bg:        #faf7f1;
+  --surface:   #fffdf8;
+  --surface2:  rgba(26,24,21,0.02);
+  --border:    rgba(26,24,21,0.09);
+  --border2:   rgba(26,24,21,0.14);
+  --fg:        #1a1815;
+  --gallery-bg: #efe7d8;   /* photo backing from the design tokens */
   /* Measured against --bg (#f8f6f1) and --surface (#fff); all clear WCAG AA 4.5:1.
      The old --fg-subtle (#a8a29e) scored 2.34:1 and failed everywhere it was used. */
-  --fg-muted:  #57534e;   /* 7.1 / 7.6 */
-  --fg-subtle: #6b655f;   /* 5.3 / 5.8 */
-  --fg-faint:  #736c65;   /* 4.8 / 5.2 — dimmest tier that still passes */
+  --fg-muted:  #4a453c;   /* ink-dim  — body copy */
+  --fg-subtle: #6b655c;   /* between ink-dim and ink-mute, still AA on paper */
+  --fg-faint:  #8a8272;   /* ink-mute — kickers, meta, labels */
 }
 
 /* ── Tailwind v4 theme mapping ────────────────────────────────── */
@@ -299,7 +301,7 @@ body {
    ponytail: 15 rules here beat editing 210 call sites. */
 [data-theme="light"] .text-emerald-300,
 [data-theme="light"] .text-emerald-400,
-[data-theme="light"] .text-emerald-500 { color: #047857 !important; }
+[data-theme="light"] .text-emerald-500 { color: #2c5620 !important; }
 [data-theme="light"] .text-rose-300,
 [data-theme="light"] .text-rose-400,
 [data-theme="light"] .text-rose-500    { color: #be123c !important; }
@@ -317,7 +319,35 @@ body {
 [data-theme="light"] .text-blue-400    { color: #1d4ed8 !important; }
 [data-theme="light"] .text-pink-400    { color: #be185d !important; }
 /* emerald-600 is too light for 10px labels on --bg */
-[data-theme="light"] .text-emerald-600 { color: #046c4e !important; }
+[data-theme="light"] .text-emerald-600 { color: #2c5620 !important; }
+
+/* ── Cinematic accents on app pages ──────────────────────────────
+   Solid emerald fills are the app's primary action; the landing's primary is
+   ink, with terracotta for the hero CTA. Map fills to the design's green so
+   buttons stay one recognisable family across landing + app. */
+[data-theme="light"] .bg-emerald-500,
+[data-theme="light"] .bg-emerald-600 { background-color: #3f7a2e !important; }
+[data-theme="light"] .hover\:bg-emerald-400:hover,
+[data-theme="light"] .hover\:bg-emerald-500:hover { background-color: #2c5620 !important; }
+[data-theme="light"] .bg-emerald-500\/10,
+[data-theme="light"] .bg-emerald-500\/20 { background-color: rgba(63,122,46,.12) !important; }
+[data-theme="light"] .border-emerald-500\/20,
+[data-theme="light"] .border-emerald-500\/30 { border-color: rgba(63,122,46,.28) !important; }
+
+/* Serif display type is the design's loudest signature — apply it to page
+   headings everywhere so the app reads like the landing. Utility-sized text
+   (chips, labels, stat readouts) keeps Jakarta via .not-serif escape hatch. */
+[data-theme="light"] h1,
+[data-theme="light"] h2 {
+  font-family: var(--font-serif), Georgia, serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -.03em;
+}
+[data-theme="light"] h1.not-serif,
+[data-theme="light"] h2.not-serif { font-family: var(--font-jakarta), system-ui, sans-serif !important; }
+
+/* Body copy in the app switches to the landing's UI face */
+[data-theme="light"] body { font-family: var(--font-jakarta), system-ui, sans-serif; }
 
 /* Solid accent fills keep white text in light mode. .text-white is remapped to
    the dark foreground above (correct on cards), which would otherwise put dark
@@ -376,13 +406,17 @@ body {
 }
 [data-theme="light"] input::placeholder { color: #a8a29e !important; }
 
+.sat-wordmark { font-family: var(--font-serif), Georgia, serif; }
+
 /* Navbar */
 .sattvic-nav {
   background: rgba(10, 10, 10, 0.85);
   border-color: var(--border);
 }
 [data-theme="light"] .sattvic-nav {
-  background: rgba(248, 246, 241, 0.85);
+  background: rgba(250, 247, 241, 0.72);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
   border-color: var(--border);
 }
 

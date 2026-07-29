@@ -75,11 +75,10 @@ export function Navbar() {
     <nav className="sattvic-nav backdrop-blur-md border-b sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-2">
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-700 transition-colors">
-              <Leaf className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight">SATTVIC</span>
+          {/* Wordmark matches the landing nav: terracotta dot + serif "Sattvic" */}
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <span className="w-[11px] h-[11px] rounded-full bg-[#e0431e] shrink-0" />
+            <span className="sat-wordmark text-[25px] leading-none tracking-[-.01em] text-fg">Sattvic</span>
           </Link>
 
           {/* desktop nav — primary links only; the menu button holds the rest */}

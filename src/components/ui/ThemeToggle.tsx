@@ -7,11 +7,11 @@ import { Sun, Moon } from "lucide-react";
 
 export function ThemeToggle() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = (localStorage.getItem("sattvic-theme") as "dark" | "light") ?? "dark";
+    const saved = (localStorage.getItem("sattvic-theme") as "dark" | "light") ?? "light";
     setTheme(saved);
     document.documentElement.setAttribute("data-theme", saved);
     setMounted(true);
