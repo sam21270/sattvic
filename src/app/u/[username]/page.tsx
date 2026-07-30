@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { UserPlus, Check, ArrowLeft, Trophy, Flame, Star, Calendar } from "lucide-react";
+import { UserPlus, Check, ArrowLeft, Trophy, Star, Calendar } from "lucide-react";
 import { StreakFire } from "@/components/ui/StreakFire";
 
 interface PublicProfile {

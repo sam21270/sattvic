@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { LogOut, Flame, Trophy, Star, Shield } from "lucide-react";
-import { ALL_BADGES, getBadge, computeLocalBadges } from "@/lib/badges";
+import { ALL_BADGES, computeLocalBadges } from "@/lib/badges";
 import { loadHistory, currentStreak } from "@/lib/scoring";
 
 export default function ProfilePage() {

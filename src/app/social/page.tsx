@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
-  Search, UserPlus, Trophy, Users, Bell, Check, X,
-  Flame, Zap, Crown, Star, Share2, Copy, CheckCheck
+  Search, UserPlus, Trophy, Bell, Check, X,
+  Zap, Crown, Star, Copy, CheckCheck
 } from "lucide-react";
 import { UsernameSetup } from "@/components/social/UsernameSetup";
 import { Confetti } from "@/components/ui/Confetti";

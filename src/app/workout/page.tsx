@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Clock, Flame, Plus, Trash2, ChevronDown, TrendingUp } from "lucide-react";
+import { Dumbbell, Flame, Plus, Trash2, ChevronDown } from "lucide-react";
 import { Confetti } from "@/components/ui/Confetti";
 
 interface WorkoutEntry {

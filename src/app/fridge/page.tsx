@@ -80,9 +80,9 @@ export default function FridgePage() {
 
       {/* header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-        <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase">What's In My Fridge?</p>
+        <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase">What&rsquo;s In My Fridge?</p>
         <h1 className="text-4xl font-bold text-white tracking-tight leading-tight">
-          Tell me what you have.<br />I'll tell you what to cook.
+          Tell me what you have.<br />I&rsquo;ll tell you what to cook.
         </h1>
         <p className="text-zinc-500">
           Add the ingredients sitting in your fridge right now. Get 3 vegetarian meals you can make today — no shopping needed.

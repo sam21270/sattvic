@@ -81,10 +81,10 @@ export default function JunkPage() {
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
             Craving something?<br />
-            <span className="text-rose-400 italic">We've got you.</span>
+            <span className="text-rose-400 italic">We&rsquo;ve got you.</span>
           </h1>
           <p className="text-zinc-500 max-w-md mx-auto">
-            Type any junk food you're craving. We'll make you a vegetarian version that actually tastes good — with significantly fewer calories and way better ingredients.
+            Type any junk food you&rsquo;re craving. We&rsquo;ll make you a vegetarian version that actually tastes good — with significantly fewer calories and way better ingredients.
           </p>
         </motion.div>
 

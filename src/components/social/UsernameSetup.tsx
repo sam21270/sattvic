@@ -9,8 +9,6 @@ const AVATAR_EMOJIS = [
   "🧠","🎯","🌸","🏆","🦁","🐉","🌙","✨",
 ];
 
-const DOSHA_EMOJIS: Record<string, string> = { Vata: "🌬️", Pitta: "🔥", Kapha: "🌊" };
-
 interface Props {
   onComplete: (username: string) => void;
 }

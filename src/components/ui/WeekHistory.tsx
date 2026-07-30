@@ -200,7 +200,7 @@ export function WeekHistory() {
                         className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-rose-400 transition-colors mt-1"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        Delete this day's log
+                        Delete this day&rsquo;s log
                       </button>
                     </div>
                   </motion.div>

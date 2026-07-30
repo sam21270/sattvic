@@ -361,10 +361,10 @@ function DoshaQuiz() {
                   <span className="text-emerald-400 italic">Most diets ignore it.</span>
                 </h1>
                 <p className="text-zinc-400 text-lg max-w-xl mx-auto leading-relaxed">
-                  Ayurveda — the world's oldest nutritional system — says every person has a dominant <strong className="text-zinc-200">dosha</strong>: a mind-body constitution that determines what foods energise you, which ones drain you, and when to eat for peak performance.
+                  Ayurveda — the world&rsquo;s oldest nutritional system — says every person has a dominant <strong className="text-zinc-200">dosha</strong>: a mind-body constitution that determines what foods energise you, which ones drain you, and when to eat for peak performance.
                 </p>
                 <p className="text-zinc-500 text-base max-w-lg mx-auto">
-                  That's why two people can eat the exact same "healthy" diet and get completely different results. Generic meal plans don't work because <em className="text-zinc-300">you aren't generic.</em>
+                  That&rsquo;s why two people can eat the exact same &quot;healthy&quot; diet and get completely different results. Generic meal plans don&rsquo;t work because <em className="text-zinc-300">you aren&rsquo;t generic.</em>
                 </p>
               </div>
 
@@ -450,7 +450,7 @@ function DoshaQuiz() {
               <div className="bg-white/[0.04] border border-white/[0.07] rounded-3xl p-7 space-y-3">
                 <h3 className="text-xl font-bold text-white">Why does this matter for what you eat?</h3>
                 <p className="text-zinc-400 leading-relaxed">A Vata eating cold raw salads every day is working against their body. A Kapha eating heavy curries every meal is adding fuel to an already slow fire. A Pitta eating spicy food under stress is literally inflaming themselves.</p>
-                <p className="text-zinc-500 leading-relaxed">SATTVIC uses your dosha — plus your allergies and health conditions — to give you a plan that's calibrated to <em className="text-zinc-300">your</em> body, not a generic average.</p>
+                <p className="text-zinc-500 leading-relaxed">SATTVIC uses your dosha — plus your allergies and health conditions — to give you a plan that&rsquo;s calibrated to <em className="text-zinc-300">your</em> body, not a generic average.</p>
               </div>
 
               <ScienceAccordion />
@@ -655,7 +655,7 @@ function DoshaQuiz() {
                 <HelpCircle className="w-4 h-4 text-zinc-600 shrink-0 mt-0.5" />
                 <p className="text-xs text-zinc-500 leading-relaxed">
                   <span className="text-zinc-400 font-semibold">About this result — </span>
-                  Dosha typing comes from Ayurveda, India's 5,000-year nutritional tradition. It is not a clinical diagnosis. Think of it as a constitutional pattern — a grouping of metabolism, digestion, and temperament traits that commonly appear together. The food recommendations it generates are grounded in real principles (e.g. warm foods for slow digestion, cooling foods for inflammatory tendencies) even though the framework itself predates clinical nutrition science. SATTVIC uses your dosha to <em>prioritise</em> meal suggestions, not restrict them.
+                  Dosha typing comes from Ayurveda, India&rsquo;s 5,000-year nutritional tradition. It is not a clinical diagnosis. Think of it as a constitutional pattern — a grouping of metabolism, digestion, and temperament traits that commonly appear together. The food recommendations it generates are grounded in real principles (e.g. warm foods for slow digestion, cooling foods for inflammatory tendencies) even though the framework itself predates clinical nutrition science. SATTVIC uses your dosha to <em>prioritise</em> meal suggestions, not restrict them.
                 </p>
               </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Check, Search, X, ChevronDown, PenLine, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Check, Search, X, ChevronDown, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { DayLog, dayKey } from "@/lib/scoring";
 import { MEAL_POOL, PoolMeal } from "@/data/mealPool";
 import { getMicros } from "@/lib/micronutrients";
@@ -86,10 +86,6 @@ function calcTotals(meals: Record<SlotKey, LoggedMeal | null>) {
   );
 }
 
-function scaleMacros(m: PoolMeal, multiplier: number) {
-  const r = (n: number) => Math.round(n * multiplier);
-  return { calories: r(m.calories), protein: r(m.protein), carbs: r(m.carbs), fat: r(m.fat), fiber: r(m.fiber) };
-}
 
 export function MealLogger({ log, onChange }: MealLoggerProps) {
   const [open, setOpen]         = useState<SlotKey | null>(null);
@@ -273,7 +269,7 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
   return (
     <div className="bg-[#141414] border border-white/[0.07] rounded-3xl p-6 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-zinc-100 text-lg">Log Today's Meals</h2>
+        <h2 className="font-bold text-zinc-100 text-lg">Log Today&rsquo;s Meals</h2>
         <span className="text-xs text-zinc-500 bg-white/[0.03] border border-white/[0.07] px-3 py-1 rounded-full">
           {loggedCount} / 5 logged
         </span>
@@ -395,7 +391,7 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
                               {aiLoading && <Loader2 className="w-3 h-3 text-violet-400 animate-spin ml-auto" />}
                             </div>
                             {aiLoading && (
-                              <p className="text-xs text-zinc-600 px-3 py-2">Looking up nutrition for "{query}"…</p>
+                              <p className="text-xs text-zinc-600 px-3 py-2">Looking up nutrition for &quot;{query}&quot;…</p>
                             )}
                             {!aiLoading && aiResults.map((m) => (
                               <button key={m.name} onClick={() => selectMeal(m)}
@@ -563,7 +559,7 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
       {/* totals strip */}
       {loggedCount > 0 && (
         <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs">
-          <span className="text-zinc-500">Today's total</span>
+          <span className="text-zinc-500">Today&rsquo;s total</span>
           <div className="flex gap-3">
             <span className="text-orange-400 font-semibold">{log.calories} kcal</span>
             <span className="text-blue-400 font-semibold">{log.protein}g P</span>
@@ -578,7 +574,6 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
 
 // Inline custom grams/quantity input inside portion picker
 function CustomPortionRow({
-  meal,
   onConfirm,
 }: {
   meal: PoolMeal | AIMeal;

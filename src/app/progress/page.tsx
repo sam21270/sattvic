@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, ChevronUp, ChevronDown, CalendarDays } from "lucide-react";
+import { TrendingUp, Scale, Flame, Droplets, Dumbbell, Plus, CalendarDays } from "lucide-react";
 import { loadTodayMeals } from "@/components/ui/AIFoodLog";
 import { WeekHistory } from "@/components/ui/WeekHistory";
 import { maintenanceFromStorage, weekPrediction, actualWeekChange, fmtKg } from "@/lib/weightProjection";

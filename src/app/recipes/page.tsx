@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Flame, Link2, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, Link2, Loader2 } from "lucide-react";
 import { FlipCard } from "@/components/meals/FlipCard";
 import { Meal } from "@/types";
 
