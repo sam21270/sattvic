@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Calculator, Loader2, ArrowRight } from "lucide-react";
 import { MacroTargets } from "@/types";
 import { dayKey } from "@/lib/scoring";
+import { errorMessage } from "@/lib/utils";
 
 const activityLevels = [
   { value: "sedentary", label: "Sedentary (desk job, no exercise)" },
@@ -74,8 +75,8 @@ function MacrosCalculator() {
         else prog.unshift({ date: today, weight: Number(form.weight) });
         localStorage.setItem("sattvic-progress", JSON.stringify(prog));
       } catch {}
-    } catch (err: any) {
-      setError(err.message ?? "Something went wrong");
+    } catch (err) {
+      setError(errorMessage(err, "Something went wrong"));
     } finally {
       setLoading(false);
     }

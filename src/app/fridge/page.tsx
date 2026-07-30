@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, X, Plus, Sparkles, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
+import { errorMessage } from "@/lib/utils";
 
 interface FridgeMeal {
   name: string;
@@ -67,9 +68,9 @@ export default function FridgePage() {
       // API error rendered as "no recipes found" instead of the reason.
       if (!res.ok || data?.error) throw new Error(data?.error ?? "Failed");
       setResults(Array.isArray(data) ? data : []);
-    } catch (err: any) {
+    } catch (err) {
       // Surface the route's own message (rate limited / not configured / down)
-      setError(err.message || "Something went wrong. Please try again.");
+      setError(errorMessage(err, "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
     }

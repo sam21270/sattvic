@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, ArrowLeft, RotateCcw, Check, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { errorMessage } from "@/lib/utils";
 
 /* ── Dosha questions (single select) ─────────────────── */
 const questions = [
@@ -265,9 +266,9 @@ function DoshaQuiz() {
       localStorage.setItem("sattvic-dosha-full", JSON.stringify(data)); // so returning users see it without re-quizzing
       localStorage.setItem("sattvic-allergies", JSON.stringify(allAllergies));
       localStorage.setItem("sattvic-conditions", JSON.stringify(conditions.filter((c) => c !== "none")));
-    } catch (err: any) {
+    } catch (err) {
       // Surface the route's own message (rate limited / not configured / down)
-      setApiError(err.message || "Something went wrong. Please try again.");
+      setApiError(errorMessage(err, "Something went wrong. Please try again."));
       setStep(TOTAL_STEPS);
     } finally {
       setLoading(false);

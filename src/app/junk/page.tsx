@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Loader2, ArrowRight, Flame, Clock, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { errorMessage } from "@/lib/utils";
 
 const QUICK_CRAVINGS = [
   { label: "Pizza 🍕", query: "pizza" },
@@ -58,10 +59,10 @@ export default function JunkPage() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "Failed");
       setResult(data);
-    } catch (err: any) {
+    } catch (err) {
       // The API routes already return a user-readable reason (rate limited,
       // not configured, upstream down) — show that rather than guessing.
-      setError(err.message || "Something went wrong. Try again.");
+      setError(errorMessage(err, "Something went wrong. Try again."));
     } finally {
       setLoading(false);
     }

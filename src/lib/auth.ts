@@ -3,6 +3,15 @@ import Google from "next-auth/providers/google";
 import { connectDB } from "@/lib/db/mongoose";
 import UserModel from "@/models/User";
 
+// Only the fields the session callback actually copies across.
+type SessionUserFields = {
+  _id: unknown;
+  streak?: number;
+  streakShield?: number;
+  badges?: string[];
+  doshaResult?: { dosha: string; percentage?: Record<string, number> } | null;
+};
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // NextAuth v5 rejects the sign-in host unless it trusts it; on Vercel the
   // host is dynamic, so trust it explicitly to avoid UntrustedHost errors.
@@ -36,13 +45,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session }) {
       if (session.user?.email) {
         await connectDB();
-        const dbUser = await UserModel.findOne({ email: session.user.email }).lean() as any;
+        // The extra fields on session.user are declared in types/next-auth.d.ts,
+        // which is what keeps this assignment typed.
+        const dbUser = await UserModel.findOne({ email: session.user.email })
+          .select("streak streakShield badges doshaResult")
+          .lean<SessionUserFields | null>();
         if (dbUser) {
-          (session.user as any).id = dbUser._id.toString();
-          (session.user as any).streak = dbUser.streak;
-          (session.user as any).streakShield = dbUser.streakShield;
-          (session.user as any).badges = dbUser.badges;
-          (session.user as any).doshaResult = dbUser.doshaResult;
+          session.user.id = String(dbUser._id);
+          session.user.streak = dbUser.streak;
+          session.user.streakShield = dbUser.streakShield;
+          session.user.badges = dbUser.badges;
+          session.user.doshaResult = dbUser.doshaResult;
         }
       }
       return session;
