@@ -35,15 +35,17 @@ const MOOD_MAP: Record<number, { emoji: string; label: string }> = {
 
 // Bar per logged day, scaled from 0 — works from the very first log.
 // Bars climb from 0 on mount via a plain CSS height transition.
-function MiniBars({ data, color, unit }: { data: { date: string; value: number }[]; color: string; unit: string }) {
+function MiniBars({ data, color, unit, empty }: { data: { date: string; value: number }[]; color: string; unit: string; empty?: string }) {
   const [grow, setGrow] = useState(false);
   useEffect(() => {
     // setTimeout, not rAF — rAF never fires in background tabs, leaving bars at 0
     const t = setTimeout(() => setGrow(true), 30);
     return () => clearTimeout(t);
   }, []);
+  // An empty chart should say where its data comes from — "no data yet" left
+  // even me guessing which screen fills water in.
   if (data.length === 0)
-    return <div className="h-20 flex items-center text-xs text-zinc-600">No data yet — fills in as you log</div>;
+    return <div className="h-20 flex items-center text-xs text-zinc-600">{empty ?? "Fills in as you log"}</div>;
   const max = Math.max(...data.map((d) => d.value));
   return (
     <div className="flex items-end gap-1.5 h-20">
@@ -389,11 +391,11 @@ export default function ProgressPage() {
           {[
             // `cls` drives the label (theme-aware via globals.css); `color`
             // stays a literal hex for the SVG stroke, which needs no remap.
-            { label: "Weight trend", data: weights, color: "#8b5cf6", cls: "text-violet-400", unit: "kg" },
-            { label: "Daily calories", data: calories, color: "#ef4444", cls: "text-rose-400", unit: "kcal" },
-            { label: "Protein intake", data: proteins, color: "#10b981", cls: "text-emerald-400", unit: "g" },
-            { label: "Water intake", data: waters, color: "#38bdf8", cls: "text-sky-400", unit: "ml" },
-          ].map(({ label, data, color, cls, unit }) => (
+            { label: "Weight trend", data: weights, color: "#8b5cf6", cls: "text-violet-400", unit: "kg", empty: "Add your weight in \u201cLog today\u201d" },
+            { label: "Daily calories", data: calories, color: "#ef4444", cls: "text-rose-400", unit: "kcal", empty: "Fills in from your food log on the dashboard" },
+            { label: "Protein intake", data: proteins, color: "#10b981", cls: "text-emerald-400", unit: "g", empty: "Fills in from your food log on the dashboard" },
+            { label: "Water intake", data: waters, color: "#38bdf8", cls: "text-sky-400", unit: "ml", empty: "Tap the water tracker on the dashboard" },
+          ].map(({ label, data, color, cls, unit, empty }) => (
             <div key={label} className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className={`text-sm font-semibold ${cls}`}>{label}</span>
@@ -403,7 +405,7 @@ export default function ProgressPage() {
                   </span>
                 )}
               </div>
-              <MiniBars data={data} color={color} unit={unit} />
+              <MiniBars data={data} color={color} unit={unit} empty={empty} />
             </div>
           ))}
         </div>
@@ -431,7 +433,14 @@ export default function ProgressPage() {
         {/* full history */}
         {merged.length > 0 && (
           <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
-            <h3 className="text-sm font-semibold text-zinc-300 mb-3">Full history</h3>
+            <h3 className="text-sm font-semibold text-zinc-300">Full history</h3>
+            {/* A dash in a column reads as broken unless the table says what
+                fills it. Weight and mood are manual; the rest derive. */}
+            <p className="text-xs text-zinc-500 mb-3 mt-1">
+              Calories and protein come from your food log · water from the dashboard tracker ·
+              burned from steps and workouts · weight and mood from &ldquo;Log today&rdquo;.
+              A dash just means nothing was recorded that day.
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -442,7 +451,7 @@ export default function ProgressPage() {
                     <th className="pb-2 pr-3 font-semibold">Protein</th>
                     <th className="pb-2 pr-3 font-semibold">Water</th>
                     <th className="pb-2 pr-3 font-semibold">Burned</th>
-                    <th className="pb-2 font-semibold">Mood</th>
+                    <th className="pb-2 font-semibold" title="How you felt that day, 1–5 — set in “Log today”">Mood</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -456,7 +465,9 @@ export default function ProgressPage() {
                       <td className="py-2.5 pr-3 tabular-nums">{e.protein ? `${e.protein}g` : "—"}</td>
                       <td className="py-2.5 pr-3 tabular-nums">{e.water ? `${e.water} ml` : "—"}</td>
                       <td className="py-2.5 pr-3 tabular-nums">{e.workout ? `${e.workout} kcal` : "—"}</td>
-                      <td className="py-2.5">{e.mood ? MOOD_MAP[e.mood].emoji : "—"}</td>
+                      <td className="py-2.5" title={e.mood ? MOOD_MAP[e.mood].label : undefined}>
+                        {e.mood ? MOOD_MAP[e.mood].emoji : "—"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Activity } from "lucide-react";
+import { useReadout } from "@/components/ui/LiveReadout";
 
 /* ─── ECG waveform ──────────────────────────────────────────────
    One tile = flatline + a single beat spike. Strung into a strip and
@@ -90,6 +91,10 @@ const accents = ["var(--pulse-lime)", "var(--pulse-cyan)", "var(--pulse-amber)"]
 const card = "rounded-2xl border border-white/[0.08] bg-white/[0.03]";
 
 export default function HomePage() {
+  // null until mounted, and for visitors with nothing logged — the card then
+  // shows the sample numbers instead of an empty shell.
+  const live = useReadout();
+
   return (
     <div className="font-sans text-[#f1f0ed] bg-[#0a0b0a]" style={{ overflowX: "clip" }}>
 
@@ -136,14 +141,18 @@ export default function HomePage() {
             <div className={`${card} p-6`}>
               <div className="flex items-center justify-between pulse-label text-[10px] text-[#9aa0a6]">
                 <span className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#c2f04a] animate-pulse" /> Sattvic score · today
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#c2f04a] animate-pulse" />
+                  {live ? "Your score · today" : "Sattvic score · sample"}
                 </span>
-                <span className="text-[#c2f04a]">On track</span>
+                <span className="text-[#c2f04a]">{live ? live.label : "On track"}</span>
               </div>
               <div className="flex items-end gap-4 mt-3">
-                <span className="font-display text-[5.5rem] leading-none text-[#f1f0ed]">78</span>
+                <span className="font-display text-[5.5rem] leading-none text-[#f1f0ed]">{live ? live.score : 78}</span>
                 <div className="pulse-label text-[10px] text-[#9aa0a6] pb-3 leading-relaxed">
-                  Streak<br /><span className="text-[#c2f04a]">6 days strong</span>
+                  Streak<br />
+                  <span className="text-[#c2f04a]">
+                    {live ? `${live.streak} day${live.streak === 1 ? "" : "s"} strong` : "6 days strong"}
+                  </span>
                 </div>
               </div>
               <div className="mt-2"><MiniEcg color="var(--pulse-lime)" /></div>
@@ -151,15 +160,23 @@ export default function HomePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className={`${card} p-5`}>
-                <p className="pulse-label text-[10px] text-[#9aa0a6]">Tonight</p>
-                <p className="pulse-serif text-2xl text-[#f1f0ed] mt-2 leading-tight">Paneer<br />Tikka Bowl</p>
-                <p className="pulse-label text-[9px] text-[#c2f04a] mt-3">High protein<br />balanced</p>
+                <p className="pulse-label text-[10px] text-[#9aa0a6]">{live?.meal ? "Last logged" : "Tonight"}</p>
+                <p className="pulse-serif text-2xl text-[#f1f0ed] mt-2 leading-tight line-clamp-3">
+                  {live?.meal ?? "Paneer Tikka Bowl"}
+                </p>
+                <p className="pulse-label text-[9px] text-[#c2f04a] mt-3">
+                  {live?.mealNote ?? "High protein · balanced"}
+                </p>
               </div>
               <div className={`${card} p-5 flex flex-col`}>
                 <p className="pulse-label text-[10px] text-[#9aa0a6]">Protein today</p>
-                <p className="font-display text-5xl text-[#f1f0ed] mt-auto">98<span className="text-lg text-[#9aa0a6]">/120g</span></p>
+                <p className="font-display text-5xl text-[#f1f0ed] mt-auto">
+                  {live ? live.protein : 98}
+                  <span className="text-lg text-[#9aa0a6]">/{live ? live.proteinTarget : 120}g</span>
+                </p>
                 <div className="mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-[#c2f04a]" style={{ width: "82%" }} />
+                  <div className="h-full rounded-full bg-[#c2f04a]"
+                    style={{ width: `${live ? Math.min(100, Math.round((live.protein / live.proteinTarget) * 100)) : 82}%` }} />
                 </div>
               </div>
             </div>
