@@ -1,5 +1,5 @@
 // Deterministic weight math: 7700 kcal ≈ 1 kg of body weight.
-// ponytail: workouts are NOT subtracted — maintenance (TDEE) already includes
+// Note: workouts are NOT subtracted — maintenance (TDEE) already includes
 // the user's activity level, subtracting logged workouts would double-count.
 const KCAL_PER_KG = 7700;
 

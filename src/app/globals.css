@@ -169,7 +169,7 @@ body {
    both fail WCAG AA (4.5:1) on the app's most-used control. emerald-700 keeps
    the brand hue and clears it at 4.9:1. Tinted classes (bg-emerald-500/10 etc)
    are separate selectors and are untouched.
-   ponytail: one block, delete it to revert the brand green. */
+   Note: one block, delete it to revert the brand green. */
 .bg-emerald-500 { background-color: #047857; }
 .bg-emerald-600 { background-color: #047857; }
 .hover\:bg-emerald-400:hover { background-color: #059669; }
@@ -200,7 +200,7 @@ body {
 [data-theme="light"] .bg-\[\#111111\] { background-color: var(--surface) !important; }
 /* Real content surface that was missing its override: the flip-card back was
    staying dark while .text-white flipped to dark — invisible text.
-   ponytail: overrides are whack-a-mole; the real fix is semantic tokens in the
+   Note: overrides are whack-a-mole; the real fix is semantic tokens in the
    components. Do that when the next hardcoded hex slips through. */
 [data-theme="light"] .bg-\[\#0f0f0f\] { background-color: var(--surface) !important; }
 
@@ -246,7 +246,7 @@ body {
 /* Accent text: the -300/-400 shades are tuned for dark surfaces and drop to
    ~1.7:1 on light tinted chips (e.g. text-sky-300 on bg-sky-500/15).
    Remap to the -700 shades, which clear AA on both white and tinted panels.
-   ponytail: 15 rules here beat editing 210 call sites. */
+   Note: 15 rules here beat editing 210 call sites. */
 [data-theme="light"] .text-emerald-300,
 [data-theme="light"] .text-emerald-400,
 [data-theme="light"] .text-emerald-500 { color: #047857 !important; }

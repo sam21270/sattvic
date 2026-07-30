@@ -471,7 +471,7 @@ const SAMPLE_MEALS: Meal[] = [
 const VIRAL_TAGS = ["TikTok Viral", "TikTok", "TikTok 2024", "Reddit Viral", "Reddit Favourite", "Instagram", "Instagram Viral", "YouTube Classic", "NYT Cooking"];
 
 // Deterministic weekly pick — same recipe for everyone all week, rotates on its
-// own, no backend. ponytail: swap for a rating-ranked pick after the DB lands.
+// own, no backend. Note: swap for a rating-ranked pick after the DB lands.
 function recipeOfTheWeek(): Meal {
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 1);

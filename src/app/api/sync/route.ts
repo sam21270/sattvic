@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import User from "@/models/User";
 
 // Cross-device sync of the whole `sattvic*` localStorage namespace.
-// ponytail: uses ?email= like every other route here; verify the session
+// Note: uses ?email= like every other route here; verify the session
 // server-side (getServerSession) once the whole API surface moves off email params.
 
 export async function GET(req: NextRequest) {

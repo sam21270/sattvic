@@ -41,7 +41,7 @@ export default function ProfilePage() {
 
   // Derive streak + avg score from the SAME local history the dashboard uses,
   // so the two pages agree. Falls back to the DB value if there's no local data.
-  // ponytail: swap to the synced DB fields once localStorage→Mongo sync lands.
+  // Note: swap to the synced DB fields once localStorage→Mongo sync lands.
   const history = loadHistory();
   const streak = history.length ? currentStreak(history) : (userData.streak ?? 0);
   const avgScore = history.length

@@ -283,7 +283,7 @@ function Dashboard() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.55 }}>
-          {/* ponytail: free-form AI logging replaced the 5-slot MealLogger —
+          {/* Note: free-form AI logging replaced the 5-slot MealLogger —
               "1 banana, 1 cup poha, 3 biscuits" any time, any number of meals */}
           <AIFoodLog onTotalsChange={(t) => setLog((l) => ({ ...l, ...t }))} />
         </motion.div>

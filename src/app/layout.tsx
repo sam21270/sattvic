@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${instrumentSerif.variable} h-full antialiased`} data-theme="dark" suppressHydrationWarning>
       {/* Dark-only: the light theme was never finished, so there is no toggle
           and no theme script. data-theme="dark" on <html> is the whole story.
-          ponytail: the [data-theme="light"] CSS is now unreachable dead code —
+          Note: the [data-theme="light"] CSS is now unreachable dead code —
           kept so light mode can be finished later; delete it if it never is. */}
       <body className="min-h-full bg-[#0a0a0a] text-zinc-100">
         <Providers>

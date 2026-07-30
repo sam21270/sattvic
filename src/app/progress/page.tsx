@@ -77,7 +77,7 @@ export default function ProgressPage() {
     mood: 3 as 1 | 2 | 3 | 4 | 5,
   });
 
-  // ponytail: ~0.04 kcal per step (walking average) — good enough without body-weight math
+  // Note: ~0.04 kcal per step (walking average) — good enough without body-weight math
   function autoBurned(date: string): number {
     let burned = 0;
     try {

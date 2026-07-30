@@ -29,7 +29,7 @@ export function getBadge(id: string): Badge | undefined {
 
 // Evaluate badges from what's actually in localStorage, so they light up for
 // things the user has already done. Client-only (guards against SSR).
-// ponytail: this is the local mirror of the server award path in /api/user —
+// Note: this is the local mirror of the server award path in /api/user —
 // merge/replace once localStorage→Mongo sync lands.
 export function computeLocalBadges(): string[] {
   if (typeof window === "undefined") return [];

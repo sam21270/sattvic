@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         .replace(/<style[\s\S]*?<\/style>/gi, "")
         .replace(/<[^>]+>/g, " ")
         .replace(/\s+/g, " ")
-        .slice(0, 12000); // ponytail: char cap instead of readability lib
+        .slice(0, 12000); // Note: char cap instead of readability lib
     }
 
     const completion = await groq.chat.completions.create({
