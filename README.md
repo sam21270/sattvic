@@ -5,7 +5,8 @@ respects your macros. You answer nine questions instead of keeping a food
 diary; it plans the week, counts the protein, and decides dinner before you
 get home.
 
-**Live:** https://sattvic.vercel.app · **Solo project**, built and shipped end to end.
+**Live:** https://sattvic.vercel.app · Built and shipped solo, AI-assisted —
+see [How I used AI](#how-i-used-ai).
 
 > No user base — this is a portfolio project, so the landing page shows how it
 > was built rather than testimonials I don't have. Sign in with Google to try
@@ -62,6 +63,29 @@ so the next person can tell intent from accident.
 smooth-scroll and the Three.js hero orb are both disabled on
 `(pointer: coarse)` — on a mid-range phone the RAF loop fights native momentum
 scrolling and the orb burns frames for decoration.
+
+## How I used AI
+
+Two different things get called "AI" in this repo and they're worth separating.
+
+**Inside the product,** a model does exactly one job: turning "2 rotis, dal, a
+glass of buttermilk" into grams. That's where messy human input has to become
+structured data, and rules alone handle it badly. Everything downstream — the
+Sattvic Score, dosha matching, macro targets, badge thresholds — is
+deterministic code that can be read and tested. The split is the whole design:
+a model that invents your protein number can't be debugged or trusted, so the
+model gets the ambiguity and plain functions get the arithmetic.
+
+**Building it,** I used AI as an assistant — fastest on UI scaffolding,
+animation boilerplate, and first drafts of copy. What it didn't decide: the
+product itself, the data model, the nutrition and dosha logic, and what to cut.
+Some of the better details came from pushing back on the first answer — the
+sync endpoint rejects empty payloads because the real failure mode is a fresh
+device syncing `{}` upward and wiping a month of logs, which is the kind of
+thing you only catch by thinking about your own users.
+
+Short version: AI made me faster at the parts that are typing. It didn't do the
+parts that are deciding.
 
 ## Known limitations
 
