@@ -4,7 +4,6 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { Providers } from "@/components/Providers";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { JourneyBar } from "@/components/ui/JourneyBar";
 import { ResumeBanner } from "@/components/ui/ResumeBanner";
 
@@ -46,13 +45,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${instrumentSerif.variable} h-full antialiased`} data-theme="dark" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('sattvic-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();`,
-          }}
-        />
-      </head>
+      {/* Dark-only: the light theme was never finished, so there is no toggle
+          and no theme script. data-theme="dark" on <html> is the whole story.
+          ponytail: the [data-theme="light"] CSS is now unreachable dead code —
+          kept so light mode can be finished later; delete it if it never is. */}
       <body className="min-h-full bg-[#0a0a0a] text-zinc-100">
         <Providers>
           <SmoothScroll />
@@ -60,7 +56,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <JourneyBar />
           <main>{children}</main>
           <ResumeBanner />
-          <ThemeToggle />
         </Providers>
       </body>
     </html>
