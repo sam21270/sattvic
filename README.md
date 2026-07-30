@@ -91,12 +91,11 @@ parts that are deciding.
 
 Being straight about what isn't done:
 
-- **API routes authenticate by `?email=` query param, not the server session.**
-  It works, but it means a caller who knows an address can read or write that
-  user's sync blob. The fix is `auth()` server-side in each route handler —
-  it's the first thing I'd change, and it's marked in the code.
 - **No test suite.** Scoring and the dosha rules are pure functions and are the
   obvious place to start.
+- **Sync is whole-blob, not per-key.** Two devices editing different things in
+  the same session means the older write loses everything, not just the
+  conflicting key.
 - **Light theme is unfinished**, so the app ships dark-only; the
   `[data-theme="light"]` CSS is still in the repo but unreachable.
 - Recipe and food photography is placeholder.
@@ -119,5 +118,4 @@ GOOGLE_CLIENT_SECRET=…
 GROQ_API_KEY=…
 ```
 
-`@anthropic-ai/sdk` is still in `package.json` from an earlier iteration but
-nothing imports it — it can be dropped.
+All AI calls go through Groq; there's no second provider to configure.

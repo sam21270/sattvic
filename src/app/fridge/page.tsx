@@ -63,11 +63,13 @@ export default function FridgePage() {
         body: JSON.stringify({ ingredients: ingredients.join(", "), jain: localStorage.getItem("sattvic-jain") === "1" }),
       });
       const data = await res.json();
+      // Without this the catch below only ever saw network failures, so a real
+      // API error rendered as "no recipes found" instead of the reason.
+      if (!res.ok || data?.error) throw new Error(data?.error ?? "Failed");
       setResults(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError(err.message?.includes("credit")
-        ? "API credits needed — add $5 at console.anthropic.com to enable this feature."
-        : "Something went wrong. Please try again.");
+      // Surface the route's own message (rate limited / not configured / down)
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

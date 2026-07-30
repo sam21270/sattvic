@@ -19,7 +19,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (session?.user?.email) {
-      fetch(`/api/user?email=${session.user.email}`)
+      fetch("/api/user")
         .then((r) => r.json())
         .then(setUserData);
     }

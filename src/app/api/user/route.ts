@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import UserModel from "@/models/User";
 import { checkNewBadges } from "@/lib/badges";
+
+// The signed-in user's email always comes from the session, never from the
+// request. Trusting a client-supplied ?email= let any caller read or mutate
+// another account's streak, badges and dosha just by knowing their address.
 
 function getTodayKey() {
   return new Date().toISOString().slice(0, 10);
@@ -13,23 +18,27 @@ function getYesterdayKey() {
   return d.toISOString().slice(0, 10);
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   await connectDB();
-  const email = req.nextUrl.searchParams.get("email");
-  if (!email) return NextResponse.json({ error: "No email" }, { status: 400 });
-  const user = await UserModel.findOne({ email }).lean();
+  const user = await UserModel.findOne({ email: session.user.email }).lean();
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(user);
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   await connectDB();
   const body = await req.json();
-  const { email, score, grade, mealsLoggedToday, doshaResult, usedFridge, calculatedMacros, weekPlanned, proteinHit } = body;
+  // `email` is deliberately not read off the body — the session decides whose
+  // record this writes to.
+  const { score, grade, mealsLoggedToday, doshaResult, usedFridge, calculatedMacros, weekPlanned, proteinHit } = body;
 
-  if (!email) return NextResponse.json({ error: "No email" }, { status: 400 });
-
-  const user = await UserModel.findOne({ email });
+  const user = await UserModel.findOne({ email: session.user.email });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const today = getTodayKey();

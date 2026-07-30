@@ -46,7 +46,7 @@ export function CloudSync() {
       await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, data, updatedAt: ts }),
+        body: JSON.stringify({ data, updatedAt: ts }),
       });
     } catch {}
   }
@@ -57,7 +57,7 @@ export function CloudSync() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/sync?email=${encodeURIComponent(email)}`);
+        const res = await fetch("/api/sync");
         if (!res.ok || cancelled) return;
         const { data, updatedAt } = await res.json();
         const localTs = Number(localStorage.getItem(TS_KEY) ?? 0);

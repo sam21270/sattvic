@@ -59,9 +59,9 @@ export default function JunkPage() {
       if (!res.ok || data.error) throw new Error(data.error ?? "Failed");
       setResult(data);
     } catch (err: any) {
-      setError(err.message?.includes("credit")
-        ? "API credits needed — add $5 at console.anthropic.com."
-        : "Something went wrong. Try again.");
+      // The API routes already return a user-readable reason (rate limited,
+      // not configured, upstream down) — show that rather than guessing.
+      setError(err.message || "Something went wrong. Try again.");
     } finally {
       setLoading(false);
     }

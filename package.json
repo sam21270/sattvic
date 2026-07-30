@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.104.1",
     "@auth/mongodb-adapter": "^3.11.2",
     "@react-three/fiber": "^9.6.1",
     "@types/canvas-confetti": "^1.9.0",

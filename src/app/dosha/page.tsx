@@ -266,11 +266,8 @@ function DoshaQuiz() {
       localStorage.setItem("sattvic-allergies", JSON.stringify(allAllergies));
       localStorage.setItem("sattvic-conditions", JSON.stringify(conditions.filter((c) => c !== "none")));
     } catch (err: any) {
-      setApiError(
-        err.message?.includes("credit")
-          ? "API credits needed — add $5 at console.anthropic.com."
-          : "Something went wrong. Please try again."
-      );
+      // Surface the route's own message (rate limited / not configured / down)
+      setApiError(err.message || "Something went wrong. Please try again.");
       setStep(TOTAL_STEPS);
     } finally {
       setLoading(false);

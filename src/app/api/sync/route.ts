@@ -1,23 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import User from "@/models/User";
 
-// Cross-device sync of the whole `sattvic*` localStorage namespace.
-// Note: uses ?email= like every other route here; verify the session
-// server-side (getServerSession) once the whole API surface moves off email params.
+// Cross-device sync of the whole `sattvic*` localStorage namespace. Whose blob
+// this reads or writes is decided by the session — a client-supplied email
+// would let anyone pull another user's entire logged history.
 
-export async function GET(req: NextRequest) {
-  const email = req.nextUrl.searchParams.get("email");
-  if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const user = await User.findOne({ email }).select("syncData syncUpdatedAt").lean() as any;
+  const user = await User.findOne({ email: session.user.email }).select("syncData syncUpdatedAt").lean() as any;
   return NextResponse.json({ data: user?.syncData ?? null, updatedAt: user?.syncUpdatedAt ?? 0 });
 }
 
 export async function POST(req: NextRequest) {
-  const { email, data, updatedAt } = await req.json();
-  if (!email || !data || typeof data !== "object" || typeof updatedAt !== "number") {
+  const session = await auth();
+  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const email = session.user.email;
+
+  const { data, updatedAt } = await req.json();
+  if (!data || typeof data !== "object" || typeof updatedAt !== "number") {
     return NextResponse.json({ error: "bad request" }, { status: 400 });
   }
   // never accept an empty blob — protects against a fresh device clobbering data
