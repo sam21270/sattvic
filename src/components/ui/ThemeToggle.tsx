@@ -1,17 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
 
 export function ThemeToggle() {
-  const pathname = usePathname();
-  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = (localStorage.getItem("sattvic-theme") as "dark" | "light") ?? "light";
+    const saved = (localStorage.getItem("sattvic-theme") as "dark" | "light") ?? "dark";
     setTheme(saved);
     document.documentElement.setAttribute("data-theme", saved);
     setMounted(true);
@@ -25,7 +23,6 @@ export function ThemeToggle() {
   }
 
   if (!mounted) return null;
-  if (pathname === "/") return null;   // landing is light-only by design
 
   const isDark = theme === "dark";
 

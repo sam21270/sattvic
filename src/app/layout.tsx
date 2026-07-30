@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Archivo, Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Archivo, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
@@ -12,7 +12,6 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"] });
 const instrumentSerif = Instrument_Serif({ variable: "--font-serif", weight: "400", style: ["normal", "italic"], subsets: ["latin"] });
-const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"] });
 
 const DESCRIPTION =
   "Type what you ate in plain language and let AI count the macros. Personalised vegetarian meal plans, Ayurvedic dosha matching, Jain mode, and a shopping list that knows what's already in your fridge.";
@@ -41,20 +40,20 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#faf7f1",
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${instrumentSerif.variable} ${jakarta.variable} h-full antialiased`} data-theme="light" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${instrumentSerif.variable} h-full antialiased`} data-theme="dark" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('sattvic-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();`,
+            __html: `(function(){var t=localStorage.getItem('sattvic-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();`,
           }}
         />
       </head>
-      <body className="min-h-full bg-bg text-fg">
+      <body className="min-h-full bg-[#0a0a0a] text-zinc-100">
         <Providers>
           <SmoothScroll />
           <Navbar />

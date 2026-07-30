@@ -55,61 +55,8 @@
 @keyframes breathe { 0%,100% { opacity: .45; transform: scale(1); } 50% { opacity: .8; transform: scale(1.05); } }
 .animate-breathe { animation: breathe 9s ease-in-out infinite; }
 
-/* ── Cinematic landing (v5) ───────────────────────────────────────
-   Warm-paper, light-only marketing page. Scoped under .sat-landing so it
-   never touches the app's dark theme. Keyframes are sat-* prefixed. */
-@keyframes sat-marq   { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes sat-dolly  { 0% { transform: translateZ(-2000px); } 100% { transform: translateZ(700px); } }
-@keyframes sat-line   { 0% { opacity: 0; } 5%,28% { opacity: 1; } 33%,100% { opacity: 0; } }
-@keyframes sat-cue    { 0%,100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(7px); opacity: 1; } }
-@keyframes sat-rise   { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
-@keyframes sat-zoomthru { 0% { transform: scale(1.16); opacity: .4; } 38% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.04); opacity: 1; } }
-@keyframes sat-soften { from { opacity: 0; transform: translateY(40px) scale(.94); } to { opacity: 1; transform: none; } }
-@keyframes sat-swell  { from { transform: scale(.82); opacity: .35; } to { transform: scale(1); opacity: 1; } }
-
-.sat-landing a { color: #1a1815; text-decoration: none; transition: color .4s ease; }
-.sat-landing a:hover { color: #e0431e; }
-
-.sat-landing [data-reveal] { animation: sat-rise 1s cubic-bezier(.2,.8,.2,1) both; }
-.sat-landing [data-reveal-delay="70"]  { animation-delay: .07s; }
-.sat-landing [data-reveal-delay="80"]  { animation-delay: .08s; }
-.sat-landing [data-reveal-delay="90"]  { animation-delay: .09s; }
-.sat-landing [data-reveal-delay="140"] { animation-delay: .14s; }
-.sat-landing [data-reveal-delay="210"] { animation-delay: .21s; }
-.sat-landing [data-reveal-delay="280"] { animation-delay: .28s; }
-.sat-landing [data-reveal-delay="350"] { animation-delay: .35s; }
-@supports (animation-timeline: view()) {
-  .sat-landing [data-reveal] { animation: sat-soften 1s cubic-bezier(.2,.8,.2,1) both; animation-timeline: view(); animation-range: entry 4% entry 70%; animation-delay: 0s; }
-  .sat-landing [data-zoom]   { animation: sat-zoomthru linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-  .sat-landing [data-swell]  { animation: sat-swell linear both; animation-timeline: view(); animation-range: entry 10% cover 46%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sat-landing [data-reveal], .sat-landing [data-zoom], .sat-landing [data-swell] { animation: none; }
-  .sat-dolly, .sat-hline, .sat-cue, .sat-marq-row { animation: none !important; }
-}
-
-/* Desktop-first spec: below 860px hide the nav links and the stage's step
-   column, letting the phone screens carry the story. ponytail: a proper
-   mobile pass (stack copy above phone, static hero plate) is a follow-up. */
-@media (max-width: 860px) {
-  .sat-nav-links { display: none !important; }
-  .sat-stage-grid { grid-template-columns: 1fr !important; }
-  .sat-stage-grid > div:first-child { display: none !important; }
-}
-
-/* hover lifts (React inline styles can't do :hover) */
-.sat-lift            { transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .6s ease, background .45s ease, color .45s ease; }
-.sat-lift:hover      { transform: translateY(-3px); }
-.sat-lift-sm:hover   { transform: translateY(-1px); }
-.sat-pill-dark:hover { background: #e0431e !important; color: #fff !important; }
-.sat-taste           { transition: transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .6s ease; }
-.sat-taste:hover     { transform: translateY(-8px); box-shadow: 0 24px 50px rgba(26,24,21,.22); }
-
 /* ── Design tokens ────────────────────────────────────────────── */
 :root {
-  /* Native controls (range tracks, selects, scrollbars) follow this. Without
-     it the browser painted dark tracks on the light page. */
-  color-scheme: dark;
   --bg:        #0a0a0a;
   --surface:   #141414;
   --gallery-bg: #0d0d0d;   /* food-gallery band; flips in light mode below */
@@ -122,21 +69,18 @@
 }
 
 [data-theme="light"] {
-  /* Cinematic warm-paper palette — same tokens the landing page uses, so every
-     app page reads as the same design. */
-  color-scheme: light;
-  --bg:        #faf7f1;
-  --surface:   #fffdf8;
-  --surface2:  rgba(26,24,21,0.02);
-  --border:    rgba(26,24,21,0.09);
-  --border2:   rgba(26,24,21,0.14);
-  --fg:        #1a1815;
-  --gallery-bg: #efe7d8;   /* photo backing from the design tokens */
+  --bg:        #f8f6f1;
+  --surface:   #ffffff;
+  --surface2:  rgba(0,0,0,0.02);
+  --border:    rgba(0,0,0,0.08);
+  --border2:   rgba(0,0,0,0.14);
+  --fg:        #1a1a1a;
+  --gallery-bg: #f0ede8;   /* soft off-white so the gallery matches the page */
   /* Measured against --bg (#f8f6f1) and --surface (#fff); all clear WCAG AA 4.5:1.
      The old --fg-subtle (#a8a29e) scored 2.34:1 and failed everywhere it was used. */
-  --fg-muted:  #4a453c;   /* ink-dim  — body copy */
-  --fg-subtle: #6b655c;   /* between ink-dim and ink-mute, still AA on paper */
-  --fg-faint:  #8a8272;   /* ink-mute — kickers, meta, labels */
+  --fg-muted:  #57534e;   /* 7.1 / 7.6 */
+  --fg-subtle: #6b655f;   /* 5.3 / 5.8 */
+  --fg-faint:  #736c65;   /* 4.8 / 5.2 — dimmest tier that still passes */
 }
 
 /* ── Tailwind v4 theme mapping ────────────────────────────────── */
@@ -305,7 +249,7 @@ body {
    ponytail: 15 rules here beat editing 210 call sites. */
 [data-theme="light"] .text-emerald-300,
 [data-theme="light"] .text-emerald-400,
-[data-theme="light"] .text-emerald-500 { color: #2c5620 !important; }
+[data-theme="light"] .text-emerald-500 { color: #047857 !important; }
 [data-theme="light"] .text-rose-300,
 [data-theme="light"] .text-rose-400,
 [data-theme="light"] .text-rose-500    { color: #be123c !important; }
@@ -323,36 +267,7 @@ body {
 [data-theme="light"] .text-blue-400    { color: #1d4ed8 !important; }
 [data-theme="light"] .text-pink-400    { color: #be185d !important; }
 /* emerald-600 is too light for 10px labels on --bg */
-[data-theme="light"] .text-emerald-600 { color: #2c5620 !important; }
-
-/* ── Cinematic accents on app pages ──────────────────────────────
-   Solid emerald fills are the app's primary action; the landing's primary is
-   ink, with terracotta for the hero CTA. Map fills to the design's green so
-   buttons stay one recognisable family across landing + app. */
-[data-theme="light"] .bg-emerald-500,
-[data-theme="light"] .bg-emerald-600 { background-color: #3f7a2e !important; }
-[data-theme="light"] .hover\:bg-emerald-400:hover,
-[data-theme="light"] .hover\:bg-emerald-500:hover { background-color: #2c5620 !important; }
-[data-theme="light"] .bg-emerald-500\/10,
-[data-theme="light"] .bg-emerald-500\/20 { background-color: rgba(63,122,46,.12) !important; }
-[data-theme="light"] .accent-emerald-500 { accent-color: #3f7a2e; }
-[data-theme="light"] .border-emerald-500\/20,
-[data-theme="light"] .border-emerald-500\/30 { border-color: rgba(63,122,46,.28) !important; }
-
-/* Serif display type is the design's loudest signature — apply it to page
-   headings everywhere so the app reads like the landing. Utility-sized text
-   (chips, labels, stat readouts) keeps Jakarta via .not-serif escape hatch. */
-[data-theme="light"] h1,
-[data-theme="light"] h2 {
-  font-family: var(--font-serif), Georgia, serif !important;
-  font-weight: 400 !important;
-  letter-spacing: -.03em;
-}
-[data-theme="light"] h1.not-serif,
-[data-theme="light"] h2.not-serif { font-family: var(--font-jakarta), system-ui, sans-serif !important; }
-
-/* Body copy in the app switches to the landing's UI face */
-[data-theme="light"] body { font-family: var(--font-jakarta), system-ui, sans-serif; }
+[data-theme="light"] .text-emerald-600 { color: #046c4e !important; }
 
 /* Solid accent fills keep white text in light mode. .text-white is remapped to
    the dark foreground above (correct on cards), which would otherwise put dark
@@ -411,17 +326,13 @@ body {
 }
 [data-theme="light"] input::placeholder { color: #a8a29e !important; }
 
-.sat-wordmark { font-family: var(--font-serif), Georgia, serif; }
-
 /* Navbar */
 .sattvic-nav {
   background: rgba(10, 10, 10, 0.85);
   border-color: var(--border);
 }
 [data-theme="light"] .sattvic-nav {
-  background: rgba(250, 247, 241, 0.72);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(248, 246, 241, 0.85);
   border-color: var(--border);
 }
 
