@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Activity, Star } from "lucide-react";
+import { ArrowRight, Activity } from "lucide-react";
 
 /* ─── ECG waveform ──────────────────────────────────────────────
    One tile = flatline + a single beat spike. Strung into a strip and
@@ -74,10 +74,14 @@ const features = [
   { href: "/social", tag: "Social", title: "Compete with Friends", desc: "Add friends and battle it out on a weekly leaderboard. Challenges, badges, glory." },
 ];
 
-const reviews = [
-  { name: "Priya M.", handle: "@priya_eats", text: "Finally a meal planner that actually understands vegetarian nutrition. The suggestions are spot on!" },
-  { name: "Arjun K.", handle: "@arjunfitlife", text: "I hit my protein goals every day now. The macro calculator changed how I plan my meals completely." },
-  { name: "Meera S.", handle: "@meerawellness", text: "The dosha quiz was eye-opening. My meal plan is completely different now and I feel so much better." },
+/* Built-notes replace the invented testimonials that used to sit here. Sattvic
+   has no user base yet, so quoting imaginary people was the one thing on this
+   page that wasn't true — and a reviewer spots that instantly. */
+const buildNotes = [
+  { label: "The idea", text: "Most trackers ask you to count calories. Ayurveda asks what your body is like. Sattvic does both — a nine-question constitution read, then meals that hit real macro targets." },
+  { label: "The hard part", text: "Plain-language food logging. \"2 rotis, dal, a glass of buttermilk\" has to become grams of protein — an LLM parses it, then the macros are recomputed and stored server-side." },
+  { label: "The stack", text: "Next.js App Router on Vercel, MongoDB via Mongoose, Google auth with NextAuth, and Llama 3.3 70B on Groq for the AI paths. Built and shipped solo." },
+  { label: "The cleanup", text: "A contrast pass measured every text pair against WCAG AA and fixed the ones that failed. The 3D hero and smooth-scroll switch off on touch devices, where they only cost frames." },
 ];
 
 const accents = ["var(--pulse-lime)", "var(--pulse-cyan)", "var(--pulse-amber)"];
@@ -214,29 +218,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ──────────────────────────────────────── */}
-      <section className="py-16">
-        <div className="px-4 max-w-6xl mx-auto mb-10">
-          <p className="pulse-label text-[10px] text-[#c2f04a] mb-3">Loved by vegetarians</p>
-          <h2 className="font-display text-[clamp(2.5rem,6vw,4.5rem)] text-[#f1f0ed]">Real people,<br />real results.</h2>
+      {/* ── HOW IT'S BUILT ────────────────────────────────────── */}
+      <section className="px-4 py-16 max-w-6xl mx-auto">
+        <div className="mb-10">
+          <p className="pulse-label text-[10px] text-[#c2f04a] mb-3">How it&rsquo;s built</p>
+          <h2 className="font-display text-[clamp(2.5rem,6vw,4.5rem)] text-[#f1f0ed]">No users yet.<br />Just the build.</h2>
+          <p className="text-[15px] text-[#9aa0a6] leading-relaxed max-w-lg mt-5">
+            Sattvic is a solo project, not a company — so there are no testimonials to show you.
+            Here&rsquo;s what actually went into it instead.
+          </p>
         </div>
-        <div className="relative overflow-hidden" style={{ maskImage: "linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)" }}>
-          <div className="flex gap-4 w-max animate-marquee-slow px-4">
-            {[...reviews, ...reviews, ...reviews].map((r, i) => (
-              <div key={i} className={`${card} w-80 shrink-0 p-6 space-y-4`}>
-                <div className="flex gap-1">
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <Star key={s} className="w-3.5 h-3.5" style={{ color: "var(--pulse-amber)", fill: "var(--pulse-amber)" }} />
-                  ))}
-                </div>
-                <p className="text-sm text-[#c8c8c0] leading-relaxed">&ldquo;{r.text}&rdquo;</p>
-                <div>
-                  <p className="text-sm font-semibold text-[#e8e8e0]">{r.name}</p>
-                  <p className="pulse-label text-[9px] text-[#6b7178]">{r.handle}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {buildNotes.map((n, i) => (
+            <div key={n.label} className={`${card} p-6 space-y-3`}>
+              <p className="pulse-label text-[10px]" style={{ color: accents[i % accents.length] }}>{n.label}</p>
+              <p className="text-sm text-[#c8c8c0] leading-relaxed">{n.text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3 mt-6">
+          <a href="https://github.com/sam21270/sattvic" target="_blank" rel="noopener noreferrer"
+            className="pulse-label text-[12px] text-[#0a0b0a] bg-[#c2f04a] hover:bg-[#d4ff5e] transition-colors rounded-full px-6 py-3">
+            Read the code
+          </a>
+          <Link href="/dashboard"
+            className="pulse-label text-[12px] text-[#e8e8e0] border border-white/20 hover:border-white/40 transition-colors rounded-full px-6 py-3">
+            Try it with sample data
+          </Link>
         </div>
       </section>
 
