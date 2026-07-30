@@ -55,15 +55,18 @@ function MiniEcg({ color }: { color: string }) {
 }
 
 /* ─── Real SATTVIC content ──────────────────────────────────── */
+// Counts are real: 145 meals in mealPool + 26 recipes in the browser = 171,
+// and 12 badges in ALL_BADGES. "Meat-free" not "plant-based" — the pool uses
+// paneer, curd, ghee and eggs, so a plant-based claim would be wrong.
 const stats = [
-  { num: "200+", label: "Vegetarian recipes" },
+  { num: "170+", label: "Vegetarian recipes" },
   { num: "7-Day", label: "Meal planning" },
-  { num: "100%", label: "Plant-based" },
+  { num: "100%", label: "Meat-free" },
   { num: "12", label: "Achievement badges" },
 ];
 
 const ticker = [
-  "HIGH PROTEIN MEALS", "SATTVIC LIVING", "PLANT-BASED NUTRITION", "STREAK TRACKING",
+  "HIGH PROTEIN MEALS", "SATTVIC LIVING", "VEGETARIAN NUTRITION", "STREAK TRACKING",
   "MACRO TRACKING", "LOW CARB RECIPES", "MINDFUL EATING", "CLEAN INGREDIENTS",
 ];
 
