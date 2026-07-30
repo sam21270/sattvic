@@ -27,15 +27,18 @@ function ecgPoints(beats: number, tile: number, mid: number, amp: number) {
 function PulseStrip() {
   const beats = 8, tile = 120, w = beats * tile, h = 60, mid = 30, amp = 20;
   const pts = ecgPoints(beats, tile, mid, amp);
-  const Half = () => (
+  // A plain element, not a nested component — defining a component during
+  // render makes React recreate it on every pass.
+  const half = (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="shrink-0" preserveAspectRatio="none">
       <polyline points={pts} fill="none" stroke="var(--pulse-lime)" strokeWidth="1.5" strokeOpacity="0.6" />
     </svg>
   );
   return (
     <div className="relative w-full overflow-hidden" style={{ maskImage: "linear-gradient(90deg,transparent,#000 12%,#000 78%,transparent)" }}>
+      {/* duplicated so the -50% marquee wraps seamlessly */}
       <div className="flex animate-marquee" style={{ width: "max-content" }}>
-        <Half /><Half />
+        {half}{half}
       </div>
       <Activity className="absolute right-[14%] top-1/2 -translate-y-1/2 w-6 h-6" style={{ color: "var(--pulse-cyan)" }} />
     </div>

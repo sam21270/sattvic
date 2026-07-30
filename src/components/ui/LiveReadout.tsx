@@ -78,6 +78,10 @@ function read(): Readout | null {
 export function useReadout(): Readout | null {
   const [data, setData] = useState<Readout | null>(null);
   useEffect(() => {
+    // Deliberate: localStorage can only be read after mount. Reading it during
+    // render would return null on the server and real data on the client, which
+    // is a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setData(read());
     // Re-read when another tab logs a meal, so the card can't go stale.
     const onStorage = () => setData(read());

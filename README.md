@@ -5,10 +5,10 @@ respects your macros. You answer nine questions instead of keeping a food
 diary; it plans the week, counts the protein, and decides dinner before you
 get home.
 
-**Live:** https://sattvic.vercel.app · Built and shipped solo, AI-assisted —
-see [How I used AI](#how-i-used-ai).
+**Live:** https://sattvic.vercel.app · Built and shipped solo, AI-assisted.
+See [How I used AI](#how-i-used-ai).
 
-> No user base — this is a portfolio project, so the landing page shows how it
+> No user base yet. This is a portfolio project, so the landing page shows how it
 > was built rather than testimonials I don't have. Sign in with Google to try
 > it against your own data.
 
@@ -35,7 +35,7 @@ Framer Motion · React Three Fiber · Lenis · deployed on Vercel
 
 **Nutrition scoring is deterministic, not AI.** The LLM only converts free text
 into numbers. The Sattvic Score itself (`src/lib/scoring.ts`) is a plain
-weighted function — calories 25, protein 30, meals 20, dosha fit 15,
+weighted function: calories 25, protein 30, meals 20, dosha fit 15,
 micronutrients 10. A model that invents your score can't be debugged or
 trusted; a pure function can be unit-tested and always explains itself. AI is
 used for the fuzzy part only.
@@ -50,18 +50,18 @@ for a single user on two devices.
 
 **Local-first, so the app works before you sign in.** Everything writes to
 localStorage first and syncs on auth. You can take the dosha quiz, generate a
-week and log meals without an account — signing in upgrades you to
+week and log meals without an account. Signing in upgrades you to
 cross-device rather than unlocking the product.
 
 **Accessibility was a measured pass, not a vibe.** Tailwind's `zinc-500` scores
-3.8:1 on this near-black surface and `zinc-600` only 2.4:1 — both fail WCAG AA.
+3.8:1 on this near-black surface and `zinc-600` only 2.4:1. Both fail WCAG AA.
 White on `emerald-500` measures 2.47:1, on the app's most-used button. The
 overrides in `globals.css` carry the measured ratio for each fix in a comment
 so the next person can tell intent from accident.
 
 **Animation gets switched off where it costs more than it gives.** Lenis
 smooth-scroll and the Three.js hero orb are both disabled on
-`(pointer: coarse)` — on a mid-range phone the RAF loop fights native momentum
+`(pointer: coarse)`. On a mid-range phone the RAF loop fights native momentum
 scrolling and the orb burns frames for decoration.
 
 ## How I used AI
@@ -76,10 +76,10 @@ deterministic code that can be read and tested. The split is the whole design:
 a model that invents your protein number can't be debugged or trusted, so the
 model gets the ambiguity and plain functions get the arithmetic.
 
-**Building it,** I used AI as an assistant — fastest on UI scaffolding,
+**Building it,** I used AI as an assistant, fastest on UI scaffolding,
 animation boilerplate, and first drafts of copy. What it didn't decide: the
 product itself, the data model, the nutrition and dosha logic, and what to cut.
-Some of the better details came from pushing back on the first answer — the
+Some of the better details came from pushing back on the first answer. The
 sync endpoint rejects empty payloads because the real failure mode is a fresh
 device syncing `{}` upward and wiping a month of logs, which is the kind of
 thing you only catch by thinking about your own users.
@@ -91,8 +91,8 @@ parts that are deciding.
 
 Being straight about what isn't done:
 
-- **No test suite.** Scoring and the dosha rules are pure functions and are the
-  obvious place to start.
+- **Tests cover the scoring core only.** The pure functions are tested; the
+  React components and API routes are not.
 - **Sync is whole-blob, not per-key.** Two devices editing different things in
   the same session means the older write loses everything, not just the
   conflicting key.
@@ -105,6 +105,7 @@ Being straight about what isn't done:
 ```bash
 npm install
 npm run dev
+npm test     # scoring + dosha rules, via node:test — no test framework needed
 ```
 
 Needs a `.env.local`:
