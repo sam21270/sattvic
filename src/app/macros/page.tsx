@@ -85,7 +85,7 @@ function MacrosCalculator() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">AI Macro Calculator</h1>
+        <h1 className="text-2xl font-bold text-white">Macro Calculator</h1>
         <p className="text-zinc-500 mt-1">Get personalized daily macro targets based on your body and goals.</p>
       </div>
 

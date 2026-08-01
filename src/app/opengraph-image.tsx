@@ -55,7 +55,7 @@ export default async function Image() {
 
         {/* feature chips */}
         <div style={{ display: "flex", gap: 14, marginTop: 44 }}>
-          {["AI food logging", "Dosha matching", "Jain friendly", "100% vegetarian"].map((chip) => (
+          {["Plain-language logging", "Dosha matching", "Jain friendly", "100% vegetarian"].map((chip) => (
             <div
               key={chip}
               style={{

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -54,6 +55,11 @@ export default function DashboardPage() {
 }
 
 function Dashboard() {
+  // The greeting used to be hardcoded to one name, so every signed-in user was
+  // welcomed as someone else. Comes from the session now, and is simply omitted
+  // when signed out rather than guessing.
+  const { data: session } = useSession();
+  const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? "";
   const searchParams = useSearchParams();
   const justFinishedJourney = searchParams.get("journey") === "1";
   const [showJourneyBanner, setShowJourneyBanner] = useState(justFinishedJourney);
@@ -221,7 +227,7 @@ function Dashboard() {
             {new Date().toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric" })}
           </p>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-white tracking-tight">{greeting()}, Sanika 👋</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight">{greeting()}{firstName ? `, ${firstName}` : ""} 👋</h1>
             <StreakFire streak={streak} size="md" />
           </div>
           <p className="text-zinc-500 mt-1">

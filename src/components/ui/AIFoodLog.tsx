@@ -102,7 +102,7 @@ function sumMeals(meals: LoggedMeal[]): FoodLogTotals {
   );
 }
 
-// AI-powered food logger: type what you ate in plain language
+// Food logger: type what you ate in plain language and it works out the macros
 // ("2 rotis, 1 cup rice, 1.5 cups paneer gravy") and AI estimates macros.
 // No slots, no forms — any number of meals per day.
 export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLogTotals) => void }) {
@@ -212,7 +212,7 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
           <Sparkles className="w-4 h-4 text-emerald-400" />
         </div>
         <div>
-          <h2 className="text-sm font-bold text-white">AI Food Log</h2>
+          <h2 className="text-sm font-bold text-white">Food Log</h2>
           <p className="text-xs text-zinc-500">Just type what you ate — AI counts the macros</p>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { isForeignData } from "@/lib/syncOwner";
 
 // Mirrors the whole `sattvic*` localStorage namespace to the user's account so
 // meals, streak, badges, plan, fasts, allergies — everything — follow them
@@ -9,22 +10,33 @@ import { useSession } from "next-auth/react";
 // wiping good server data.
 
 const TS_KEY = "sattvic-sync-ts";       // local copy of the blob's timestamp
+const OWNER_KEY = "sattvic-sync-owner"; // which account this local blob belongs to
 const RELOAD_FLAG = "sattvic-synced";   // session flag so we reload at most once
+const META = new Set([TS_KEY, OWNER_KEY]);
 
 function collect(): Record<string, string> {
   const out: Record<string, string> = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i)!;
-    if (k.startsWith("sattvic") && k !== TS_KEY) out[k] = localStorage.getItem(k) ?? "";
+    if (k.startsWith("sattvic") && !META.has(k)) out[k] = localStorage.getItem(k) ?? "";
   }
   return out;
 }
 
-function apply(data: Record<string, string>) {
-  // replace the local sattvic namespace with the server's (minus the ts key)
+/** Wipe the local sattvic namespace. Exported so sign-out uses the same list. */
+export function clearLocalData() {
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const k = localStorage.key(i)!;
-    if (k.startsWith("sattvic") && k !== TS_KEY) localStorage.removeItem(k);
+    if (k.startsWith("sattvic")) localStorage.removeItem(k);
+  }
+  sessionStorage.removeItem(RELOAD_FLAG);
+}
+
+function apply(data: Record<string, string>) {
+  // replace the local sattvic namespace with the server's (minus the meta keys)
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i)!;
+    if (k.startsWith("sattvic") && !META.has(k)) localStorage.removeItem(k);
   }
   for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v);
 }
@@ -37,6 +49,8 @@ export function CloudSync() {
 
   async function push() {
     if (!email) return;
+    // Never upload a blob that belongs to a different account.
+    if (localStorage.getItem(OWNER_KEY) !== email) return;
     const data = collect();
     if (Object.keys(data).length === 0) return; // never push empty over good data
     const ts = Date.now();
@@ -54,9 +68,18 @@ export function CloudSync() {
   // initial pull, then decide push/apply
   useEffect(() => {
     if (status !== "authenticated" || !email) return;
+    canPush.current = false;
     let cancelled = false;
     (async () => {
       try {
+        // SECURITY: the local blob is tagged with the account it came from. If
+        // a different user signs in on this browser — shared laptop, or the
+        // previous session simply expired — their data must not be treated as
+        // "local changes" and pushed into the new account. Wipe first, then
+        // pull only what belongs to this user.
+        if (isForeignData(localStorage.getItem(OWNER_KEY), email)) clearLocalData();
+        localStorage.setItem(OWNER_KEY, email);
+
         const res = await fetch("/api/sync");
         if (!res.ok || cancelled) return;
         const { data, updatedAt } = await res.json();
@@ -83,7 +106,7 @@ export function CloudSync() {
       } catch {}
     })();
     return () => { cancelled = true; };
-  }, [status]);
+  }, [status, email]);
 
   // push local changes: poll every 5s for a changed blob, and on tab hide
   useEffect(() => {
@@ -96,7 +119,7 @@ export function CloudSync() {
     const onHide = () => { if (canPush.current && document.hidden) push(); };
     document.addEventListener("visibilitychange", onHide);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onHide); };
-  }, [status]);
+  }, [status, email]);
 
   return null;
 }

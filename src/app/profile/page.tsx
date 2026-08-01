@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { LogOut, Flame, Trophy, Star, Shield } from "lucide-react";
 import { ALL_BADGES, computeLocalBadges } from "@/lib/badges";
 import { loadHistory, currentStreak } from "@/lib/scoring";
+import { clearLocalData } from "@/components/ui/CloudSync";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -84,7 +85,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => { clearLocalData(); signOut({ callbackUrl: "/" }); }}
             className="flex items-center gap-2 text-sm text-zinc-500 hover:text-rose-600 transition-colors border border-white/[0.1] px-4 py-2 rounded-xl"
           >
             <LogOut className="w-4 h-4" /> Sign out

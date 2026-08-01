@@ -352,11 +352,26 @@ export default function SocialPage() {
         {/* leaderboard tab */}
         {tab === "leaderboard" && (
           <div className="space-y-3">
+            {/* Search needs an exact username, which nobody can guess — so the
+                empty state has to explain both halves of connecting. */}
             {leaderboard.length === 0 && (
               <div className="text-center py-12 text-zinc-600">
                 <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p className="font-semibold text-zinc-400">No friends yet</p>
-                <p className="text-sm mt-1">Search for friends above to start competing</p>
+                <p className="text-sm mt-1 max-w-sm mx-auto leading-relaxed">
+                  Friends find each other by username. Send someone your link with{" "}
+                  <span className="text-zinc-400 font-medium">Share link</span> above, or search
+                  theirs to send a request.
+                </p>
+                {myUsername && (
+                  <button
+                    onClick={copyProfileLink}
+                    className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/10 rounded-full px-4 py-2 transition-colors"
+                  >
+                    {copiedLink ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedLink ? "Link copied" : `Copy my link (@${myUsername})`}
+                  </button>
+                )}
               </div>
             )}
             {leaderboard.map((u, i) => {
