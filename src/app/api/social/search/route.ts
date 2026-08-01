@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import UserModel from "@/models/User";
-import { toStrangerView } from "@/lib/socialView";
+import { toStrangerView, isValidUsername } from "@/lib/socialView";
 
 // GET /api/social/search?q=username
 export async function GET(req: NextRequest) {
@@ -10,20 +10,27 @@ export async function GET(req: NextRequest) {
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const q = req.nextUrl.searchParams.get("q")?.toLowerCase().trim();
-  if (!q || q.length < 2) return NextResponse.json({ users: [] });
+  if (!q || q.length < 2 || q.length > 20) return NextResponse.json({ users: [] });
+
+  // The query used to go into $regex unescaped, so "." or ".*" matched every
+  // account and dumped the whole user list, and "(a+)+$" pinned the CPU with
+  // catastrophic backtracking. There is no regex any more: usernames are
+  // [a-z0-9_], and lookup is an exact equality match. You can only find someone
+  // whose username you already know — no browsing the user base by prefix.
+  if (!isValidUsername(q)) return NextResponse.json({ users: [] });
 
   await connectDB();
 
-  // Search returns people you are not friends with yet, so it must not reveal
-  // their real name, dosha or how they are doing — only enough to recognise
-  // the account you meant to add.
+  // Deliberately not filtered by isPublic: that flag governs the public /u/
+  // page. Being findable by exact username is what makes adding a friend
+  // possible at all, and this returns only username, avatar and bio — to a
+  // signed-in caller, never anonymously.
   const users = await UserModel.find({
-    username: { $regex: q, $options: "i" },
+    username: q,
     email: { $ne: session.user.email },
-    isPublic: true,
   })
     .select("username avatarEmoji bio")
-    .limit(10)
+    .limit(5)
     .lean();
 
   return NextResponse.json({ users: users.map(toStrangerView) });

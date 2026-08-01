@@ -17,7 +17,8 @@ export function UsernameSetup({ onComplete }: Props) {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("🧘");
-  const [isPublic, setIsPublic] = useState(true);
+  // Opt-in, not opt-out — a public profile is a deliberate choice.
+  const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1); // 1=username, 2=avatar+bio

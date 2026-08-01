@@ -42,7 +42,9 @@ const UserSchema = new Schema<IUser>(
     username:       { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     bio:            { type: String, default: "" },
     avatarEmoji:    { type: String, default: "🧘" },
-    isPublic:       { type: Boolean, default: true },
+    // Private by default: the /u/ page is readable by anyone on the internet,
+    // so it is opt-in. Friend search does not depend on this flag.
+    isPublic:       { type: Boolean, default: false },
     friends:        [{ type: Schema.Types.ObjectId, ref: "User" }],
     friendRequests: [{
       from:         { type: Schema.Types.ObjectId, ref: "User" },

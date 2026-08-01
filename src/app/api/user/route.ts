@@ -23,7 +23,13 @@ export async function GET() {
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const user = await UserModel.findOne({ email: session.user.email }).lean();
+  // Projected, not returned raw. The full document carries syncData (the whole
+  // app state), the account email, and friendRequests — which hold the *sender's*
+  // email, so returning the document leaked other people's addresses to the
+  // profile page. Only what that page renders is sent.
+  const user = await UserModel.findOne({ email: session.user.email })
+    .select("streak streakShield badges doshaResult scoreHistory totalScore")
+    .lean();
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(user);
 }

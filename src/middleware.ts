@@ -9,11 +9,16 @@ import { NextRequest, NextResponse } from "next/server";
 // the instance count — enough to stop a naive script, not a distributed one.
 // Move to Upstash/Redis if abuse actually shows up in the logs.
 const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 20;
+// AI calls are slow and cost money; social calls are cheap but enable
+// username probing and friend-request spam, so they get a looser cap.
+const LIMITS: [prefix: string, max: number][] = [
+  ["/api/ai/", 20],
+  ["/api/social/", 60],
+];
 
 const hits = new Map<string, { count: number; resetAt: number }>();
 
-function tooMany(ip: string): boolean {
+function tooMany(ip: string, max: number): boolean {
   const now = Date.now();
   const rec = hits.get(ip);
   if (!rec || now > rec.resetAt) {
@@ -23,12 +28,17 @@ function tooMany(ip: string): boolean {
     return false;
   }
   rec.count++;
-  return rec.count > MAX_PER_WINDOW;
+  return rec.count > max;
 }
 
 export function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+  const rule = LIMITS.find(([prefix]) => path.startsWith(prefix));
+  if (!rule) return NextResponse.next();
+
+  // Key by IP *and* bucket so heavy AI use can't lock someone out of social.
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (tooMany(ip)) {
+  if (tooMany(`${rule[0]}${ip}`, rule[1])) {
     return NextResponse.json(
       { error: "Too many requests — give it a minute and try again." },
       { status: 429, headers: { "Retry-After": "60" } },
@@ -37,4 +47,4 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: "/api/ai/:path*" };
+export const config = { matcher: ["/api/ai/:path*", "/api/social/:path*"] };

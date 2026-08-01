@@ -79,3 +79,13 @@ export function toStrangerView(u: SocialDoc): StrangerView {
     bio: u.bio ?? "",
   };
 }
+
+/**
+ * The one username rule, used by both signup and lookup. Usernames go into a
+ * Mongo query and into public URLs, so anything outside [a-z0-9_] is rejected
+ * rather than escaped — that keeps regex metacharacters and NoSQL operators
+ * out of the query entirely.
+ */
+export function isValidUsername(u: unknown): u is string {
+  return typeof u === "string" && /^[a-z0-9_]{3,20}$/.test(u);
+}

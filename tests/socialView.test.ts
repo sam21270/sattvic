@@ -3,7 +3,7 @@
 // request. These tests assert the forbidden fields can never come back.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toFriendView, toStrangerView, weeklyScore, todayScore, SOCIAL_FIELDS } from "../src/lib/socialView.ts";
+import { toFriendView, toStrangerView, weeklyScore, todayScore, SOCIAL_FIELDS, isValidUsername } from "../src/lib/socialView.ts";
 
 // A document with everything sensitive still attached, as Mongo would hand it over.
 const doc = {
@@ -72,4 +72,40 @@ test("weekly score ignores days older than a week", () => {
     { date: recent.toISOString().slice(0, 10), score: 40 },
   ]);
   assert.equal(total, 40, "a month-old score must not inflate this week");
+});
+
+// Usernames reach a Mongo query and a public URL. Rejecting anything outside
+// [a-z0-9_] is what keeps regex metacharacters and NoSQL operators out.
+test("username validation rejects the payloads that made search dangerous", () => {
+  const attacks = [
+    ".*",              // matched every user — dumped the user list
+    ".",               // same
+    "(a+)+$",          // catastrophic backtracking, pins the CPU
+    "^admin",          // anchor injection
+    "a|b",             // alternation
+    "[a-z]",           // character class
+    "../../etc/passwd",// path traversal in the /u/ URL
+    "<script>",        // markup into a public page
+    "ab",              // too short
+    "a".repeat(21),    // too long
+    "Wriya",           // uppercase — usernames are lowercased before lookup
+    "has space",
+    "",
+  ];
+  for (const a of attacks) {
+    assert.equal(isValidUsername(a), false, `must reject ${JSON.stringify(a)}`);
+  }
+});
+
+test("username validation rejects non-strings (NoSQL operator objects)", () => {
+  // ?q[$ne]=x arrives as an object; it must never reach the query.
+  for (const v of [{ $ne: "x" }, ["a"], null, undefined, 42, true]) {
+    assert.equal(isValidUsername(v), false, `must reject ${JSON.stringify(v)}`);
+  }
+});
+
+test("username validation accepts ordinary usernames", () => {
+  for (const ok of ["wriya", "sanika_21", "abc", "a_1", "z".repeat(20)]) {
+    assert.equal(isValidUsername(ok), true, `must accept ${ok}`);
+  }
 });
