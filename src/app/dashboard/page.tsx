@@ -54,6 +54,21 @@ export default function DashboardPage() {
   );
 }
 
+// Only send when the number actually changes, and only for signed-in users —
+// the effect below re-runs on every log edit.
+let lastPushed = "";
+function pushScore(score: number, grade: string, mealsLoggedToday: number) {
+  const key = `${new Date().toISOString().slice(0, 10)}:${score}`;
+  if (key === lastPushed || mealsLoggedToday === 0) return;
+  lastPushed = key;
+  // 401 when signed out is expected and ignored; local-first still works.
+  fetch("/api/user", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ score, grade, mealsLoggedToday }),
+  }).catch(() => {});
+}
+
 function Dashboard() {
   // The greeting used to be hardcoded to one name, so every signed-in user was
   // welcomed as someone else. Comes from the session now, and is simply omitted
@@ -146,6 +161,9 @@ function Dashboard() {
     setBreakdown(bd);
     saveToHistory(bd.total, bd.grade);
     setHistory(loadHistory());
+    // Mirror today's score to the account so friends' leaderboards have data.
+    // Nothing wrote to the server before, so every leaderboard read zero.
+    pushScore(bd.total, bd.grade, log.mealsLogged);
 
     // confetti on calorie goal hit (only once per session)
     if (!confettiFired && log.calories >= targets.calories && log.mealsLogged > 0) {

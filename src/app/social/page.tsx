@@ -11,32 +11,28 @@ import {
 import { UsernameSetup } from "@/components/social/UsernameSetup";
 import { Confetti } from "@/components/ui/Confetti";
 
+// Mirrors lib/socialView.ts — friends see competitive numbers, never personal
+// details. Strangers in search see even less.
 interface FriendUser {
   id: string;
   username: string;
-  name: string;
+  avatarEmoji: string;
+  streak: number;
+  todayScore: number;
+  weeklyScore: number;
+}
+
+interface StrangerUser {
+  id: string;
+  username: string;
   avatarEmoji: string;
   bio: string;
-  dosha: string | null;
-  totalScore: number;
-  weeklyScore: number;
-  streak: number;
-  badges: string[];
 }
 
 interface FriendRequest {
-  from: string;
-  fromEmail: string;
-  fromName: string;
   fromUsername: string;
   sentAt: string;
 }
-
-const DOSHA_COLOR: Record<string, string> = {
-  Vata: "text-violet-400 bg-violet-500/15 border-violet-500/30",
-  Pitta: "text-rose-400 bg-rose-500/15 border-rose-500/30",
-  Kapha: "text-emerald-400 bg-emerald-500/15 border-emerald-500/30",
-};
 
 const RANK_STYLE = [
   { bg: "bg-amber-500/20 border-amber-500/40", icon: Crown, color: "text-amber-400" },
@@ -86,7 +82,7 @@ export default function SocialPage() {
   const [friends, setFriends] = useState<FriendUser[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchQ, setSearchQ] = useState("");
-  const [searchResults, setSearchResults] = useState<FriendUser[]>([]);
+  const [searchResults, setSearchResults] = useState<StrangerUser[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [tab, setTab] = useState<"leaderboard" | "requests" | "challenges">("leaderboard");
   const [pendingActions, setPendingActions] = useState<Record<string, boolean>>({});
@@ -166,7 +162,7 @@ export default function SocialPage() {
 
   // leaderboard = friends + me, sorted by weekly score
   const myEntry: FriendUser | null = myUsername
-    ? { id: "me", username: myUsername, name: session?.user?.name ?? "You", avatarEmoji: "🧘", bio: "", dosha: null, totalScore: 0, weeklyScore: 0, streak: 0, badges: [] }
+    ? { id: "me", username: myUsername, avatarEmoji: "🧘", streak: 0, todayScore: 0, weeklyScore: 0 }
     : null;
 
   const leaderboard = [...friends, ...(myEntry ? [myEntry] : [])].sort((a, b) => b.weeklyScore - a.weeklyScore);
@@ -293,19 +289,10 @@ export default function SocialPage() {
                         <Link href={`/u/${u.username}`} className="font-bold text-white hover:text-emerald-400 transition-colors">
                           @{u.username}
                         </Link>
-                        {u.dosha && (
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${DOSHA_COLOR[u.dosha] ?? ""}`}>
-                            {u.dosha}
-                          </span>
-                        )}
                       </div>
-                      <p className="text-xs text-zinc-500 truncate">{u.bio || u.name}</p>
+                      <p className="text-xs text-zinc-500 truncate">{u.bio}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="text-right hidden sm:block">
-                        <p className="text-xs font-bold text-amber-400">{u.weeklyScore} pts</p>
-                        <p className="text-[10px] text-zinc-600">this week</p>
-                      </div>
                       {!isFriend ? (
                         <button
                           disabled={pendingActions[u.username]}
@@ -399,17 +386,10 @@ export default function SocialPage() {
                         @{u.username}
                       </Link>
                       {isMe && <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 rounded-full">you</span>}
-                      {u.dosha && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-semibold hidden sm:inline ${DOSHA_COLOR[u.dosha] ?? ""}`}>
-                          {u.dosha}
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
                       <span className="text-[11px] text-zinc-500">🔥 {u.streak} day streak</span>
-                      {u.badges.length > 0 && (
-                        <span className="text-[11px] text-zinc-600">{u.badges.slice(0, 3).join(" ")}</span>
-                      )}
+                      <span className="text-[11px] text-zinc-500">Today {u.todayScore}/100</span>
                     </div>
                   </div>
 
@@ -441,14 +421,14 @@ export default function SocialPage() {
             )}
             {requests.map((req) => (
               <motion.div
-                key={req.fromEmail}
+                key={req.fromUsername}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-3 p-4 bg-white/[0.04] border border-white/[0.07] rounded-2xl"
               >
                 <span className="text-3xl">🧘</span>
                 <div className="flex-1">
-                  <p className="font-bold text-white">@{req.fromUsername || req.fromName}</p>
+                  <p className="font-bold text-white">@{req.fromUsername}</p>
                   <p className="text-xs text-zinc-500">Wants to be friends · {new Date(req.sentAt).toLocaleDateString()}</p>
                 </div>
                 <div className="flex gap-2">

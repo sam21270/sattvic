@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import UserModel from "@/models/User";
+import { SOCIAL_FIELDS, toFriendView } from "@/lib/socialView";
 
 // POST /api/social/friend
 // body: { action: "send"|"accept"|"decline"|"remove", targetUsername: string }
@@ -73,22 +74,18 @@ export async function GET() {
 
   await connectDB();
   const me = await UserModel.findOne({ email: session.user.email })
-    .populate("friends", "username name avatarEmoji bio doshaResult totalScore streak badges scoreHistory")
+    .populate("friends", "username avatarEmoji bio streak scoreHistory")
     .lean() as any;
 
-  const requests = me?.friendRequests ?? [];
-  const friends = (me?.friends ?? []).map((f: any) => ({
-    id: f._id.toString(),
-    username: f.username,
-    name: f.name,
-    avatarEmoji: f.avatarEmoji ?? "🧘",
-    bio: f.bio ?? "",
-    dosha: f.doshaResult?.dosha ?? null,
-    totalScore: f.totalScore ?? 0,
-    streak: f.streak ?? 0,
-    badges: f.badges ?? [],
-    weeklyScore: weeklyScore(f.scoreHistory ?? []),
+  // Requests used to be returned as stored, which shipped the sender's email
+  // address to the recipient. Only the username and avatar are needed to
+  // decide whether to accept.
+  const requests = (me?.friendRequests ?? []).map((r: { fromUsername?: string; fromName?: string; sentAt?: Date }) => ({
+    fromUsername: r.fromUsername ?? "",
+    sentAt: r.sentAt,
   }));
+
+  const friends = (me?.friends ?? []).map(toFriendView);
 
   return NextResponse.json({ requests, friends });
 }

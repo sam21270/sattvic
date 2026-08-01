@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db/mongoose";
 import UserModel from "@/models/User";
+import { toStrangerView } from "@/lib/socialView";
 
 // GET /api/social/search?q=username
 export async function GET(req: NextRequest) {
@@ -13,33 +14,18 @@ export async function GET(req: NextRequest) {
 
   await connectDB();
 
+  // Search returns people you are not friends with yet, so it must not reveal
+  // their real name, dosha or how they are doing — only enough to recognise
+  // the account you meant to add.
   const users = await UserModel.find({
     username: { $regex: q, $options: "i" },
     email: { $ne: session.user.email },
     isPublic: true,
   })
-    .select("username name avatarEmoji bio doshaResult totalScore streak badges scoreHistory")
+    .select("username avatarEmoji bio")
     .limit(10)
-    .lean() as any[];
+    .lean();
 
-  return NextResponse.json({ users: users.map((u) => ({
-    id: u._id.toString(),
-    username: u.username,
-    name: u.name,
-    avatarEmoji: u.avatarEmoji ?? "🧘",
-    bio: u.bio ?? "",
-    dosha: (u.doshaResult as any)?.dosha ?? null,
-    totalScore: u.totalScore ?? 0,
-    streak: u.streak ?? 0,
-    badges: u.badges ?? [],
-    weeklyScore: weeklyScore(u.scoreHistory ?? []),
-  })) });
+  return NextResponse.json({ users: users.map(toStrangerView) });
 }
 
-function weeklyScore(history: { date: string; score: number }[]) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 7);
-  return history
-    .filter((h) => new Date(h.date) >= cutoff)
-    .reduce((s, h) => s + h.score, 0);
-}
