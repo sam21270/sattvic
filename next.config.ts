@@ -4,9 +4,11 @@ import type { NextConfig } from "next";
 // worth protecting: framing enables clickjacking a signed-in user, and a
 // referrer carrying a username leaks who is using the app to third parties.
 const securityHeaders = [
-  // Never render the app inside someone else's iframe.
+  // Never render the app inside someone else's iframe. The full CSP — including
+  // frame-ancestors and a per-request script nonce — is set in middleware.ts,
+  // because a nonce has to change per response and cannot live in a static
+  // header. X-Frame-Options stays for browsers that predate frame-ancestors.
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
   // Don't let a browser second-guess a declared content type.
   { key: "X-Content-Type-Options", value: "nosniff" },
   // Send the origin cross-site, never the full path (which can hold a username).

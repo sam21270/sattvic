@@ -31,20 +31,71 @@ function tooMany(ip: string, max: number): boolean {
   return rec.count > max;
 }
 
-export function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname;
-  const rule = LIMITS.find(([prefix]) => path.startsWith(prefix));
-  if (!rule) return NextResponse.next();
-
-  // Key by IP *and* bucket so heavy AI use can't lock someone out of social.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (tooMany(`${rule[0]}${ip}`, rule[1])) {
-    return NextResponse.json(
-      { error: "Too many requests — give it a minute and try again." },
-      { status: 429, headers: { "Retry-After": "60" } },
-    );
-  }
-  return NextResponse.next();
+/**
+ * Content-Security-Policy.
+ *
+ * Why no nonce, deliberately: most pages here are statically prerendered, so
+ * their HTML is built once and cannot carry a per-request nonce. Next only
+ * stamps nonces onto dynamically rendered routes. A nonce policy therefore
+ * blocked every script on the static pages — verified: /macros shipped 13
+ * script tags with zero nonces, and the app rendered but never hydrated.
+ * Making every page dynamic to satisfy a scanner would cost real speed for no
+ * real safety, so the policy is built around what static output actually needs.
+ *
+ * 'unsafe-inline' in script-src is the honest cost of that. What the policy
+ * still buys, which is not nothing:
+ *  - an injected <script src="//evil.com"> is blocked; only same-origin runs
+ *  - object-src 'none' removes plugin and embed vectors
+ *  - base-uri 'none' stops a <base> tag rewriting every relative URL
+ *  - form-action 'self' stops a form being repointed at an attacker
+ *  - connect-src 'self' stops exfiltration to a third-party host
+ * Inline-injection risk is separately mitigated: React escapes by default and
+ * this codebase has no dangerouslySetInnerHTML in any user-facing path.
+ */
+function buildCsp(): string {
+  const dev = process.env.NODE_ENV !== "production";
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",       // Unsplash photos + Google avatars
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",                        // no Flash/embed vectors
+    "base-uri 'none'",                          // stops <base> hijacking relative URLs
+    "form-action 'self'",
+    "upgrade-insecure-requests",
+  ].join("; ");
 }
 
-export const config = { matcher: ["/api/ai/:path*", "/api/social/:path*"] };
+export function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+
+  const rule = LIMITS.find(([prefix]) => path.startsWith(prefix));
+  if (rule) {
+    // Key by IP *and* bucket so heavy AI use can't lock someone out of social.
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+    if (tooMany(`${rule[0]}${ip}`, rule[1])) {
+      return NextResponse.json(
+        { error: "Too many requests — give it a minute and try again." },
+        { status: 429, headers: { "Retry-After": "60" } },
+      );
+    }
+    return NextResponse.next();
+  }
+
+  const res = NextResponse.next();
+  res.headers.set("content-security-policy", buildCsp());
+  return res;
+}
+
+export const config = {
+  matcher: [
+    "/api/ai/:path*",
+    "/api/social/:path*",
+    // Every page, but not Next's own static output or the image optimiser —
+    // hashing a policy onto immutable assets buys nothing.
+    { source: "/((?!_next/static|_next/image|favicon.ico).*)", missing: [{ type: "header", key: "next-router-prefetch" }] },
+  ],
+};
