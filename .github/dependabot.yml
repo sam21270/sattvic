@@ -1,0 +1,13 @@
+# Free GitHub scanning: opens a PR when a dependency has a new advisory or a
+# new release. Security advisories are raised immediately, not just weekly.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for routine bumps instead of ten; security fixes still come alone.
+      minor-and-patch:
+        update-types: ["minor", "patch"]
