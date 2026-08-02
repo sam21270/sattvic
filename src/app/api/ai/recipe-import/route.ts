@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
+import { fetchPublicPage } from "@/lib/safeFetch";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -12,10 +13,20 @@ export async function POST(req: NextRequest) {
     }
     input = input.trim();
 
-    // If it's a URL, fetch the page and strip it to readable text
+    // If it's a URL, fetch the page and strip it to readable text.
+    // fetchPublicPage refuses private addresses and re-checks every redirect —
+    // fetching this straight was server-side request forgery on an endpoint
+    // anyone can call.
     if (/^https?:\/\//i.test(input)) {
-      const res = await fetch(input, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(10000) });
-      const html = await res.text();
+      let html: string;
+      try {
+        html = await fetchPublicPage(input);
+      } catch (e) {
+        return NextResponse.json(
+          { error: e instanceof Error ? e.message : "That link could not be imported." },
+          { status: 400 },
+        );
+      }
       input = html
         .replace(/<script[\s\S]*?<\/script>/gi, "")
         .replace(/<style[\s\S]*?<\/style>/gi, "")
