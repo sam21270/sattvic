@@ -787,28 +787,30 @@ function MealPlanner() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* On a phone these wrapped to ragged widths. They share the row evenly
+            below sm, and sit inline at their natural size from sm up. */}
+        <div className="flex items-stretch gap-2 flex-wrap w-full sm:w-auto">
           <Link
             href="/progress"
-            className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 px-4 py-2.5 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 px-4 py-2.5 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm whitespace-nowrap"
           >
-            <TrendingUp className="w-4 h-4" />
+            <TrendingUp className="w-4 h-4 shrink-0" />
             Log meals
           </Link>
           {hasMeals && (
             <button
               onClick={() => setShowGrocery(true)}
-              className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 px-4 py-2.5 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/[0.06] border border-white/[0.1] text-zinc-300 px-4 py-2.5 rounded-xl font-semibold hover:bg-white/[0.09] transition-colors text-sm whitespace-nowrap"
             >
-              <ShoppingCart className="w-4 h-4" />
+              <ShoppingCart className="w-4 h-4 shrink-0" />
               Shopping List
             </button>
           )}
           <button
             onClick={generatePlan}
-            className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm whitespace-nowrap"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 shrink-0" />
             {hasMeals ? "Regenerate" : "Generate Week"}
           </button>
         </div>

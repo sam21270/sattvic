@@ -104,6 +104,16 @@ body {
   transition: background 0.3s ease, color 0.2s ease;
 }
 
+/* The page must not drag sideways. One wide row used to make the whole app
+   pannable on a phone, which reads as broken. Belt and braces: the rows that
+   caused it now wrap, and the shell refuses horizontal scroll regardless of
+   what a future component does. `clip` (not `hidden`) keeps position:sticky
+   working, which `hidden` on html would break. */
+html, body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 /* ── Animations ───────────────────────────────────────────────── */
 @keyframes marquee {
   from { transform: translateX(0); }

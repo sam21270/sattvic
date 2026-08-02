@@ -8,41 +8,18 @@ import Link from "next/link";
 import { UserPlus, Check, ArrowLeft, Trophy, Star, Calendar } from "lucide-react";
 import { StreakFire } from "@/components/ui/StreakFire";
 
+// Mirrors GET /api/social/profile/[username]. Real name, dosha, badges and the
+// day-by-day history were removed from that response on purpose — this page is
+// readable by anyone on the internet. Reading them here is what crashed it.
 interface PublicProfile {
-  id: string;
   username: string;
-  name: string;
   avatarEmoji: string;
   bio: string;
-  dosha: string | null;
-  totalScore: number;
-  weeklyScore: number;
   streak: number;
-  badges: string[];
-  scoreHistory: { date: string; score: number; grade: string }[];
+  todayScore: number;
+  weeklyScore: number;
   memberSince: string;
 }
-
-const DOSHA_INFO: Record<string, { color: string; desc: string; emoji: string }> = {
-  Vata: { color: "from-violet-500/20 to-indigo-500/10 border-violet-500/30 text-violet-300", desc: "Creative · Energetic · Quick", emoji: "🌬️" },
-  Pitta: { color: "from-rose-500/20 to-orange-500/10 border-rose-500/30 text-rose-300",       desc: "Focused · Ambitious · Fiery",  emoji: "🔥" },
-  Kapha: { color: "from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-300", desc: "Grounded · Steady · Nurturing", emoji: "🌊" },
-};
-
-const BADGE_META: Record<string, { emoji: string; name: string }> = {
-  first_log:     { emoji: "🌱", name: "First Log" },
-  streak_3:      { emoji: "🔥", name: "3-Day Streak" },
-  streak_7:      { emoji: "⚡", name: "Week Warrior" },
-  streak_30:     { emoji: "💎", name: "Iron Streak" },
-  perfect_score: { emoji: "✨", name: "Perfect Score" },
-  protein_king:  { emoji: "💪", name: "Protein King" },
-  macro_master:  { emoji: "🎯", name: "Macro Master" },
-  explorer:      { emoji: "🗺️", name: "Explorer" },
-  dosha_unlocked:{ emoji: "🌿", name: "Dosha Unlocked" },
-  hydration_hero:{ emoji: "💧", name: "Hydration Hero" },
-  recipe_lover:  { emoji: "👨‍🍳", name: "Recipe Lover" },
-  social_star:   { emoji: "🌟", name: "Social Star" },
-};
 
 function ScoreChart({ history }: { history: { date: string; score: number }[] }) {
   if (history.length < 2) return (
@@ -144,7 +121,6 @@ export default function PublicProfilePage() {
 
   if (!profile) return null;
 
-  const doshaInfo = profile.dosha ? DOSHA_INFO[profile.dosha] : null;
   const memberDays = Math.floor((Date.now() - new Date(profile.memberSince).getTime()) / 86400000);
 
   return (
@@ -176,15 +152,9 @@ export default function PublicProfilePage() {
 
             <div>
               <h1 className="text-2xl font-black text-white">@{profile.username}</h1>
-              <p className="text-zinc-400 text-sm">{profile.name}</p>
               {profile.bio && <p className="text-zinc-500 text-sm mt-2 max-w-xs">{profile.bio}</p>}
             </div>
 
-            {doshaInfo && (
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full bg-gradient-to-r border ${doshaInfo.color}`}>
-                {doshaInfo.emoji} {profile.dosha} · {doshaInfo.desc}
-              </span>
-            )}
 
             {/* stats row */}
             <div className="flex gap-6 mt-1">
@@ -193,8 +163,8 @@ export default function PublicProfilePage() {
                 <p className="text-[11px] text-zinc-600">this week</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-black text-white">{profile.totalScore}</p>
-                <p className="text-[11px] text-zinc-600">total pts</p>
+                <p className="text-xl font-black text-white">{profile.todayScore}</p>
+                <p className="text-[11px] text-zinc-600">today</p>
               </div>
               <div className="flex flex-col items-center">
                 <StreakFire streak={profile.streak} size="sm" />
@@ -233,49 +203,6 @@ export default function PublicProfilePage() {
           </div>
         </motion.div>
 
-        {/* score chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5"
-        >
-          <h3 className="text-sm font-bold text-zinc-300 mb-3 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400" />
-            Score trend (last 14 days)
-          </h3>
-          <ScoreChart history={profile.scoreHistory} />
-        </motion.div>
-
-        {/* badges */}
-        {profile.badges.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5"
-          >
-            <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2">
-              <Star className="w-4 h-4 text-amber-400" />
-              Badges ({profile.badges.length})
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              {profile.badges.map((id) => {
-                const meta = BADGE_META[id] ?? { emoji: "🏅", name: id };
-                return (
-                  <motion.div
-                    key={id}
-                    whileHover={{ scale: 1.1 }}
-                    className="flex flex-col items-center gap-1 p-3 bg-white/[0.04] border border-white/[0.07] rounded-2xl min-w-[64px]"
-                  >
-                    <span className="text-2xl">{meta.emoji}</span>
-                    <span className="text-[10px] text-zinc-500 text-center leading-tight">{meta.name}</span>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
 
         {/* member since */}
         <div className="flex items-center gap-2 text-xs text-zinc-700 px-1">

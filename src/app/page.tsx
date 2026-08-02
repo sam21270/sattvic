@@ -89,8 +89,7 @@ const buildNotes = [
   { label: "The hard part", text: "Plain-language food logging. \"2 rotis, dal, a glass of buttermilk\" has to become grams of protein — an LLM parses it, then the macros are recomputed and stored server-side." },
   { label: "The stack", text: "Next.js App Router on Vercel, MongoDB via Mongoose, Google auth with NextAuth, and Llama 3.3 70B on Groq for the AI paths. Built and shipped solo." },
   { label: "The cleanup", text: "A contrast pass measured every text pair against WCAG AA and fixed the ones that failed. The 3D hero and smooth-scroll switch off on touch devices, where they only cost frames." },
-  { label: "Where AI stops", text: "A model turns your typed meal into grams — that's the fuzzy part. The score, the dosha match and the macro targets are deterministic functions, because a number you can't debug is a number you can't trust." },
-  { label: "Built with AI, not by it", text: "AI-assisted on UI scaffolding and copy drafts. The product decisions, data model and nutrition logic are mine — and so is knowing which of those not to hand to a model." },
+  { label: "Numbers you can check", text: "Your score, macro targets and dosha match are plain formulas, not guesses — the same inputs always give the same answer, and every one of them is open in the repo. Nothing about your nutrition is left to a black box." },
 ];
 
 const accents = ["var(--pulse-lime)", "var(--pulse-cyan)", "var(--pulse-amber)"];
@@ -105,12 +104,12 @@ export default function HomePage() {
     <div className="font-sans text-[#f1f0ed] bg-[#0a0b0a]" style={{ overflowX: "clip" }}>
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative px-4 pt-16 pb-8 overflow-hidden">
+      <section className="relative px-4 pt-6 sm:pt-16 pb-8 overflow-hidden">
         <div className="pointer-events-none absolute right-0 top-24 w-[46rem] h-[46rem] rounded-full animate-breathe"
           style={{ background: "radial-gradient(circle, rgba(194,240,74,0.10), transparent 60%)" }} />
 
         <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.15fr_1fr] gap-12 items-start">
-          <div className="space-y-7 pt-6">
+          <div className="space-y-7 sm:pt-6">
             <span className="pulse-label inline-flex items-center gap-2 text-[11px] text-[#c2f04a] border border-[#c2f04a]/30 rounded-full px-4 py-1.5">
               Ayurvedic nutrition · 100% vegetarian
             </span>

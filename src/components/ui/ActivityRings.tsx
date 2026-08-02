@@ -86,7 +86,9 @@ export function ActivityRings({
       </div>
 
       {/* legend */}
-      <div className="flex gap-4">
+      {/* wraps: three legend columns overflowed a 390px phone and made
+          the whole page draggable sideways */}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
         {rings.map((ring) => (
           <div key={ring.label} className="flex flex-col items-center gap-0.5">
             <div className="flex items-center gap-1.5">

@@ -91,20 +91,23 @@ export default function JunkPage() {
 
         {/* search */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+          {/* The button is ~160px but only 112px of padding was reserved, so it
+              sat on top of the placeholder. Below the field on phones, inside
+              it from sm up where there is room. */}
+          <div className="relative flex flex-col gap-2 sm:block">
+            <Search className="absolute left-4 top-4 sm:top-1/2 sm:-translate-y-1/2 w-5 h-5 text-zinc-500" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && search(query)}
               placeholder="e.g. pizza, pasta, chocolate brownie, biryani..."
-              className="w-full pl-12 pr-28 py-4 bg-[#141414] border border-white/[0.1] rounded-2xl text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/30 text-base transition-colors"
+              className="w-full pl-12 pr-4 sm:pr-40 py-4 bg-[#141414] border border-white/[0.1] rounded-2xl text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/30 text-base transition-colors"
             />
             <button
               onClick={() => search(query)}
               disabled={loading || !query.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-rose-400 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+              className="w-full sm:w-auto sm:absolute sm:right-2 sm:top-1/2 sm:-translate-y-1/2 bg-rose-500 text-white px-5 py-3 sm:py-2 rounded-xl font-semibold text-sm hover:bg-rose-400 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-3.5 h-3.5" /> Make it healthy</>}
             </button>
@@ -151,15 +154,16 @@ export default function JunkPage() {
             >
               {/* hero card */}
               <div className="relative bg-gradient-to-br from-rose-900/30 to-orange-900/20 border border-rose-700/30 rounded-3xl p-7 space-y-4 overflow-hidden">
-                <div className="absolute top-4 right-4">
-                  <div className="bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl">
-                    Health Score {result.healthScore}/100
+                {/* In flow, not absolutely positioned — the badge is wider than
+                    the pr-24 the title reserved, so it sat on the name. */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <h2 className="text-2xl font-black text-white">{result.name}</h2>
+                    <p className="text-rose-300 text-sm font-medium">{result.tagline}</p>
                   </div>
-                </div>
-
-                <div className="space-y-1">
-                  <h2 className="text-2xl font-black text-white pr-24">{result.name}</h2>
-                  <p className="text-rose-300 text-sm font-medium">{result.tagline}</p>
+                  <div className="shrink-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl whitespace-nowrap">
+                    {result.healthScore}/100
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">

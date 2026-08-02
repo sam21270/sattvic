@@ -97,7 +97,7 @@ export function WaterTracker({ current, goal = 2500, onAdd }: Props) {
       </div>
 
       {/* quick add buttons */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {levels.map((ml) => (
           <button
             key={ml}
@@ -111,7 +111,7 @@ export function WaterTracker({ current, goal = 2500, onAdd }: Props) {
 
       {/* remove buttons — for mis-taps */}
       {current > 0 && (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {levels.map((ml) => (
             <button
               key={ml}
