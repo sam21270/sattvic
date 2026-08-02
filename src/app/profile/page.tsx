@@ -63,20 +63,23 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#141414] border border-white/[0.07] rounded-3xl p-7 shadow-sm"
+        className="bg-[#141414] border border-white/[0.07] rounded-3xl p-5 sm:p-7 shadow-sm"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        {/* A 64px avatar plus an un-shrinkable email plus the button overflowed
+            a 390px phone, so Sign out sat on top of the address. The button
+            drops below on mobile, and the text truncates instead of pushing. */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
             {user.image ? (
-              <img src={user.image} alt={user.name} className="w-16 h-16 rounded-2xl object-cover" />
+              <img src={user.image} alt={user.name} className="w-16 h-16 rounded-2xl object-cover shrink-0" />
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-700">
+              <div className="w-16 h-16 shrink-0 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-700">
                 {user.name?.[0]}
               </div>
             )}
-            <div>
-              <h1 className="text-2xl font-bold text-white">{user.name}</h1>
-              <p className="text-zinc-600 text-sm">{user.email}</p>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-white truncate">{user.name}</h1>
+              <p className="text-zinc-600 text-sm truncate">{user.email}</p>
               {doshaResult && (
                 <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border mt-2 ${doshaColors[doshaResult.dosha] ?? ""}`}>
                   {doshaEmoji[doshaResult.dosha]} {doshaResult.dosha} type
@@ -86,15 +89,15 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={() => { clearLocalData(); signOut({ callbackUrl: "/" }); }}
-            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-rose-600 transition-colors border border-white/[0.1] px-4 py-2 rounded-xl"
+            className="shrink-0 self-start sm:self-auto flex items-center justify-center gap-2 text-sm text-zinc-500 hover:text-rose-600 transition-colors border border-white/[0.1] px-4 py-2.5 rounded-xl w-full sm:w-auto"
           >
-            <LogOut className="w-4 h-4" /> Sign out
+            <LogOut className="w-4 h-4 shrink-0" /> Sign out
           </button>
         </div>
       </motion.div>
 
       {/* stats row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { icon: Flame,   label: "Current Streak",  value: `${streak} days`,   color: "text-orange-500", bg: "bg-orange-50" },
           { icon: Star,    label: "Avg Sattvic Score",value: `${avgScore} / 100`,              color: "text-emerald-600", bg: "bg-emerald-50" },
@@ -105,12 +108,12 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
-            className="bg-[#141414] border border-white/[0.07] rounded-3xl p-5 shadow-sm text-center space-y-2"
+            className="bg-[#141414] border border-white/[0.07] rounded-3xl p-3 sm:p-5 shadow-sm text-center space-y-2 min-w-0"
           >
             <div className={`w-10 h-10 rounded-2xl ${s.bg} flex items-center justify-center mx-auto`}>
               <s.icon className={`w-5 h-5 ${s.color}`} />
             </div>
-            <p className="text-xl font-bold text-white">{s.value}</p>
+            <p className="text-lg sm:text-xl font-bold text-white break-words">{s.value}</p>
             <p className="text-xs text-zinc-600 font-medium">{s.label}</p>
           </motion.div>
         ))}
