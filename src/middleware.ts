@@ -60,11 +60,16 @@ function buildCsp(): string {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",       // Unsplash photos + Google avatars
     "font-src 'self' data:",
-    "connect-src 'self'",
+    // accounts.google.com is required by both: signing in POSTs to
+    // /api/auth/signin/google, which 302s to Google. connect-src is checked
+    // when next-auth's fetch follows that redirect, form-action when the
+    // form-POST path follows it. With 'self' alone both are blocked and the
+    // Sign in button silently does nothing — verified in the browser.
+    "connect-src 'self' https://accounts.google.com",
     "frame-ancestors 'none'",
     "object-src 'none'",                        // no Flash/embed vectors
     "base-uri 'none'",                          // stops <base> hijacking relative URLs
-    "form-action 'self'",
+    "form-action 'self' https://accounts.google.com",
     "upgrade-insecure-requests",
   ].join("; ");
 }
