@@ -15,6 +15,11 @@ export async function POST(req: NextRequest) {
     if (![body.weight, body.height, body.age].every((n) => typeof n === "number" && Number.isFinite(n) && n > 0)) {
       return NextResponse.json({ error: "weight, height and age must be positive numbers" }, { status: 400 });
     }
+    // Present-but-not-a-string passes the check above and still reaches
+    // .toLowerCase() inside calculateMacros — a 500 for what is a bad request.
+    if (!["gender", "activityLevel", "goal"].every((k) => typeof body[k] === "string")) {
+      return NextResponse.json({ error: "gender, activityLevel and goal must be strings" }, { status: 400 });
+    }
 
     const macros = calculateMacros(body);
     return NextResponse.json(macros);
