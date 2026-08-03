@@ -25,7 +25,31 @@ if (!/^mongodb(\+srv)?:\/\//.test(uri)) {
 const client = new MongoClient(uri);
 try {
   await client.connect();
-  const users = client.db().collection("users");
+
+  // A connection string without a database name silently falls back to "test",
+  // which would report "nothing to clean" while the real data sits elsewhere.
+  // So: say which database we are in, and prove the users are in it.
+  const db = process.env.MONGODB_DB ? client.db(process.env.MONGODB_DB) : client.db();
+  const users = db.collection("users");
+  const total = await users.countDocuments();
+  console.log(`database: ${db.databaseName}`);
+  console.log(`users found: ${total}`);
+
+  if (total === 0) {
+    console.log("\nNo users in this database — the name is probably wrong.");
+    const { databases } = await client.db().admin().listDatabases();
+    for (const d of databases) {
+      if (["admin", "local", "config"].includes(d.name)) continue;
+      const names = await client.db(d.name).listCollections().toArray();
+      const n = names.some((c) => c.name === "users")
+        ? await client.db(d.name).collection("users").countDocuments()
+        : null;
+      console.log(`  ${d.name}: ${n === null ? "no users collection" : n + " users"}`);
+    }
+    console.log("\nRe-run with the right one, e.g.:");
+    console.log('  MONGODB_DB="sattvic" MONGODB_URI="..." node scripts/purge-stored-pii.mjs');
+    process.exit(1);
+  }
 
   const affected = await users.countDocuments({
     $or: [
