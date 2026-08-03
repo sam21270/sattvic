@@ -25,9 +25,12 @@ if (!/^mongodb(\+srv)?:\/\//.test(uri)) {
 // The single most common mistake: pasting Atlas's string as-is.
 if (/<[^>]*(password|db_password|username)[^>]*>/i.test(uri)) {
   console.error(
+    // ponytail: shows only the credentials segment, not a whole srv URI.
+    // A full example URI here matches GitHub's Atlas-credential scanner and
+    // opens a "possible valid secret" alert on every push.
     "The connection string still contains a placeholder like <db_password>.\n" +
-    "Replace it — angle brackets and all — with the real password, e.g.\n" +
-    "  mongodb+srv://user:MyActualPassw0rd@cluster.mongodb.net/",
+    "Replace it — angle brackets and all — with the real password, so the\n" +
+    "credentials segment reads  user:s3cret  and not  user:<db_password>.",
   );
   process.exit(1);
 }
@@ -49,8 +52,9 @@ try {
 
   // A connection string without a database name silently falls back to "test",
   // which would report "nothing to clean" while the real data sits elsewhere.
-  // So: say which database we are in, and prove the users are in it.
-  const db = process.env.MONGODB_DB ? client.db(process.env.MONGODB_DB) : client.db();
+  // So: default to "sattvic", say which database we are in, and prove the
+  // users are in it. MONGODB_DB overrides.
+  const db = client.db(process.env.MONGODB_DB || "sattvic");
   const users = db.collection("users");
   const total = await users.countDocuments();
   console.log(`database: ${db.databaseName}`);

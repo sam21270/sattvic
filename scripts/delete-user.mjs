@@ -31,7 +31,10 @@ if (!target || target.startsWith("--")) {
 const client = new MongoClient(uri);
 try {
   await client.connect();
-  const db = process.env.MONGODB_DB ? client.db(process.env.MONGODB_DB) : client.db();
+  // ponytail: default to "sattvic", not the driver's "test" fallback. A URI
+  // without a database name is the normal case here, and silently operating on
+  // "test" is how the wrong database got touched before.
+  const db = client.db(process.env.MONGODB_DB || "sattvic");
   const users = db.collection("users");
 
   const user = await users.findOne(
