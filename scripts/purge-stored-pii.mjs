@@ -22,6 +22,27 @@ if (!/^mongodb(\+srv)?:\/\//.test(uri)) {
   process.exit(1);
 }
 
+// The single most common mistake: pasting Atlas's string as-is.
+if (/<[^>]*(password|db_password|username)[^>]*>/i.test(uri)) {
+  console.error(
+    "The connection string still contains a placeholder like <db_password>.\n" +
+    "Replace it — angle brackets and all — with the real password, e.g.\n" +
+    "  mongodb+srv://user:MyActualPassw0rd@cluster.mongodb.net/",
+  );
+  process.exit(1);
+}
+
+// A raw @ : / ? # in a password breaks URL parsing and shows up as bad auth.
+const creds = uri.slice(uri.indexOf("//") + 2, uri.lastIndexOf("@"));
+if (creds.includes("@") || /[/?#]/.test(creds)) {
+  console.error(
+    "The username or password contains a character that must be percent-encoded\n" +
+    "(@ becomes %40, : becomes %3A, / becomes %2F, ? becomes %3F, # becomes %23).\n" +
+    "Easiest fix: set a password with only letters and numbers in Atlas → Database Access.",
+  );
+  process.exit(1);
+}
+
 const client = new MongoClient(uri);
 try {
   await client.connect();
@@ -76,6 +97,27 @@ try {
     ],
   });
   console.log(left === 0 ? "verified: no stored copies remain." : `WARNING: ${left} still remain.`);
+} catch (err) {
+  // Turn Mongo's stack dump into the two things that are actually wrong.
+  const msg = String(err?.message ?? err);
+  if (/bad auth|authentication failed/i.test(msg)) {
+    console.error(
+      "\nAuthentication failed — the username or password is wrong.\n" +
+      "  · Did you replace <db_password> with the real password?\n" +
+      "  · Atlas → Database Access → Edit → Edit Password to set a new one\n" +
+      "    (use letters and numbers only to avoid encoding issues).\n" +
+      "  · If you change it, update MONGODB_URI in Vercel too, or the live site breaks.",
+    );
+  } else if (/ETIMEDOUT|ENOTFOUND|ServerSelection|queryTxt/i.test(msg)) {
+    console.error(
+      "\nCould not reach the cluster.\n" +
+      "  · Atlas → Network Access → Add IP Address → Add Current IP Address\n" +
+      "  · Check the cluster hostname is correct and the cluster is not paused.",
+    );
+  } else {
+    console.error("\n" + msg);
+  }
+  process.exitCode = 1;
 } finally {
   await client.close();
 }
