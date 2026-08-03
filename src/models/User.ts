@@ -2,8 +2,6 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IFriendRequest {
   from: mongoose.Types.ObjectId;
-  fromEmail: string;
-  fromName: string;
   fromUsername: string;
   sentAt: Date;
 }
@@ -46,10 +44,11 @@ const UserSchema = new Schema<IUser>(
     // so it is opt-in. Friend search does not depend on this flag.
     isPublic:       { type: Boolean, default: false },
     friends:        [{ type: Schema.Types.ObjectId, ref: "User" }],
+    // Deliberately stores no copy of the sender's email or real name. A request
+    // only needs to say who sent it and let you act on it; duplicating their PII
+    // into someone else's document is how it leaked in the first place.
     friendRequests: [{
       from:         { type: Schema.Types.ObjectId, ref: "User" },
-      fromEmail:    String,
-      fromName:     String,
       fromUsername: String,
       sentAt:       { type: Date, default: Date.now },
     }],

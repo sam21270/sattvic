@@ -30,8 +30,6 @@ export async function POST(req: NextRequest) {
     }
     them.friendRequests.push({
       from: me._id as any,
-      fromEmail: me.email,
-      fromName: me.name,
       fromUsername: me.username ?? me.name,
       sentAt: new Date(),
     });
@@ -80,7 +78,7 @@ export async function GET() {
   // Requests used to be returned as stored, which shipped the sender's email
   // address to the recipient. Only the username and avatar are needed to
   // decide whether to accept.
-  const requests = (me?.friendRequests ?? []).map((r: { fromUsername?: string; fromName?: string; sentAt?: Date }) => ({
+  const requests = (me?.friendRequests ?? []).map((r: { fromUsername?: string; sentAt?: Date }) => ({
     fromUsername: r.fromUsername ?? "",
     sentAt: r.sentAt,
   }));
