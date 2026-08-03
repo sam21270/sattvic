@@ -10,7 +10,7 @@ const doc = {
   _id: "abc123",
   username: "wriya",
   name: "Wriya Real Name",
-  email: "wriya@gmail.com",
+  email: "wriya@example.com",
   avatarEmoji: "🌿",
   bio: "hi",
   streak: 5,
@@ -26,7 +26,7 @@ test("a friend view never carries email, real name, dosha or raw history", () =>
   // exact keys, not substrings — "username" legitimately contains "name"
   for (const f of FORBIDDEN) assert.ok(!(f in v), `friend view leaked key "${f}"`);
   const s = JSON.stringify(v);
-  assert.ok(!s.includes("wriya@gmail.com"), "friend view leaked the email value");
+  assert.ok(!s.includes("wriya@example.com"), "friend view leaked the email value");
   assert.ok(!s.includes("Wriya Real Name"), "friend view leaked the real name");
   assert.ok(!s.includes("Vata"), "friend view leaked the dosha value");
   assert.ok(!s.includes("secret"), "friend view leaked synced app data");
@@ -37,7 +37,7 @@ test("a stranger sees only username, avatar and bio", () => {
   assert.deepEqual(Object.keys(v).sort(), ["avatarEmoji", "bio", "id", "username"]);
   for (const f of FORBIDDEN) assert.ok(!(f in v), `stranger view leaked key "${f}"`);
   const s = JSON.stringify(v);
-  assert.ok(!s.includes("wriya@gmail.com") && !s.includes("Wriya Real Name") && !s.includes("Vata"),
+  assert.ok(!s.includes("wriya@example.com") && !s.includes("Wriya Real Name") && !s.includes("Vata"),
     "stranger view leaked a sensitive value");
   // strangers must not learn how someone is doing, only that they exist
   assert.ok(!("streak" in v) && !("weeklyScore" in v), "strangers must not see scores");
