@@ -108,7 +108,7 @@ export default function HomePage() {
         <div className="pointer-events-none absolute right-0 top-24 w-[46rem] h-[46rem] rounded-full animate-breathe"
           style={{ background: "radial-gradient(circle, rgba(194,240,74,0.10), transparent 60%)" }} />
 
-        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.15fr_1fr] gap-12 items-start">
+        <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 items-start">
           <div className="space-y-7 sm:pt-6">
             <span className="pulse-label inline-flex items-center gap-2 text-[11px] text-[#c2f04a] border border-[#c2f04a]/30 rounded-full px-4 py-1.5">
               Ayurvedic nutrition · 100% vegetarian
@@ -222,7 +222,7 @@ export default function HomePage() {
           <p className="pulse-label text-[10px] text-[#c2f04a] mb-3">Everything inside</p>
           <h2 className="font-display text-[clamp(2.5rem,6vw,4.5rem)] text-[#f1f0ed]">Eight tools.<br />One app.</h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((f, i) => {
             const c = accents[i % accents.length];
             return (
@@ -252,7 +252,7 @@ export default function HomePage() {
             Here&rsquo;s what actually went into it instead.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {buildNotes.map((n, i) => (
             <div key={n.label} className={`${card} p-6 space-y-3`}>
               <p className="pulse-label text-[10px]" style={{ color: accents[i % accents.length] }}>{n.label}</p>

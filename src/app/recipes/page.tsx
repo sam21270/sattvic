@@ -547,7 +547,7 @@ export default function RecipesPage() {
 
       {/* Recipe of the Week — rotates automatically, same for everyone */}
       <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-emerald-500/50 via-emerald-500/10 to-transparent">
-        <div className="rounded-3xl bg-[#0f0f0f] p-5 sm:p-6 grid sm:grid-cols-[1fr_320px] gap-6 items-center">
+        <div className="rounded-3xl bg-[#0f0f0f] p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-[1fr_320px] gap-6 items-center">
           <div>
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-3 py-1">
               ⭐ Recipe of the Week

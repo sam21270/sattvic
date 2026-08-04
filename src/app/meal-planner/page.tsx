@@ -528,7 +528,7 @@ function MealRow({
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {meal.ingredients?.length > 0 && (
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-2">

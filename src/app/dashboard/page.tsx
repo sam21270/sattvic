@@ -294,7 +294,7 @@ function Dashboard() {
       </div>
 
       {/* main grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.55 }}>
           {breakdown && (
             <SattvicScore
@@ -317,7 +317,7 @@ function Dashboard() {
       <RestOfDay consumed={{ calories: log.calories, protein: log.protein }} targets={{ calories: targets.calories, protein: targets.protein }} />
 
       {/* activity + water row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* activity rings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

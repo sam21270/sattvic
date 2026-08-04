@@ -288,7 +288,7 @@ function StepCard({ step, index }: { step: typeof STEPS[0]; index: number }) {
   const Preview = step.Preview;
 
   return (
-    <div ref={ref} className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+    <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
 
       {/* Text column */}
       <motion.div
