@@ -103,3 +103,61 @@ export async function fetchPublicPage(raw: string): Promise<string> {
   }
   throw new Error("That link redirects too many times.");
 }
+
+/**
+ * Turn a fetched page into the text worth sending to the model.
+ *
+ * Video pages — YouTube, TikTok, Instagram — render through JavaScript, so the
+ * markup that arrives is navigation chrome. The recipe, when the creator wrote
+ * one, is in the description or caption, and both live in places that plain
+ * tag-stripping destroys: <meta> keeps it in a `content` attribute, and YouTube
+ * keeps the full text in a "shortDescription" field inside a <script>. Stripping
+ * scripts and then tags threw away the only part that mattered, so an imported
+ * cooking video always came back "no recipe found".
+ *
+ * So: lift the title, the description metas and shortDescription out first, then
+ * append the ordinary visible text for normal recipe blogs.
+ */
+const ENTITIES: Record<string, string> = {
+  "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": " ",
+};
+const decodeEntities = (s: string) =>
+  s.replace(/&(?:amp|lt|gt|quot|#39|nbsp);/g, (m) => ENTITIES[m] ?? m);
+
+function metaContent(html: string, name: string): string | undefined {
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    html.match(new RegExp(`<meta[^>]+(?:name|property)=["']${esc}["'][^>]*content=["']([^"']*)["']`, "i"))?.[1] ??
+    html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:name|property)=["']${esc}["']`, "i"))?.[1]
+  );
+}
+
+export function htmlToText(html: string, limit = 12000): string {
+  const parts: string[] = [];
+
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  if (title) parts.push(decodeEntities(title.trim()));
+
+  for (const name of ["description", "og:description", "twitter:description"]) {
+    const v = metaContent(html, name);
+    if (v) parts.push(decodeEntities(v));
+  }
+
+  // YouTube's full description, JSON-encoded inside a <script>.
+  const short = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/)?.[1];
+  if (short) {
+    try { parts.push(JSON.parse(`"${short}"`)); } catch { /* leave it out */ }
+  }
+
+  parts.push(
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
+
+  // De-duplicate: the metas usually repeat each other verbatim.
+  return [...new Set(parts.filter(Boolean))].join("\n\n").slice(0, limit);
+}

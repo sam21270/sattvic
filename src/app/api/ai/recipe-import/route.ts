@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
-import { fetchPublicPage } from "@/lib/safeFetch";
+import { fetchPublicPage, htmlToText } from "@/lib/safeFetch";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -27,12 +27,9 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
-      input = html
-        .replace(/<script[\s\S]*?<\/script>/gi, "")
-        .replace(/<style[\s\S]*?<\/style>/gi, "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .slice(0, 12000); // Note: char cap instead of readability lib
+      // Keeps the title, description metas and YouTube's shortDescription,
+      // which plain tag-stripping discarded — that is where a video's recipe is.
+      input = htmlToText(html); // Note: char cap instead of readability lib
     }
 
     const completion = await groq.chat.completions.create({

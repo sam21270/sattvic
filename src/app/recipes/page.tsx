@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, SlidersHorizontal, Link2, Loader2 } from "lucide-react";
 import { FlipCard } from "@/components/meals/FlipCard";
 import { Meal } from "@/types";
+import { PageEnter } from "@/components/ui/PageEnter";
 
 // Real, viral, tried-and-tested vegetarian recipes from TikTok / Instagram / YouTube / Reddit
 // Sources noted in tags — these are the ones people actually cook and screenshot
@@ -535,7 +536,7 @@ export default function RecipesPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <PageEnter className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <div>
         <p className="text-xs font-semibold tracking-widest text-emerald-500 uppercase mb-2">Recipe Browser</p>
         <h1 className="text-3xl font-bold text-white tracking-tight">Recipes people actually make.</h1>
@@ -645,7 +646,7 @@ export default function RecipesPage() {
           <div className="col-span-full text-center py-16 text-zinc-600">No recipes match your filters.</div>
         )}
       </div>
-    </div>
+    </PageEnter>
   );
 }
 

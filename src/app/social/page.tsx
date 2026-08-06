@@ -109,8 +109,31 @@ export default function SocialPage() {
       .then((d) => {
         setFriends(d.friends ?? []);
         setRequests(d.requests ?? []);
-      });
+      })
+      .catch(() => { /* a dropped poll is not worth surfacing */ });
   }
+
+  // A friend request is created on someone else's device, so this page cannot
+  // know about it without asking. It only loaded once on mount, which is why a
+  // request needed a manual refresh to appear.
+  //
+  // ponytail: polling, not websockets or SSE. The realistic case is two people
+  // sitting together adding each other, and 20s of latency covers that at
+  // 3 requests/minute against a 60/minute limit. Revisit if that changes.
+  useEffect(() => {
+    if (!session) return;
+    const sync = () => { if (document.visibilityState === "visible") loadFriends(); };
+    const id = setInterval(sync, 20_000);
+    // Coming back to the tab is the moment someone actually looks — refresh then
+    // too, so the wait is not a fixed 20s after switching apps.
+    document.addEventListener("visibilitychange", sync);
+    window.addEventListener("focus", sync);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", sync);
+      window.removeEventListener("focus", sync);
+    };
+  }, [session]);
 
   useEffect(() => {
     if (searchQ.length < 2) { setSearchResults([]); return; }

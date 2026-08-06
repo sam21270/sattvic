@@ -7,6 +7,7 @@ import { Calculator, Loader2, ArrowRight } from "lucide-react";
 import { MacroTargets } from "@/types";
 import { dayKey } from "@/lib/scoring";
 import { errorMessage } from "@/lib/utils";
+import { PageEnter } from "@/components/ui/PageEnter";
 
 const activityLevels = [
   { value: "sedentary", label: "Sedentary (desk job, no exercise)" },
@@ -83,7 +84,7 @@ function MacrosCalculator() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <PageEnter className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white">Macro Calculator</h1>
         <p className="text-zinc-500 mt-1">Get personalized daily macro targets based on your body and goals.</p>
@@ -244,6 +245,6 @@ function MacrosCalculator() {
           )}
         </div>
       )}
-    </div>
+    </PageEnter>
   );
 }

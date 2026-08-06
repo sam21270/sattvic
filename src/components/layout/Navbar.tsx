@@ -69,6 +69,12 @@ export function Navbar() {
     );
 
   return (
+    // The drawer below is deliberately a sibling of <nav>, not a child.
+    // backdrop-filter (backdrop-blur-md) makes an element the containing block
+    // for its fixed-position descendants, so a drawer nested inside this nav
+    // anchored to the nav instead of the viewport: opening the menu near the
+    // bottom of a long page rendered it thousands of pixels above the screen.
+    <>
     <nav className="sattvic-nav backdrop-blur-md border-b sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-2">
@@ -110,6 +116,7 @@ export function Navbar() {
           </div>
         </div>
       </div>
+    </nav>
 
       {/* mobile drawer */}
       {open && (
@@ -142,6 +149,6 @@ export function Navbar() {
           </div>
         </>
       )}
-    </nav>
+    </>
   );
 }
