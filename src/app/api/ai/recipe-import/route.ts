@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
 import { fetchPublicPage, htmlToText, pageDescription } from "@/lib/safeFetch";
+import { youtubeText } from "@/lib/youtube";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -23,19 +24,27 @@ export async function POST(req: NextRequest) {
     // fetching this straight was server-side request forgery on an endpoint
     // anyone can call.
     if (/^https?:\/\//i.test(input)) {
-      let html: string;
-      try {
-        html = await fetchPublicPage(input);
-      } catch (e) {
-        return NextResponse.json(
-          { error: e instanceof Error ? e.message : "That link could not be imported." },
-          { status: 400 },
-        );
+      // YouTube first, when a key is configured — scraping the watch page comes
+      // back empty from production because YouTube strips it for datacenter IPs.
+      const yt = await youtubeText(input);
+      if (yt) {
+        pageHadDescription = yt.hasDescription;
+        input = yt.text.slice(0, 12000);
+      } else {
+        let html: string;
+        try {
+          html = await fetchPublicPage(input);
+        } catch (e) {
+          return NextResponse.json(
+            { error: e instanceof Error ? e.message : "That link could not be imported." },
+            { status: 400 },
+          );
+        }
+        // Keeps the title, description metas and YouTube's shortDescription,
+        // which plain tag-stripping discarded — that is where a video's recipe is.
+        pageHadDescription = pageDescription(html).length > 0;
+        input = htmlToText(html); // Note: char cap instead of readability lib
       }
-      // Keeps the title, description metas and YouTube's shortDescription,
-      // which plain tag-stripping discarded — that is where a video's recipe is.
-      pageHadDescription = pageDescription(html).length > 0;
-      input = htmlToText(html); // Note: char cap instead of readability lib
     }
 
     const completion = await groq.chat.completions.create({

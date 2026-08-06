@@ -573,7 +573,11 @@ export default function RecipesPage() {
         <p className="text-sm font-bold text-white flex items-center gap-2">
           <Link2 className="w-4 h-4 text-emerald-400" /> Import any recipe
         </p>
-        <p className="text-xs text-zinc-500">Paste a blog/YouTube link or the recipe text itself — AI turns it into a card with macros.</p>
+        {/* Video links are deliberately not promised here. YouTube serves a
+            stripped page to datacenter IPs, so a plain fetch from the server
+            gets no description, and Shorts often carry the recipe only in the
+            video anyway. Pasting the text always works. */}
+        <p className="text-xs text-zinc-500">Paste a recipe blog link, or the recipe text itself — AI turns it into a card with macros.</p>
         <div className="flex gap-2">
           <input
             type="text"
