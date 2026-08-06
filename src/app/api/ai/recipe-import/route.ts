@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
-import { fetchPublicPage, htmlToText } from "@/lib/safeFetch";
+import { fetchPublicPage, htmlToText, pageDescription } from "@/lib/safeFetch";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -13,6 +13,10 @@ export async function POST(req: NextRequest) {
     }
     input = input.trim();
     const fromVideo = /^https?:\/\/[^\s]*(youtube\.com|youtu\.be|tiktok\.com|instagram\.com|facebook\.com)\//i.test(input);
+    // Whether the page described itself at all. Without this the "the creator
+    // wrote no description" message would also fire when the site served us a
+    // stripped page, which would be us inventing a cause we never checked.
+    let pageHadDescription = false;
 
     // If it's a URL, fetch the page and strip it to readable text.
     // fetchPublicPage refuses private addresses and re-checks every redirect —
@@ -30,6 +34,7 @@ export async function POST(req: NextRequest) {
       }
       // Keeps the title, description metas and YouTube's shortDescription,
       // which plain tag-stripping discarded — that is where a video's recipe is.
+      pageHadDescription = pageDescription(html).length > 0;
       input = htmlToText(html); // Note: char cap instead of readability lib
     }
 
@@ -66,9 +71,12 @@ Return ONLY valid JSON, no markdown:
       // "no recipe found" made that look like the importer was broken.
       return NextResponse.json(
         {
-          error: fromVideo
-            ? "That video has no written recipe — the creator didn't put one in the description. Paste the recipe text instead and it'll still work."
-            : json.error,
+          error:
+            fromVideo && !pageHadDescription
+              ? "That video has no written description — the recipe is only in the video itself. Paste the recipe text instead and it'll still work."
+              : fromVideo
+                ? "Couldn't find a recipe in that video's description. Paste the recipe text instead and it'll still work."
+                : json.error,
         },
         { status: 422 },
       );

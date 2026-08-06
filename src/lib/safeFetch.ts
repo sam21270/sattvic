@@ -132,15 +132,19 @@ function metaContent(html: string, name: string): string | undefined {
   );
 }
 
-export function htmlToText(html: string, limit = 12000): string {
+/**
+ * Just the page's own description — the metas plus, on YouTube, the full text
+ * from the player JSON. Separate from htmlToText so a caller can tell "this page
+ * described itself and there was no recipe in it" apart from "this page told us
+ * nothing at all", which are different things to say to someone.
+ */
+export function pageDescription(html: string): string {
   const parts: string[] = [];
-
-  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
-  if (title) parts.push(decodeEntities(title.trim()));
 
   // YouTube serves its own marketing copy as the description on pages where the
   // creator wrote none — Shorts especially. Keeping it would hand the model a
-  // paragraph about uploading videos and let it drown out the title.
+  // paragraph about uploading videos and let it drown out the title, and would
+  // make an empty page look like it had said something.
   const BOILERPLATE = /^Enjoy the videos and music (that )?you love, upload original content/i;
 
   for (const name of ["description", "og:description", "twitter:description"]) {
@@ -153,6 +157,18 @@ export function htmlToText(html: string, limit = 12000): string {
   if (short) {
     try { parts.push(JSON.parse(`"${short}"`)); } catch { /* leave it out */ }
   }
+
+  return [...new Set(parts.filter((p) => p.trim()))].join("\n\n");
+}
+
+export function htmlToText(html: string, limit = 12000): string {
+  const parts: string[] = [];
+
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  if (title) parts.push(decodeEntities(title.trim()));
+
+  const description = pageDescription(html);
+  if (description) parts.push(description);
 
   parts.push(
     html
