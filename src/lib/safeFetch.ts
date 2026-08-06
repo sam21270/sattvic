@@ -138,9 +138,14 @@ export function htmlToText(html: string, limit = 12000): string {
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
   if (title) parts.push(decodeEntities(title.trim()));
 
+  // YouTube serves its own marketing copy as the description on pages where the
+  // creator wrote none — Shorts especially. Keeping it would hand the model a
+  // paragraph about uploading videos and let it drown out the title.
+  const BOILERPLATE = /^Enjoy the videos and music (that )?you love, upload original content/i;
+
   for (const name of ["description", "og:description", "twitter:description"]) {
     const v = metaContent(html, name);
-    if (v) parts.push(decodeEntities(v));
+    if (v && !BOILERPLATE.test(v)) parts.push(decodeEntities(v));
   }
 
   // YouTube's full description, JSON-encoded inside a <script>.

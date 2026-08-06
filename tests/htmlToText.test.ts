@@ -40,6 +40,23 @@ test("scripts and styles stay stripped out of the body text", () => {
   assert.ok(!out.includes("alert(1)") && !out.includes("color:red"));
 });
 
+test("drops YouTube's own boilerplate description", () => {
+  // Shorts with no creator description serve this marketing copy in every
+  // description meta. Keeping it buries the title, which is the only real signal.
+  const out = htmlToText(`<html><head><title>Easy Masala Bread - YouTube</title>
+    <meta name="description" content="Enjoy the videos and music that you love, upload original content and share it all with friends, family and the world on YouTube.">
+    <meta property="og:description" content="Enjoy the videos and music that you love, upload original content and share it all with friends, family and the world on YouTube.">
+    </head><body></body></html>`);
+  assert.ok(!out.includes("upload original content"), "kept YouTube's boilerplate");
+  assert.ok(out.includes("Easy Masala Bread"), "lost the title");
+});
+
+test("a real description that merely mentions music is still kept", () => {
+  const out = htmlToText(`<html><head><title>Dal</title>
+    <meta name="description" content="Enjoy the videos below for 1 cup toor dal and 2 tbsp ghee."></head><body></body></html>`);
+  assert.ok(out.includes("toor dal"), "boilerplate filter was too greedy");
+});
+
 test("output respects the character cap", () => {
   assert.ok(htmlToText(`<p>${"x".repeat(50000)}</p>`, 500).length <= 500);
 });

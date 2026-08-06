@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Paste a recipe link or text" }, { status: 400 });
     }
     input = input.trim();
+    const fromVideo = /^https?:\/\/[^\s]*(youtube\.com|youtu\.be|tiktok\.com|instagram\.com|facebook\.com)\//i.test(input);
 
     // If it's a URL, fetch the page and strip it to readable text.
     // fetchPublicPage refuses private addresses and re-checks every redirect —
@@ -59,7 +60,19 @@ Return ONLY valid JSON, no markdown:
 
     const raw = completion.choices[0]?.message?.content ?? "";
     const json = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
-    if (json.error) return NextResponse.json({ error: json.error }, { status: 422 });
+    if (json.error) {
+      // A Short or Reel whose creator wrote no description carries the recipe
+      // only in the video itself, so there is nothing on the page to read.
+      // "no recipe found" made that look like the importer was broken.
+      return NextResponse.json(
+        {
+          error: fromVideo
+            ? "That video has no written recipe — the creator didn't put one in the description. Paste the recipe text instead and it'll still work."
+            : json.error,
+        },
+        { status: 422 },
+      );
+    }
     return NextResponse.json(json);
   } catch (error) {
     console.error("Recipe import error:", error);
