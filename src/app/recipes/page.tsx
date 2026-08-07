@@ -494,7 +494,20 @@ export default function RecipesPage() {
   const [imported, setImported] = useState<Meal[]>([]);
 
   useEffect(() => {
-    try { setImported(JSON.parse(localStorage.getItem("sattvic-imported-recipes") ?? "[]")); } catch {}
+    try {
+      const saved: Meal[] = JSON.parse(localStorage.getItem("sattvic-imported-recipes") ?? "[]");
+      // Anything imported before og:image landed was stored with image: "" and
+      // renders as a card with no photo. It cannot be repaired in place — the
+      // source URL was never saved — so drop it and write the cleaned list back,
+      // rather than making someone clear localStorage by hand.
+      // ponytail: also drops a pasted-text import, which never has a picture.
+      // Store the source URL on import if those ever need to survive.
+      const withPhotos = saved.filter((m) => m.image);
+      setImported(withPhotos);
+      if (withPhotos.length !== saved.length) {
+        localStorage.setItem("sattvic-imported-recipes", JSON.stringify(withPhotos));
+      }
+    } catch {}
   }, []);
 
   async function importRecipe() {
