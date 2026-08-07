@@ -573,13 +573,18 @@ export default function RecipesPage() {
         <p className="text-sm font-bold text-white flex items-center gap-2">
           <Link2 className="w-4 h-4 text-emerald-400" /> Import any recipe
         </p>
-        {/* YouTube is promised again now that YOUTUBE_API_KEY is set and links
-            go through the Data API — scraping the watch page returns nothing
-            from a datacenter IP. TikTok and Instagram stay unmentioned: they
-            have no equivalent free API and block servers harder. A video whose
-            creator wrote no description still cannot work, which is why pasting
-            the text is offered alongside. */}
-        <p className="text-xs text-zinc-500">Paste a recipe blog or YouTube link, or the recipe text itself — AI turns it into a card with macros.</p>
+        {/* Short-form is called out because it is the format most likely to be
+            pasted here and the one that cannot work: a Short or Reel carries the
+            recipe in speech and on screen, and its description is usually empty,
+            so there is no text for anything to read. Saying so up front is the
+            only honest fix — no API returns words the creator never wrote.
+            Blogs and long-form YouTube do work, the latter via the Data API. */}
+        <p className="text-xs text-zinc-500">
+          Paste a recipe blog link, a YouTube video, or the recipe text itself — AI turns it into a card with macros.
+        </p>
+        <p className="text-xs text-zinc-600">
+          Shorts, Reels and TikToks usually have no written recipe, so copy the text for those.
+        </p>
         <div className="flex gap-2">
           <input
             type="text"
