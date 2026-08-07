@@ -101,7 +101,7 @@ const SAMPLE_MEALS: Meal[] = [
     _id: "6",
     name: "Korean Sundubu Jjigae", mealTime: "dinner",
     description: "Spicy silken tofu stew that's been on every Korean food YouTuber's channel. Deeply warming, incredibly quick, and packed with umami. Serve with rice — non-negotiable.",
-    image: "https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=600&h=400&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&h=400&fit=crop&q=80",
     calories: 290, protein: 18, carbs: 14, fat: 16, fiber: 3, prepTime: 20,
     ingredients: ["400g silken tofu", "1 tbsp gochugaru (Korean chilli flakes)", "2 tbsp gochujang", "1 tbsp soy sauce", "1 tbsp sesame oil", "1 tsp sugar", "4 garlic cloves, minced", "1 small onion, sliced", "2 cups dashima (kombu) stock or veg stock", "2 spring onions", "1 egg (optional)"],
     instructions: [
@@ -509,7 +509,9 @@ export default function RecipesPage() {
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "failed");
-      const meal: Meal = { ...data, _id: `imported-${Date.now()}`, image: "", tags: data.tags ?? ["Imported"] };
+      // image comes from the page's og:image, or the video's thumbnail. It was
+      // hardcoded to "" here, which is why every import rendered a blank card.
+      const meal: Meal = { ...data, _id: `imported-${Date.now()}`, image: data.image ?? "", tags: data.tags ?? ["Imported"] };
       const next = [meal, ...imported];
       setImported(next);
       localStorage.setItem("sattvic-imported-recipes", JSON.stringify(next));

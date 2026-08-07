@@ -1748,7 +1748,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 cup moong dal, soaked 3 hours", "1 onion, finely chopped", "1 green chilli", "Fresh coriander", "1 tsp cumin", "Salt", "1 tsp oil per chilla", "Mint chutney to serve"],
     instructions: ["Blend soaked moong dal with green chilli and cumin into a smooth batter.", "Fold in onion and coriander. Season with salt.", "Spread a ladle on a hot oiled tawa like a dosa.", "Cook 2-3 min per side until golden.", "Serve hot with mint chutney."],
     tags: ["Indian", "High Protein", "Quick"], allergens: [], conditionFlags: [],
-    image: "https://images.unsplash.com/photo-1587339144367-6c5b419a0e93?w=600&h=400&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Kadhi Chawal", mealType: "main",
@@ -1992,7 +1992,7 @@ export const MEAL_POOL: PoolMeal[] = [
     ingredients: ["1 cup cooked rajma (kidney beans)", "1 onion, 2 tomatoes, pureed", "1 tbsp ginger-garlic paste", "Rajma masala, cumin, garam masala", "1.5 tbsp oil", "Cooked rice, coriander"],
     instructions: ["Fry cumin, then onion to golden. Add ginger-garlic and tomato puree.", "Add spices, cook until oil separates.", "Add rajma with a cup of water, simmer 15-20 min, mashing a few to thicken.", "Serve over rice with coriander."],
     tags: ["Indian", "High Protein", "Comfort"], allergens: [], conditionFlags: [],
-    image: "https://images.unsplash.com/photo-1631452180775-fca34a5db6c0?w=600&h=400&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&h=400&fit=crop&q=80",
   },
   {
     name: "Chana Masala with Roti", mealType: "main",

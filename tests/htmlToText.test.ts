@@ -3,7 +3,7 @@
 // in the description and the extractor threw the description away.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { htmlToText } from "../src/lib/safeFetch.ts";
+import { htmlToText, pageImage } from "../src/lib/safeFetch.ts";
 
 // Shaped like a real YouTube response: recipe lives in a meta attribute and in
 // JSON inside a <script>, never in the visible markup.
@@ -59,4 +59,17 @@ test("a real description that merely mentions music is still kept", () => {
 
 test("output respects the character cap", () => {
   assert.ok(htmlToText(`<p>${"x".repeat(50000)}</p>`, 500).length <= 500);
+});
+
+test("pulls the page's own photo out of its meta tags", () => {
+  // Imports rendered blank cards because nothing ever read this.
+  const withOg = `<html><head><meta property="og:image" content="https://blog.example/dal.jpg"></head></html>`;
+  assert.equal(pageImage(withOg), "https://blog.example/dal.jpg");
+
+  const twitterOnly = `<html><head><meta name="twitter:image" content="https://blog.example/poha.png"></head></html>`;
+  assert.equal(pageImage(twitterOnly), "https://blog.example/poha.png");
+
+  assert.equal(pageImage(`<html><head><title>No picture</title></head></html>`), null);
+  // A relative or junk value is worse than none — the card falls back instead.
+  assert.equal(pageImage(`<html><head><meta property="og:image" content="/relative.jpg"></head></html>`), null);
 });

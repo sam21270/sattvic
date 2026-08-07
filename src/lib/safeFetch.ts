@@ -182,3 +182,16 @@ export function htmlToText(html: string, limit = 12000): string {
   // De-duplicate: the metas usually repeat each other verbatim.
   return [...new Set(parts.filter(Boolean))].join("\n\n").slice(0, limit);
 }
+
+/**
+ * The page's own preview image. Imported recipes were saved with image: "" and
+ * rendered as a blank card; every recipe blog and video page already publishes
+ * one of these for social sharing.
+ */
+export function pageImage(html: string): string | null {
+  for (const name of ["og:image", "twitter:image", "twitter:image:src"]) {
+    const v = metaContent(html, name);
+    if (v && /^https?:\/\//i.test(v)) return decodeEntities(v);
+  }
+  return null;
+}

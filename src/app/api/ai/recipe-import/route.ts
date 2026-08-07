@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
-import { fetchPublicPage, htmlToText, pageDescription } from "@/lib/safeFetch";
-import { youtubeText, recipeLinkFrom } from "@/lib/youtube";
+import { fetchPublicPage, htmlToText, pageDescription, pageImage } from "@/lib/safeFetch";
+import { youtubeText, recipeLinkFrom, youtubeVideoId } from "@/lib/youtube";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -18,18 +18,25 @@ export async function POST(req: NextRequest) {
     // wrote no description" message would also fire when the site served us a
     // stripped page, which would be us inventing a cause we never checked.
     let pageHadDescription = false;
+    // Imported recipes used to be saved with image: "" and rendered as a blank
+    // card. Both a video and a recipe blog always carry a picture.
+    let image: string | null = null;
 
     // If it's a URL, fetch the page and strip it to readable text.
     // fetchPublicPage refuses private addresses and re-checks every redirect —
     // fetching this straight was server-side request forgery on an endpoint
     // anyone can call.
     if (/^https?:\/\//i.test(input)) {
+      const url = input; // input gets replaced by page text below
       // YouTube first, when a key is configured — scraping the watch page comes
       // back empty from production because YouTube strips it for datacenter IPs.
-      const yt = await youtubeText(input);
+      const yt = await youtubeText(url);
       if (yt) {
         pageHadDescription = yt.hasDescription;
         input = yt.text.slice(0, 12000);
+        // Every video has a thumbnail, so a YouTube import always gets a picture.
+        const id = youtubeVideoId(url);
+        if (id) image = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
         // Creators routinely write "RECIPE: <link>" and keep the ingredients on
         // their own site. Follow that one hop — the linked page is an ordinary
@@ -38,8 +45,11 @@ export async function POST(req: NextRequest) {
         const link = recipeLinkFrom(yt.text);
         if (link) {
           try {
-            const linked = htmlToText(await fetchPublicPage(link), 10000);
+            const html = await fetchPublicPage(link);
+            const linked = htmlToText(html, 10000);
             if (linked) input = `${linked}\n\n${yt.text}`.slice(0, 12000);
+            // The blog's own photo of the dish beats a video thumbnail.
+            image = pageImage(html) ?? image;
           } catch {
             // Dead or unreachable link — the description alone still gets a try.
           }
@@ -57,6 +67,7 @@ export async function POST(req: NextRequest) {
         // Keeps the title, description metas and YouTube's shortDescription,
         // which plain tag-stripping discarded — that is where a video's recipe is.
         pageHadDescription = pageDescription(html).length > 0;
+        image = pageImage(html);
         input = htmlToText(html); // Note: char cap instead of readability lib
       }
     }
@@ -104,7 +115,7 @@ Return ONLY valid JSON, no markdown:
         { status: 422 },
       );
     }
-    return NextResponse.json(json);
+    return NextResponse.json({ ...json, image });
   } catch (error) {
     console.error("Recipe import error:", error);
     return aiErrorResponse(error, "Couldn't read that — try pasting the recipe text directly");
