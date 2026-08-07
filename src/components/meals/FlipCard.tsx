@@ -52,12 +52,34 @@ export function FlipCard({ meal }: { meal: Meal }) {
   };
   const gradient = tagGradients[meal.tags[0] ?? "default"] ?? tagGradients.default;
 
-  const foodEmoji = meal.tags[0] === "Indian" ? "🍛"
-    : meal.tags[0] === "Asian" ? "🥢"
-    : meal.tags[0] === "Breakfast" ? "🍳"
-    : meal.tags[0] === "Italian" ? "🍝"
-    : meal.tags[0] === "Fresh" ? "🥗"
-    : "🌿";
+  // Keyed off the dish name first, then the tag. Imports are tagged "Imported",
+  // which matched nothing and left a generic leaf on the tile — a pancake recipe
+  // showing a leaf is what reads as a blank card. A photo is still preferred;
+  // this only shows when the source page had none, e.g. a pasted-text import.
+  // ponytail: a keyword list, not a classifier. Extend it when a dish lands on
+  // the leaf and looks wrong.
+  const named = Object.entries({
+    "🥞": /pancake|waffle|crepe|chilla|cheela/i,
+    "🍛": /curry|masala|dal|paneer|biry|rajma|chole|sabzi|korma|tikka/i,
+    "🍜": /noodle|ramen|soup|stew|jjigae|pho|broth/i,
+    "🍝": /pasta|spaghetti|penne|lasagn|risotto/i,
+    "🥗": /salad|slaw|bowl|greens/i,
+    "🍚": /rice|pulao|pilaf|khichdi|fried rice/i,
+    "🌮": /taco|burrito|wrap|quesadilla|roll/i,
+    "🍞": /bread|toast|sandwich|naan|roti|paratha|bagel/i,
+    "🥣": /oat|porridge|smoothie|yog(h)?urt|pudding/i,
+    "🍰": /cake|cookie|brownie|dessert|pie|muffin/i,
+    "🍳": /egg|omelette|scramble|frittata/i,
+    "🫘": /bean|lentil|chickpea|tofu|tempeh/i,
+  }).find(([, re]) => re.test(meal.name))?.[0];
+
+  const foodEmoji = named
+    ?? (meal.tags[0] === "Indian" ? "🍛"
+      : meal.tags[0] === "Asian" ? "🥢"
+      : meal.tags[0] === "Breakfast" ? "🍳"
+      : meal.tags[0] === "Italian" ? "🍝"
+      : meal.tags[0] === "Fresh" ? "🥗"
+      : "🌿");
 
   return (
     <>
