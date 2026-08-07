@@ -46,9 +46,12 @@ export function recipeLinkFrom(description: string): string | null {
     .map((u) => u.replace(/[.,;:!?]+$/, ""))
     .filter((u) => !NOT_A_RECIPE_SITE.test(u));
 
-  // A link the creator labelled as the recipe wins outright; otherwise take the
-  // first ordinary link, which is nearly always their own site.
-  return found.find((u) => /recipe/i.test(u)) ?? found[0] ?? null;
+  // Only a link that says it is the recipe. There was a fallback here that took
+  // the first non-social link, on the theory it would be the creator's own site
+  // — it grabbed the music credit out of a dal video's description and imported
+  // bensound.com's page banner as the photo of the dish. A missed link is a far
+  // better outcome than confidently importing the wrong page.
+  return found.find((u) => /recipe/i.test(u)) ?? null;
 }
 
 /**

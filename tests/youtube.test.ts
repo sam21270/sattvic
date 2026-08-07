@@ -54,8 +54,11 @@ Instagram: https://www.instagram.com/preppykitchen`);
   assert.equal(link, "https://preppykitchen.com/pancake-recipe/");
 });
 
-test("falls back to the creator's own site when no link says 'recipe'", () => {
-  assert.equal(recipeLinkFrom("full method at https://myfoodblog.com/dal-tadka"), "https://myfoodblog.com/dal-tadka");
+test("does not follow a link that never claims to be the recipe", () => {
+  // This is the music credit from a real dal video. Following it imported
+  // bensound.com's page banner as the photo of the dish.
+  assert.equal(recipeLinkFrom("Music from https://www.bensound.com/free-music"), null);
+  assert.equal(recipeLinkFrom("full method at https://myfoodblog.com/dal-tadka"), null);
 });
 
 test("never follows a store or social link", () => {
