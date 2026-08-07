@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
 import { fetchPublicPage, htmlToText, pageDescription } from "@/lib/safeFetch";
-import { youtubeText } from "@/lib/youtube";
+import { youtubeText, recipeLinkFrom } from "@/lib/youtube";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -30,6 +30,20 @@ export async function POST(req: NextRequest) {
       if (yt) {
         pageHadDescription = yt.hasDescription;
         input = yt.text.slice(0, 12000);
+
+        // Creators routinely write "RECIPE: <link>" and keep the ingredients on
+        // their own site. Follow that one hop — the linked page is an ordinary
+        // recipe blog, which imports cleanly — and lead with it, keeping the
+        // description after it for context.
+        const link = recipeLinkFrom(yt.text);
+        if (link) {
+          try {
+            const linked = htmlToText(await fetchPublicPage(link), 10000);
+            if (linked) input = `${linked}\n\n${yt.text}`.slice(0, 12000);
+          } catch {
+            // Dead or unreachable link — the description alone still gets a try.
+          }
+        }
       } else {
         let html: string;
         try {

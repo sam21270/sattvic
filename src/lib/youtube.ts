@@ -25,6 +25,33 @@ export function youtubeVideoId(url: string): string | null {
 export type YoutubeText = { text: string; hasDescription: boolean };
 
 /**
+ * The recipe link out of a video description.
+ *
+ * Creators very often write "RECIPE: https://their-blog.com/..." and keep the
+ * ingredients on their own site rather than in the description — the rest of
+ * the description being book, affiliate and social links. Reading only the
+ * description then reports "no recipe" while the recipe sits one hop away on a
+ * page this importer already handles well.
+ *
+ * The result is fetched through fetchPublicPage, which is what makes following
+ * a third party's link safe: it refuses private addresses and re-checks every
+ * redirect, so a description cannot point the server at internal network space.
+ */
+const NOT_A_RECIPE_SITE =
+  /(youtube\.com|youtu\.be|instagram\.com|tiktok\.com|facebook\.com|twitter\.com|x\.com|threads\.net|pinterest\.|snapchat\.com|reddit\.com|patreon\.com|spotify\.com|apple\.com|linktr\.ee|beacons\.ai|amazon\.|amzn\.|a\.co|bookshop\.org|barnesandnoble\.com|booksamillion\.com|target\.com|walmart\.com|shopmy\.us|ltk\.app|discord\.gg)/i;
+
+export function recipeLinkFrom(description: string): string | null {
+  const found = (description.match(/https?:\/\/[^\s)\]<>"]+/g) ?? [])
+    // Trailing punctuation is part of the sentence, not the URL.
+    .map((u) => u.replace(/[.,;:!?]+$/, ""))
+    .filter((u) => !NOT_A_RECIPE_SITE.test(u));
+
+  // A link the creator labelled as the recipe wins outright; otherwise take the
+  // first ordinary link, which is nearly always their own site.
+  return found.find((u) => /recipe/i.test(u)) ?? found[0] ?? null;
+}
+
+/**
  * Title + description for a video, or null when this isn't a YouTube URL, no key
  * is configured, or the API call fails — every one of which means "fall back to
  * the normal fetch" rather than "this video has nothing".
