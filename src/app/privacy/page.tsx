@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "What SATTVIC stores, why, who else sees it, and how to have it deleted.",
 };
 
-const UPDATED = "6 August 2026";
+const UPDATED = "7 August 2026";
 const CONTACT = "sallu21270@gmail.com";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -48,10 +48,10 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-5 space-y-1.5">
           <li><strong className="text-zinc-200">Google</strong> — sign-in only.</li>
           <li><strong className="text-zinc-200">MongoDB Atlas</strong> — where the database lives.</li>
-          <li><strong className="text-zinc-200">Vercel</strong> — hosting, and short-lived server logs.</li>
+          <li><strong className="text-zinc-200">Vercel</strong> — hosting, short-lived server logs, and a page-view counter. It records that a page was opened and roughly where the visit came from. It sets no cookies, does not follow you between sites, and cannot tell one visitor from another by name.</li>
           <li><strong className="text-zinc-200">Groq</strong> — the AI features. When you type &ldquo;2 rotis and dal&rdquo; to log a meal, or paste a recipe link, that text is sent to Groq to be turned into structured food data. Your name and email are never sent with it.</li>
         </ul>
-        <p>Nothing is sold, rented or shared with anyone else, and there is no advertising or third-party analytics on this site.</p>
+        <p>Nothing is sold, rented or shared with anyone else. There is no advertising, no tracking cookies, and nothing that follows you to other websites.</p>
       </Section>
 
       <Section title="What other people can see">

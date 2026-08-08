@@ -5,6 +5,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { Providers } from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/next";
 import { JourneyBar } from "@/components/ui/JourneyBar";
 import { ResumeBanner } from "@/components/ui/ResumeBanner";
 
@@ -67,6 +68,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </footer>
           <ResumeBanner />
+          {/* Counts pageviews and visitors, nothing else. Deliberately Vercel
+              rather than GA4: no cookies, so no consent banner, and nothing
+              that identifies a person — which is what lets the privacy policy
+              keep saying there is no third-party tracking here. */}
+          <Analytics />
         </Providers>
       </body>
     </html>
