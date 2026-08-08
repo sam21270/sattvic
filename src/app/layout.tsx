@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Archivo, Instrument_Serif } from "next/font/google";
 import "./globals.css";
@@ -55,6 +56,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <JourneyBar />
           <main>{children}</main>
+          {/* The privacy policy has to be reachable from somewhere: Google's
+              OAuth consent screen expects a link, and a meal tracker that
+              stores what you eat should not hide it. There was no footer at
+              all, so this is the whole of one. */}
+          <footer className="border-t border-white/[0.06] mt-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-600">
+              <span>© {new Date().getFullYear()} SATTVIC</span>
+              <Link href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</Link>
+            </div>
+          </footer>
           <ResumeBanner />
         </Providers>
       </body>
