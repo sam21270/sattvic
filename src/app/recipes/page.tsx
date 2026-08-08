@@ -173,7 +173,7 @@ const SAMPLE_MEALS: Meal[] = [
     _id: "10",
     name: "Dhaba-Style Dal Tadka", mealTime: "lunch",
     description: "The yellow dal that every Indian restaurant pretends is difficult. It's not. This dhaba method with a proper ghee tadka poured sizzling over the dal changes everything.",
-    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
+    image: "https://www.themealdb.com/images/media/meals/wuxrtu1483564410.jpg",
     calories: 310, protein: 18, carbs: 44, fat: 9, fiber: 12, prepTime: 40,
     ingredients: ["1 cup toor dal (split pigeon peas)", "1 tomato, chopped", "1 onion, finely chopped", "1 tsp turmeric", "Salt to taste", "For tadka: 2 tbsp ghee, 1 tsp cumin seeds, 4 garlic cloves sliced thin, 2 dried red chillies, 1 tsp kashmiri chilli powder, pinch of hing (asafoetida)"],
     instructions: [
@@ -388,7 +388,7 @@ const SAMPLE_MEALS: Meal[] = [
     _id: "22",
     name: "Crispy Chickpea Shawarma Bowl", mealTime: "lunch",
     description: "Spiced roasted chickpeas, garlic tahini and pickled onion in a bowl — the plant-based shawarma that blew up on food YouTube. Meal-prep gold, packed with fibre.",
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop&q=80",
+    image: "https://www.themealdb.com/images/media/meals/ctw3ba1763788978.jpg",
     calories: 430, protein: 18, carbs: 52, fat: 17, fiber: 12, prepTime: 30,
     ingredients: ["2 cans chickpeas, drained", "2 tbsp olive oil", "2 tsp cumin", "2 tsp smoked paprika", "1 tsp turmeric", "1 tsp garlic powder", "3 tbsp tahini", "1 lemon", "1 red onion", "2 tbsp vinegar", "Cooked rice or greens to serve"],
     instructions: [
@@ -421,7 +421,7 @@ const SAMPLE_MEALS: Meal[] = [
     _id: "24",
     name: "Rajma Chawal", mealTime: "lunch",
     description: "North India's ultimate comfort meal — red kidney beans simmered in a spiced onion-tomato gravy over rice. Sunday-lunch nostalgia in a bowl, quietly high in plant protein.",
-    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&q=80",
+    image: "https://www.themealdb.com/images/media/meals/sywrsu1511463066.jpg",
     calories: 460, protein: 19, carbs: 74, fat: 9, fiber: 14, prepTime: 40,
     ingredients: ["1 can (or 1.5 cups soaked) kidney beans", "2 onions, finely chopped", "3 tomatoes, pureed", "1 tbsp ginger-garlic paste", "1 tsp cumin seeds", "1 tsp garam masala", "1 tsp red chilli powder", "½ tsp turmeric", "2 tbsp oil or ghee", "Cooked basmati rice, coriander"],
     instructions: [
@@ -454,7 +454,7 @@ const SAMPLE_MEALS: Meal[] = [
     _id: "26",
     name: "Peanut Tofu Stir-Fry", mealTime: "dinner",
     description: "Crispy tofu in a glossy peanut-soy-lime sauce with crunchy veg. A weeknight YouTube staple that converts tofu skeptics — big protein, big flavour.",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop&q=80",
+    image: "https://www.themealdb.com/images/media/meals/minfsc1763766806.jpg",
     calories: 400, protein: 26, carbs: 24, fat: 22, fiber: 5, prepTime: 25,
     ingredients: ["350g firm tofu, cubed", "1 tbsp cornflour", "2 tbsp peanut butter", "2 tbsp soy sauce", "1 tbsp maple syrup", "1 lime, juiced", "1 tsp sriracha", "2 garlic cloves", "1 red pepper", "Broccoli florets", "Neutral oil, crushed peanuts"],
     instructions: [
