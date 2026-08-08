@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const user = await UserModel.findOneAndUpdate(
     { email: session.user.email },
     { username: username.toLowerCase(), bio: safeBio, avatarEmoji: safeAvatar, isPublic: isPublic === true },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   return NextResponse.json({ ok: true, username: user?.username });
