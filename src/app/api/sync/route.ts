@@ -16,6 +16,9 @@ export async function GET() {
   return NextResponse.json({ data: user?.syncData ?? null, updatedAt: user?.syncUpdatedAt ?? 0 });
 }
 
+/** 2MB of serialised localStorage. A year of daily logging is well under 1MB. */
+const MAX_SYNC_BYTES = 2_000_000;
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,6 +31,19 @@ export async function POST(req: NextRequest) {
   // never accept an empty blob — protects against a fresh device clobbering data
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ ok: false, reason: "empty" });
+  }
+  // ...and never accept an unbounded one. This writes straight into the user
+  // document, so without a ceiling a signed-in client can grow that document
+  // until Mongo's own 16MB limit rejects it — and every read of that account
+  // gets slower long before it does. A year of logging is well under 1MB.
+  // ponytail: measured on the serialised blob, which is what actually gets
+  // stored. Raise MAX_SYNC_BYTES if a real account ever legitimately hits it.
+  const bytes = JSON.stringify(data).length;
+  if (bytes > MAX_SYNC_BYTES) {
+    return NextResponse.json(
+      { ok: false, reason: "too-large", bytes, limit: MAX_SYNC_BYTES },
+      { status: 413 },
+    );
   }
 
   await connectDB();
