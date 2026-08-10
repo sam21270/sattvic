@@ -18,6 +18,7 @@ import { WaterTracker } from "@/components/ui/WaterTracker";
 import { StreakFire } from "@/components/ui/StreakFire";
 import { Confetti } from "@/components/ui/Confetti";
 import { calculateScore, loadHistory, saveToHistory, dayKey, currentStreak, DayLog, ScoreBreakdown, HistoryEntry, ScoreTargets } from "@/lib/scoring";
+import { localDataBelongsTo } from "@/lib/syncOwner";
 
 const DEFAULT_TARGETS: ScoreTargets = { calories: 2000, protein: 120, carbs: 200, fat: 65, fiber: 30 };
 const WATER_GOAL = 2500;
@@ -163,7 +164,16 @@ function Dashboard() {
     setHistory(loadHistory());
     // Mirror today's score to the account so friends' leaderboards have data.
     // Nothing wrote to the server before, so every leaderboard read zero.
-    pushScore(bd.total, bd.grade, log.mealsLogged);
+    //
+    // Only when the local log is provably this account's. This is a write: the
+    // server awards badges and bumps the streak from what it receives. Sending
+    // the previous person's meal count wrote *their* activity into a brand new
+    // account — a first-meal badge, a score and a streak, none of it earned.
+    // Unowned data is legitimately kept and pushed by CloudSync on first
+    // sign-in; this path must not front-run that with someone else's numbers.
+    if (localDataBelongsTo(session?.user?.email)) {
+      pushScore(bd.total, bd.grade, log.mealsLogged);
+    }
 
     // confetti on calorie goal hit (only once per session)
     if (!confettiFired && log.calories >= targets.calories && log.mealsLogged > 0) {
@@ -171,7 +181,7 @@ function Dashboard() {
       setConfettiFired(true);
       setTimeout(() => setConfetti(false), 100);
     }
-  }, [log, targets]); // eslint-disable-line
+  }, [log, targets, session]); // eslint-disable-line
 
   useEffect(() => {
     if (justFinishedJourney) {

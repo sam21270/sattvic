@@ -94,3 +94,26 @@ test("the sync route bounds what it will store", () => {
     "size check runs after connectDB, so a rejected payload still costs a query",
   );
 });
+
+test("nothing writes local data to an account without proving ownership", () => {
+  // Three separate bugs have come from treating localStorage as belonging to
+  // whoever happens to be signed in: the sync leak, the imported-recipe cache,
+  // and a first-meal badge written into a brand new account from the previous
+  // person's meals. Both paths that upload local data now check first.
+  // Match the guard wrapping the call, not merely the helper being imported —
+  // an earlier version of this test compared index-of against the import line
+  // and passed happily with the guard deleted.
+  const dashboard = readFileSync("src/app/dashboard/page.tsx", "utf8");
+  assert.match(
+    dashboard,
+    /if\s*\(\s*localDataBelongsTo\([^)]*\)\s*\)\s*\{\s*pushScore\(/,
+    "dashboard pushes the local score without checking the local data is this account's",
+  );
+
+  const cloudSync = readFileSync("src/components/ui/CloudSync.tsx", "utf8");
+  const pushFn = cloudSync.slice(cloudSync.indexOf("async function push()"));
+  assert.ok(
+    pushFn.indexOf("OWNER_KEY") < pushFn.indexOf('fetch("/api/sync"'),
+    "CloudSync uploads before checking who the blob belongs to",
+  );
+});
