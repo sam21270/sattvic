@@ -8,6 +8,7 @@ import { LogOut, Flame, Trophy, Star, Shield, Loader2 } from "lucide-react";
 import { ALL_BADGES, computeLocalBadges } from "@/lib/badges";
 import { loadHistory, currentStreak } from "@/lib/scoring";
 import { clearLocalData } from "@/components/ui/CloudSync";
+import { localDataBelongsTo } from "@/lib/syncOwner";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -55,15 +56,23 @@ export default function ProfilePage() {
   }
 
   const user = session!.user as any;
-  // DB badges ∪ badges evaluated from local activity (the DB isn't synced yet)
-  const earnedBadges: string[] = Array.from(new Set([...(userData.badges ?? []), ...computeLocalBadges()]));
+  // Only merge locally-derived badges when the local blob is provably this
+  // account's. It was merged unconditionally, so a brand new account signing in
+  // on a browser that already had meals in it was shown a "Logged your first
+  // meal" badge it had not earned — someone else's activity, credited to them.
+  // The account's own badges from the server are always shown.
+  const mine = localDataBelongsTo(session?.user?.email);
+  const earnedBadges: string[] = Array.from(
+    new Set([...(userData.badges ?? []), ...(mine ? computeLocalBadges() : [])]),
+  );
   const scoreHistory: any[] = userData.scoreHistory ?? [];
   const doshaResult = userData.doshaResult;
 
   // Derive streak + avg score from the SAME local history the dashboard uses,
-  // so the two pages agree. Falls back to the DB value if there's no local data.
-  // Note: swap to the synced DB fields once localStorage→Mongo sync lands.
-  const history = loadHistory();
+  // so the two pages agree — but only when that history is this account's.
+  // Otherwise fall back to the server, which is always this account by
+  // definition. Same reason as the badges above.
+  const history = mine ? loadHistory() : [];
   const streak = history.length ? currentStreak(history) : (userData.streak ?? 0);
   const avgScore = history.length
     ? Math.round(history.reduce((a, h) => a + h.score, 0) / history.length)

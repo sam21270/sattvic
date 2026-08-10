@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { isForeignData } from "@/lib/syncOwner";
+import { isForeignData, OWNER_KEY } from "@/lib/syncOwner";
 
 // Mirrors the whole `sattvic*` localStorage namespace to the user's account so
 // meals, streak, badges, plan, fasts, allergies — everything — follow them
@@ -10,7 +10,7 @@ import { isForeignData } from "@/lib/syncOwner";
 // wiping good server data.
 
 const TS_KEY = "sattvic-sync-ts";       // local copy of the blob's timestamp
-const OWNER_KEY = "sattvic-sync-owner"; // which account this local blob belongs to
+// OWNER_KEY lives in syncOwner so the profile page can check it too.
 const RELOAD_FLAG = "sattvic-synced";   // session flag so we reload at most once
 const META = new Set([TS_KEY, OWNER_KEY]);
 
