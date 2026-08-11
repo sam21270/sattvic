@@ -19,6 +19,7 @@ import { StreakFire } from "@/components/ui/StreakFire";
 import { Confetti } from "@/components/ui/Confetti";
 import { calculateScore, loadHistory, saveToHistory, dayKey, currentStreak, DayLog, ScoreBreakdown, HistoryEntry, ScoreTargets } from "@/lib/scoring";
 import { localDataBelongsTo } from "@/lib/syncOwner";
+import { scrollToId } from "@/components/ui/SmoothScroll";
 
 const DEFAULT_TARGETS: ScoreTargets = { calories: 2000, protein: 120, carbs: 200, fat: 65, fiber: 30 };
 const WATER_GOAL = 2500;
@@ -312,6 +313,7 @@ function Dashboard() {
               history={history}
               insight={insight}
               insightLoading={insightLoading}
+              onSelectDay={() => scrollToId("week-history")}
             />
           )}
         </motion.div>
@@ -428,7 +430,11 @@ function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.55, duration: 0.5 }}
       >
-        <WeekHistory />
+        {/* Target for the 7-day bars above: clicking one brings you here,
+            where the same week is already expandable per day. */}
+        <div id="week-history" className="scroll-mt-20">
+          <WeekHistory />
+        </div>
       </motion.div>
 
       {/* macro ring */}

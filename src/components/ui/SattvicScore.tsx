@@ -14,6 +14,8 @@ interface SattvicScoreProps {
   history: HistoryEntry[];
   insight: string;
   insightLoading: boolean;
+  /** Clicking a bar in the 7-day chart. Omitted, the chart stays decorative. */
+  onSelectDay?: () => void;
 }
 
 const breakdownItems = [
@@ -35,7 +37,7 @@ function AnimatedNumber({ value }: { value: number }) {
   return <span>{shown}</span>;
 }
 
-function WeekChart({ history }: { history: HistoryEntry[] }) {
+function WeekChart({ history, onSelectDay }: { history: HistoryEntry[]; onSelectDay?: () => void }) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const last7 = Array.from({ length: 7 }, (_, i) => {
@@ -49,9 +51,20 @@ function WeekChart({ history }: { history: HistoryEntry[] }) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-bold uppercase tracking-widest text-zinc-600">7-Day History</p>
+      {/* The bars were decorative while the same week is expandable further
+          down the page, so a click on one now takes you there rather than
+          doing nothing. Still a plain div when no handler is passed. */}
       <div className="flex items-end gap-1.5 h-16">
         {last7.map((d, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+          <div
+            key={i}
+            onClick={onSelectDay}
+            role={onSelectDay ? "button" : undefined}
+            tabIndex={onSelectDay ? 0 : undefined}
+            onKeyDown={onSelectDay ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectDay(); } } : undefined}
+            aria-label={onSelectDay ? `See what you ate on ${d.label}` : undefined}
+            className={`flex-1 flex flex-col items-center gap-1 rounded ${onSelectDay ? "cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-opacity" : ""}`}
+          >
             <div className="w-full flex-1 flex items-end">
               {d.score !== null ? (
                 <motion.div
@@ -78,7 +91,7 @@ function WeekChart({ history }: { history: HistoryEntry[] }) {
   );
 }
 
-export function SattvicScore({ breakdown, history, insight, insightLoading }: SattvicScoreProps) {
+export function SattvicScore({ breakdown, history, insight, insightLoading, onSelectDay }: SattvicScoreProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
 
@@ -174,7 +187,7 @@ export function SattvicScore({ breakdown, history, insight, insightLoading }: Sa
       </div>
 
       {/* 7-day chart */}
-      <WeekChart history={history} />
+      <WeekChart history={history} onSelectDay={onSelectDay} />
 
       {/* status label */}
       <div className="flex items-center justify-between text-sm border-t border-white/[0.07] pt-4">

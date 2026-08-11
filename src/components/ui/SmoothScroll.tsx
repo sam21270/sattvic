@@ -49,3 +49,18 @@ export function SmoothScroll() {
 
   return null;
 }
+
+/**
+ * Scroll to an element by id.
+ *
+ * Native scrollIntoView does nothing while Lenis is running — it owns the
+ * scroll position on desktop and simply overwrites it, so a click that should
+ * jump down the page silently did nothing. Falls back to native on touch,
+ * where Lenis is deliberately not started.
+ */
+export function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (lenisInstance) lenisInstance.scrollTo(el, { offset: -80 });
+  else el.scrollIntoView({ behavior: "smooth", block: "start" });
+}

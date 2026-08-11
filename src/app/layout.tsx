@@ -19,7 +19,13 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sattvic.vercel.app"),
-  title: "SATTVIC — Premium Vegetarian Meal Planner",
+  // A template so each page's own title still carries the name: the Recipes
+  // page reads "Recipes — SATTVIC" in a tab, a search result and a shared link,
+  // instead of every page being called the same thing.
+  title: {
+    default: "SATTVIC — Premium Vegetarian Meal Planner",
+    template: "%s — SATTVIC",
+  },
   description: DESCRIPTION,
   openGraph: {
     title: "SATTVIC — Eat with intention",

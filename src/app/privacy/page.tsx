@@ -6,7 +6,7 @@ import Link from "next/link";
 // consent screen wants this URL before an app is published, and the app asks
 // strangers to sign in with Google and then stores what they eat.
 export const metadata: Metadata = {
-  title: "Privacy — SATTVIC",
+  title: "Privacy",
   description: "What SATTVIC stores, why, who else sees it, and how to have it deleted.",
 };
 
