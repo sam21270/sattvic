@@ -5,6 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { calculateScore, currentStreak, dayKey, type DayLog, type HistoryEntry } from "../src/lib/scoring.ts";
 import { doshaScoreAdjustment, isMealGoodForDosha } from "../src/lib/doshaRules.ts";
+import { dishQuery } from "../src/lib/utils.ts";
 
 const day = (over: Partial<DayLog> = {}): DayLog => ({
   date: "2026-07-30", calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0,
@@ -105,4 +106,16 @@ test("isMealGoodForDosha is case-insensitive and safe without a dosha", () => {
     isMealGoodForDosha("khichdi", [], "Vata"),
     "casing of meal name and dosha must not change the answer",
   );
+});
+
+/* ── linking a suggestion to a recipe ──────────────────────────── */
+
+test("a meal suggestion becomes a searchable dish name", () => {
+  // The exact strings the dashboard suggests.
+  assert.equal(dishQuery("2 cups dal makhani"), "dal makhani");
+  assert.equal(dishQuery("1 cup cooked chana masala + 2 rotis"), "chana masala");
+  assert.equal(dishQuery("1 cup Greek yogurt + 1/2 cup almonds + 1 cup mixed veggies"), "Greek yogurt");
+  assert.equal(dishQuery("1/2 katori rajma"), "rajma");
+  // Already clean, and not mangled.
+  assert.equal(dishQuery("Paneer Butter Masala"), "Paneer Butter Masala");
 });

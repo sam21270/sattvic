@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Loader2, Plus, Check, Target } from "lucide-react";
 import { logMealToToday, loadTodayMeals } from "@/components/ui/AIFoodLog";
+import { dishQuery } from "@/lib/utils";
 
 interface Suggestion { name: string; calories: number; protein: number; }
 
@@ -80,7 +81,16 @@ export function RestOfDay({
           {meals.map((m, i) => (
             <div key={i} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5">
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-zinc-300">{m.name}</p>
+                {/* The dish name is the link now. "Browse recipes" sent everyone
+                    to the same unfiltered page, which is a dead end when you
+                    were reading about one specific dish — carry the dish across
+                    so the page opens already showing it. */}
+                <Link
+                  href={`/recipes?q=${encodeURIComponent(dishQuery(m.name))}`}
+                  className="text-sm text-zinc-300 hover:text-emerald-300 transition-colors"
+                >
+                  {m.name}
+                </Link>
                 <p className="text-[11px] text-zinc-600 tabular-nums">{m.calories} kcal · {m.protein}g protein</p>
                 <div className="flex gap-3 mt-1">
                   <a
@@ -90,8 +100,11 @@ export function RestOfDay({
                   >
                     ▶ Watch recipe
                   </a>
-                  <Link href="/recipes" className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-300">
-                    Browse recipes
+                  <Link
+                    href={`/recipes?q=${encodeURIComponent(dishQuery(m.name))}`}
+                    className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-300"
+                  >
+                    Find this recipe
                   </Link>
                 </div>
               </div>

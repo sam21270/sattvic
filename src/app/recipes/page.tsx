@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, Link2, Loader2 } from "lucide-react";
 import { FlipCard } from "@/components/meals/FlipCard";
 import { Meal } from "@/types";
@@ -481,7 +482,20 @@ function recipeOfTheWeek(): Meal {
 }
 
 export default function RecipesPage() {
-  const [search, setSearch] = useState("");
+  // useSearchParams needs a Suspense boundary or the whole page opts out of
+  // static rendering.
+  return (
+    <Suspense fallback={null}>
+      <Recipes />
+    </Suspense>
+  );
+}
+
+function Recipes() {
+  // Arriving from a meal suggestion carries the dish across, so the page opens
+  // already showing it instead of 27 cards to hunt through.
+  const initialQuery = useSearchParams().get("q") ?? "";
+  const [search, setSearch] = useState(initialQuery);
   const [highProtein, setHighProtein] = useState(false);
   const [lowCarb, setLowCarb] = useState(false);
   const [viralOnly, setViralOnly] = useState(false);
@@ -669,7 +683,25 @@ export default function RecipesPage() {
         {filtered.length > 0 ? (
           filtered.map((meal) => <FlipCard key={meal._id} meal={meal} />)
         ) : (
-          <div className="col-span-full text-center py-16 text-zinc-600">No recipes match your filters.</div>
+          // Arriving from a suggestion for a dish nobody has added yet used to
+          // land on a bare "no matches", which is a worse dead end than the
+          // unfiltered list it replaced. Name the dish and offer the way out.
+          <div className="col-span-full text-center py-16 space-y-3">
+            <p className="text-zinc-500">
+              {search ? <>Nothing here matches <span className="text-zinc-300">“{search}”</span> yet.</> : "No recipes match your filters."}
+            </p>
+            {search && (
+              <p className="text-sm text-zinc-600">
+                Paste its link or recipe text into <span className="text-emerald-400">Import any recipe</span> above and it becomes a card with macros.
+              </p>
+            )}
+            <button
+              onClick={() => { setSearch(""); setHighProtein(false); setLowCarb(false); setViralOnly(false); setMealTime("all"); }}
+              className="text-sm font-semibold text-emerald-400 hover:text-emerald-300"
+            >
+              Show all recipes
+            </button>
+          </div>
         )}
       </div>
     </PageEnter>
