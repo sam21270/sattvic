@@ -114,6 +114,9 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
   // edited ingredient quantities, keyed "itemIdx:ingIdx"; and which editors are open
   const [edits, setEdits] = useState<Record<string, number>>({});
   const [openEditor, setOpenEditor] = useState<number | null>(null);
+  // Direct overrides typed onto an item, keyed by its index. Wins over the
+  // model's estimate and over any ingredient scaling.
+  const [macroEdits, setMacroEdits] = useState<Record<number, Partial<Pick<FoodItem, "calories" | "protein" | "carbs" | "fat">>>>({});
 
   useEffect(() => {
     const loaded = loadTodayMeals();
@@ -130,6 +133,21 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
   // Recompute an item's macros from its ingredients scaled by any edited quantity.
   // Ingredients carry macros at their assumed qty, so factor = editedQty / assumedQty.
   function scaledItem(item: FoodItem, i: number): FoodItem {
+    // A number typed straight into the item wins over everything else. The
+    // estimate is a guess by a model that does not know nutrition facts, and
+    // only composite dishes had keyIngredients to adjust — so the simple foods
+    // it gets wrong (2 egg whites came back as 140 kcal and 26g protein) were
+    // the ones with no way to correct them.
+    const direct = macroEdits[i];
+    if (direct && Object.keys(direct).length) {
+      const base = item.keyIngredients?.length ? fromIngredients(item, i) : item;
+      return { ...base, ...direct };
+    }
+    if (!item.keyIngredients?.length) return item;
+    return fromIngredients(item, i);
+  }
+
+  function fromIngredients(item: FoodItem, i: number): FoodItem {
     if (!item.keyIngredients?.length) return item;
     const t = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
     item.keyIngredients.forEach((ing, j) => {
@@ -157,6 +175,7 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     setPending(null);
     setEdits({});
     setOpenEditor(null);
+    setMacroEdits({});
     try {
       const res = await fetch("/api/ai/food-log", {
         method: "POST",
@@ -187,6 +206,7 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     setPending(null);
     setEdits({});
     setOpenEditor(null);
+    setMacroEdits({});
     setText("");
   }
 
@@ -264,16 +284,45 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
                       <span className="text-zinc-300">{item.name}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-zinc-500 text-xs tabular-nums">{item.calories} kcal · {item.protein}g P</span>
-                        {adjustable && (
-                          <button
-                            onClick={() => setOpenEditor(openEditor === i ? null : i)}
-                            className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300"
-                          >
-                            {openEditor === i ? "Done" : "Adjust ▾"}
-                          </button>
-                        )}
+                        {/* Offered on every item now, not only composite dishes.
+                            The estimate is a guess, and the foods it gets most
+                            wrong are simple ones with no ingredients to scale. */}
+                        <button
+                          onClick={() => setOpenEditor(openEditor === i ? null : i)}
+                          className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300"
+                        >
+                          {openEditor === i ? "Done" : "Adjust ▾"}
+                        </button>
                       </div>
                     </div>
+
+                    {/* Direct macro entry — the fallback when there are no
+                        ingredients, and the override when there are. */}
+                    {openEditor === i && !adjustable && (
+                      <div className="mt-2 mb-1 pl-2 border-l-2 border-emerald-500/30 space-y-1.5">
+                        <p className="text-[11px] text-zinc-500">These are estimates. If you know the real numbers, type them in.</p>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {([
+                            ["calories", "kcal"], ["protein", "P"], ["carbs", "C"], ["fat", "F"],
+                          ] as const).map(([field, label]) => (
+                            <label key={field} className="flex flex-col gap-1">
+                              <span className="text-[10px] uppercase tracking-wide text-zinc-600">{label}</span>
+                              <input
+                                type="number" min="0" step="1"
+                                value={macroEdits[i]?.[field] ?? item[field]}
+                                onChange={(e) =>
+                                  setMacroEdits((p) => ({
+                                    ...p,
+                                    [i]: { ...p[i], [field]: Math.max(0, Number(e.target.value) || 0) },
+                                  }))
+                                }
+                                className="w-full px-2 py-1 bg-white/[0.06] border border-white/[0.12] rounded-lg text-white text-xs text-right focus:outline-none focus:border-emerald-500/50"
+                              />
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {/* editable key ingredients — assumed quantities pre-filled */}
                     {openEditor === i && pending.items[i].keyIngredients && (
                       <div className="mt-2 mb-1 pl-2 border-l-2 border-emerald-500/30 space-y-1.5">
