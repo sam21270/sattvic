@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groq } from "@/lib/ai/groq";
 import { aiErrorResponse } from "@/lib/ai/errors";
-import { inconsistentItems, reconcile } from "@/lib/ai/macroCheck";
+import { inconsistentItems, reconcile, sumFromIngredients } from "@/lib/ai/macroCheck";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -24,7 +24,8 @@ Protein is the most commonly OVERESTIMATED macro. Most vegetarian foods are prot
 Sanity-check every item before answering: protein×4 + carbs×4 + fat×9 must be within ~10% of its calories; if not, fix the macros, not the calories.
 Removing a part of a food removes its nutrition — do not keep the whole food's numbers. "Egg white(s) only" / "no yolk": 1 large egg white ≈ 17 kcal, 3.6g protein, 0g fat (a WHOLE egg is ≈ 70 kcal, 6g protein, 5g fat), so 2 egg whites ≈ 34 kcal and 7g protein, NOT the 140 kcal of 2 whole eggs. The same applies to "malai/cream removed", "skin removed", "without oil".
 
-HOME-COOKED COMPOSITE DISHES (dal khichdi, poha, sabzi, pasta, curries, fried rice — anything cooked from multiple ingredients where the recipe/quantities vary by kitchen): break the item into its main ingredients in "keyIngredients", each with the quantity you ASSUMED and its macros AT that quantity. Mark the ones whose amount really swings the calories and is uncertain — oil/ghee/butter, rice/grains, dal/legumes, paneer, sugar, nuts — as "adjustable": true (the user will fine-tune these). Aromatics/spices/vegetables can be one lumped line with "adjustable": false. The item's own calories/protein/carbs/fat MUST equal the sum of its keyIngredients so the numbers stay consistent when the user edits a quantity. For PACKAGED or single foods (a biscuit, a pear, Maggi, bread) omit keyIngredients entirely.
+HOME-COOKED COMPOSITE DISHES (dal khichdi, poha, sabzi, pasta, curries, fried rice — anything cooked from multiple ingredients where the recipe/quantities vary by kitchen): break the item into its main ingredients in "keyIngredients", each with the quantity you ASSUMED and its macros AT that quantity. Mark the ones whose amount really swings the calories and is uncertain — oil/ghee/butter, rice/grains, dal/legumes, paneer, sugar, nuts — as "adjustable": true (the user will fine-tune these). Aromatics/spices/vegetables can be one lumped line with "adjustable": false.
+ALWAYS mark the single largest calorie contributor "adjustable": true, whatever it is — the potato in hash browns, the banana in a smoothie. It is the portion the user is most likely to disagree with, and a category rule that leaves it unadjustable makes the estimate impossible to correct. The item's own calories/protein/carbs/fat MUST equal the sum of its keyIngredients so the numbers stay consistent when the user edits a quantity. For PACKAGED or single foods (a biscuit, a pear, Maggi, bread) omit keyIngredients entirely.
 
 User ate: "${text.trim()}"
 
@@ -91,7 +92,9 @@ All top-level macro numbers are integers; keyIngredients qty may be decimal. Omi
 
     // Whatever survives, never show arithmetic that is visibly impossible.
     if (Array.isArray(result.items)) {
-      result.items = result.items.map(reconcile);
+      // Ingredients first — an item broken down must equal its parts — then the
+      // Atwater check on whatever that produced.
+      result.items = result.items.map(sumFromIngredients).map(reconcile);
       const sum = (k: "calories" | "protein" | "carbs" | "fat" | "fiber") =>
         Math.round(result.items.reduce((s: number, i: Record<string, number>) => s + (i[k] ?? 0), 0));
       // Totals are shown next to the items, so they have to be the items' sum.

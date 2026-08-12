@@ -2,7 +2,7 @@
 // returned in production, not invented examples.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { impliedCalories, isConsistent, inconsistentItems, reconcile } from "../src/lib/ai/macroCheck.ts";
+import { impliedCalories, isConsistent, inconsistentItems, reconcile, sumFromIngredients } from "../src/lib/ai/macroCheck.ts";
 
 // What "2 boiled eggs white part only" came back as: whole-egg calories kept,
 // protein roughly quadrupled, and the two not reconcilable with each other.
@@ -43,4 +43,26 @@ test("the feedback names the item and shows both numbers", () => {
 test("reconcile makes the calories match the macros, and leaves good items untouched", () => {
   assert.equal(reconcile(eggWhites).calories, 104);
   assert.equal(reconcile(wholeEggs), wholeEggs, "a consistent item is returned as-is");
+});
+
+/* ── an item must equal its ingredients ────────────────────────── */
+
+test("an item's macros are recomputed from its ingredients", () => {
+  // The real "3 hash brown patties" response: 390 stated, 300 in the parts.
+  const item = {
+    name: "3 hash brown patties", calories: 390, protein: 6, carbs: 48, fat: 18, fiber: 4,
+    keyIngredients: [
+      { name: "potatoes", calories: 180, protein: 4, carbs: 40, fat: 0, fiber: 4 },
+      { name: "oil", calories: 120, protein: 0, carbs: 0, fat: 14, fiber: 0 },
+    ],
+  };
+  const fixed = sumFromIngredients(item);
+  assert.equal(fixed.calories, 300, "should equal the parts, not the model's total");
+  assert.equal(fixed.fat, 14);
+  assert.equal(fixed.protein, 4);
+});
+
+test("an item with no ingredients is left alone", () => {
+  const packaged = { name: "1 banana", calories: 105, protein: 1, carbs: 27, fat: 0, fiber: 3 };
+  assert.equal(sumFromIngredients(packaged), packaged);
 });

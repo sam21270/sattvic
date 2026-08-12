@@ -47,3 +47,26 @@ export function inconsistentItems<T extends Macros & { name?: string }>(items: T
 export function reconcile<T extends Macros>(item: T): T {
   return isConsistent(item) ? item : { ...item, calories: impliedCalories(item) };
 }
+
+type Ingredient = Partial<Macros> & { fiber?: number };
+
+/**
+ * When an item is broken into ingredients, its own macros must be their sum.
+ *
+ * The prompt says so and the model does not always comply — "3 hash brown
+ * patties" came back as 390 kcal over ingredients totalling 300. The client
+ * already recomputes from the ingredients whenever it renders, so the server
+ * was returning a number nobody ever saw, and the two disagreed by 90 kcal.
+ * Recompute here so both sides say the same thing.
+ */
+export function sumFromIngredients<T extends Macros & { fiber?: number; keyIngredients?: Ingredient[] }>(item: T): T {
+  const parts = item.keyIngredients;
+  if (!parts?.length) return item;
+  const add = (k: "calories" | "protein" | "carbs" | "fat" | "fiber") =>
+    Math.round(parts.reduce((s, g) => s + (g[k] ?? 0), 0));
+  return {
+    ...item,
+    calories: add("calories"), protein: add("protein"),
+    carbs: add("carbs"), fat: add("fat"), fiber: add("fiber"),
+  };
+}
