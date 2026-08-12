@@ -315,7 +315,7 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
           >
             <div className="space-y-2">
               {scaledItems.map((item, i) => {
-                const adjustable = pending.items[i].keyIngredients?.some((g) => g.adjustable);
+                const overridden = Object.keys(macroEdits[i] ?? {}).length > 0;
                 return (
                   <div key={i}>
                     <div className="flex items-center justify-between text-sm">
@@ -346,11 +346,17 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
                       </p>
                     )}
 
-                    {/* Direct macro entry — the fallback when there are no
-                        ingredients, and the override when there are. */}
-                    {openEditor === i && !adjustable && (
+                    {/* Direct macro entry, on EVERY item. Composite dishes used
+                        to get quantity sliders only, so someone holding the
+                        packet — 3 frozen hash browns are 360 kcal and 18g fat on
+                        the label — had no way to enter it, and food memory had
+                        no correction to learn from. Par-fried frozen food is the
+                        case that breaks ingredient scaling outright: setting oil
+                        to 0 because you air-fried them drops the fat to 0g, when
+                        the fat is already in the patty. */}
+                    {openEditor === i && (
                       <div className="mt-2 mb-1 pl-2 border-l-2 border-emerald-500/30 space-y-1.5">
-                        <p className="text-[11px] text-zinc-500">These are estimates. If you know the real numbers, type them in.</p>
+                        <p className="text-[11px] text-zinc-500">These are estimates. If you know the real numbers — off the packet, say — type them in and they win.</p>
                         <div className="grid grid-cols-4 gap-1.5">
                           {([
                             ["calories", "kcal"], ["protein", "P"], ["carbs", "C"], ["fat", "F"],
@@ -376,24 +382,33 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
                     {/* editable key ingredients — assumed quantities pre-filled */}
                     {openEditor === i && pending.items[i].keyIngredients && (
                       <div className="mt-2 mb-1 pl-2 border-l-2 border-emerald-500/30 space-y-1.5">
-                        <p className="text-[11px] text-zinc-500">Tweak what actually moves the calories — we&apos;ve assumed typical amounts.</p>
-                        {pending.items[i].keyIngredients!.map((ing, j) =>
-                          ing.adjustable === false ? null : (
-                            <div key={j} className="flex items-center gap-2 text-xs">
-                              <span className="flex-1 text-zinc-300 capitalize">{ing.name}</span>
+                        <p className="text-[11px] text-zinc-500">
+                          {overridden
+                            ? "Ignored while your own numbers are typed in above."
+                            : "Or tweak what actually moves the calories — we've assumed typical amounts."}
+                        </p>
+                        {/* Every line is listed, including the ones that can't be
+                            tweaked. Hiding them meant the rows on screen never
+                            added up to the total underneath. */}
+                        {pending.items[i].keyIngredients!.map((ing, j) => (
+                          <div key={j} className={`flex items-center gap-2 text-xs ${overridden ? "opacity-40" : ""}`}>
+                            <span className="flex-1 text-zinc-300 capitalize">{ing.name}</span>
+                            {ing.adjustable === false ? (
+                              <span className="w-16 px-2 py-1 text-zinc-500 text-xs text-right tabular-nums">{ing.qty}</span>
+                            ) : (
                               <input
                                 type="number" step="0.5" min="0"
                                 value={edits[`${i}:${j}`] ?? ing.qty}
                                 onChange={(e) => setEdits((p) => ({ ...p, [`${i}:${j}`]: Number(e.target.value) }))}
                                 className="w-16 px-2 py-1 bg-white/[0.06] border border-white/[0.12] rounded-lg text-white text-xs text-right focus:outline-none focus:border-emerald-500/50"
                               />
-                              <span className="w-12 text-zinc-500">{ing.unit}</span>
-                              <span className="w-16 text-right text-zinc-500 tabular-nums">
-                                {Math.round(ing.calories * ((edits[`${i}:${j}`] ?? ing.qty) / (ing.qty || 1)))} kcal
-                              </span>
-                            </div>
-                          )
-                        )}
+                            )}
+                            <span className="w-12 text-zinc-500">{ing.unit}</span>
+                            <span className="w-16 text-right text-zinc-500 tabular-nums">
+                              {Math.round(ing.calories * ((edits[`${i}:${j}`] ?? ing.qty) / (ing.qty || 1)))} kcal
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
