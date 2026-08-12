@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Plus, Trash2, Check } from "lucide-react";
 import { getMicros } from "@/lib/micronutrients";
 import { dayKey } from "@/lib/scoring";
-import { memoryKey, recallMacros, rememberMacros, forgetMacros } from "@/lib/foodMemory";
+import { memoryKeys, recallMacros, rememberMacros, forgetMacros } from "@/lib/foodMemory";
+import { errorMessage } from "@/lib/utils";
 
 interface KeyIngredient {
   name: string;
@@ -191,14 +192,18 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      if (!res.ok) throw new Error("failed");
+      // The route already says why it failed — out of quota, key missing,
+      // upstream down. Telling someone to rephrase perfectly good English
+      // because the daily token limit ran out sends them chasing their own
+      // wording for a problem that is not theirs.
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "");
       const data: AnalyzedMeal = await res.json();
-      if (!data.items?.length) throw new Error("failed");
+      if (!data.items?.length) throw new Error("");
       // Anything corrected before wins over a fresh guess. Reuses the same
       // override slot a typed-in number uses, so it beats ingredient scaling too.
       const saved: typeof macroEdits = {};
       const hits: Record<number, boolean> = {};
-      const keys = data.items.map((it, i) => memoryKey(it.name, text, i));
+      const keys = memoryKeys(data.items, text);
       keys.forEach((k, i) => {
         const m = recallMacros(k);
         if (m) { saved[i] = m; hits[i] = true; }
@@ -207,8 +212,8 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
       setMacroEdits(saved);
       setFromMemory(hits);
       setPending(data);
-    } catch {
-      setError("Couldn't analyze that — try describing the food a bit differently.");
+    } catch (e) {
+      setError(errorMessage(e, "Couldn't analyze that — try describing the food a bit differently."));
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,7 @@
 // can be taken back. Both are one localStorage blob, so both get a test.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalisePhrase, memoryKey, recallMacros, rememberMacros, forgetMacros } from "../src/lib/foodMemory.ts";
+import { normalisePhrase, memoryKeys, recallMacros, rememberMacros, forgetMacros } from "../src/lib/foodMemory.ts";
 
 function withLocalStorage(run: () => void) {
   const store = new Map<string, string>();
@@ -40,24 +40,44 @@ test("a different quantity is a different food", () => {
   });
 });
 
-test("a count the model dropped from the name still separates the entries", () => {
-  // Observed live: "3 hash browns" came back named just "hash browns". Keyed on
-  // that alone, a correction made for 3 would be served for 5.
-  assert.notEqual(
-    memoryKey("hash browns", "3 hash browns", 0),
-    memoryKey("hash browns", "5 hash browns", 0),
+test("the model renaming the same food does not lose the entry", () => {
+  // Observed live, same phrase on consecutive calls: "3 hash browns" was named
+  // "hash browns" once and "3 hash browns" the next; a tea gained a "(1 cup)"
+  // suffix. Keyed on the model's name, a saved correction goes missing at
+  // random. What the user typed does not move.
+  assert.deepEqual(
+    memoryKeys([{ name: "hash browns" }], "3 hash browns"),
+    memoryKeys([{ name: "3 hash browns (3 patties)" }], "3 hash browns"),
   );
-  assert.equal(memoryKey("hash browns", "3 hash browns", 0), "3hashbrowns");
 });
 
-test("a count the model did write is used as-is", () => {
-  // No borrowing when the name already carries the quantity — otherwise the
-  // text's count would be glued on twice.
-  assert.equal(memoryKey("2 rotis", "2 rotis, 1 cup rice", 0), "2rotis");
+test("a different quantity typed is a different entry", () => {
+  assert.notDeepEqual(
+    memoryKeys([{ name: "hash browns" }], "3 hash browns"),
+    memoryKeys([{ name: "hash browns" }], "5 hash browns"),
+  );
 });
 
-test("each item borrows the count from its own part of the phrase", () => {
-  assert.equal(memoryKey("rice", "3 hash browns, 1 cup rice", 1), "1rice");
+test("two versions of one drink are told apart by what was typed", () => {
+  // The user's own case: same tea, 1% milk some days and 6% others. The model
+  // may well call both "masala tea"; the phrase is what separates them.
+  const [a] = memoryKeys([{ name: "masala tea" }], "masala tea with 150ml 1% milk");
+  const [b] = memoryKeys([{ name: "masala tea" }], "masala tea with 150ml 6% milk");
+  assert.notEqual(a, b);
+});
+
+test("each item is keyed on its own part of the phrase", () => {
+  assert.deepEqual(
+    memoryKeys([{ name: "3 hash browns" }, { name: "1 cup cooked rice" }], "3 hash browns, 1 cup rice"),
+    ["3hashbrowns", "1cuprice"],
+  );
+});
+
+test("two foods out of one typed segment never share an entry", () => {
+  // "2 rotis and dal" is one comma segment but two items. Sharing a key would
+  // have the second overwrite the first, then serve dal's numbers for roti.
+  const keys = memoryKeys([{ name: "2 rotis" }, { name: "1 katori dal" }], "2 rotis and dal");
+  assert.notEqual(keys[0], keys[1]);
 });
 
 test("undo stops the saved numbers being reused", () => {

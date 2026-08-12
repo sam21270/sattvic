@@ -30,24 +30,30 @@ export function normalisePhrase(name: string): string {
 }
 
 /**
- * The key an item is remembered under.
+ * The keys a meal's items are remembered under — one per item, in order.
  *
- * The model is asked to write the count into the item name and often doesn't —
- * "3 hash browns" came back named just "hash browns". Keyed on that alone, a
- * correction made for 3 would be reused for 5, which is the one thing this must
- * never do. So when the name carries no number, borrow one from the phrase the
- * user actually typed.
+ * Keyed on what the USER typed, not on what the model called it. The model's
+ * name for the same food drifts between calls: "3 hash browns" came back as
+ * "hash browns" one run and "3 hash browns" the next, and the same tea was
+ * named "…6% milk no sugar" once and "…6% milk no sugar (1 cup)" the next.
+ * Keyed on that, a saved correction goes missing at random. What the user
+ * types is stable, and it is also the thing they control — writing "with 1%
+ * milk" is how they tell two versions of the same drink apart.
  *
- * ponytail: the comma segment at the item's own index. If the model merges two
- * segments into one item the borrowed count is the wrong one — but the key is
- * still a pure function of the same text, so the same meal keeps hitting the
- * same entry and a different quantity still lands on a different key.
+ * ponytail: the comma segment at the item's own index. The model usually
+ * returns one item per segment. When it splits one segment into several, the
+ * extra items fall back to their name and a repeat of the same key is
+ * disambiguated by name, so two foods can never overwrite each other's entry.
  */
-export function memoryKey(itemName: string, text: string, index: number): string {
-  const name = normalisePhrase(itemName);
-  if (/\d/.test(name)) return name;
-  const qty = (text.split(",")[index] ?? "").match(/\d+(?:\.\d+)?/)?.[0] ?? "";
-  return qty + name;
+export function memoryKeys(items: { name: string }[], text: string): string[] {
+  const segments = text.split(",");
+  const used = new Set<string>();
+  return items.map((item, i) => {
+    let key = normalisePhrase(segments[i] ?? "") || normalisePhrase(item.name);
+    if (used.has(key)) key += normalisePhrase(item.name);
+    used.add(key);
+    return key;
+  });
 }
 
 function load(): Record<string, RememberedMacros> {

@@ -6,6 +6,7 @@ import { Plus, Check, Search, X, ChevronDown, Trash2, Sparkles, Loader2 } from "
 import { DayLog, dayKey } from "@/lib/scoring";
 import { MEAL_POOL, PoolMeal } from "@/data/mealPool";
 import { getMicros } from "@/lib/micronutrients";
+import { errorMessage } from "@/lib/utils";
 
 interface AIMeal {
   name: string;
@@ -231,12 +232,14 @@ export function MealLogger({ log, onChange }: MealLoggerProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: customText }),
       });
-      if (!res.ok) throw new Error();
+      // Same as the food log: show the reason the route gave rather than
+      // blaming the wording for a quota or key failure.
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "");
       const data = await res.json();
       if (!data.items?.length) throw new Error();
       setCustomResult(data);
-    } catch {
-      setCustomError("Couldn't analyze that — try rephrasing (e.g. \"2 rotis, 1 katori dal\").");
+    } catch (e) {
+      setCustomError(errorMessage(e, "Couldn't analyze that — try rephrasing (e.g. \"2 rotis, 1 katori dal\")."));
     } finally {
       setCustomLoading(false);
     }
