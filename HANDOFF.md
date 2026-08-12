@@ -19,35 +19,25 @@ privacy policy live and linked site-wide, Vercel Analytics enabled and counting,
 every page at 390px, GitHub profile complete (avatar, README, pins, MIT licence,
 topics).
 
-## Next task — food memory v1
+## Food memory v1 — shipped 2026-08-11 (`922b74e`)
 
-The agreed next piece. The macro estimates come from an LLM that does not know
-nutrition facts, so they vary by phrasing ("3 hashbrowns" vs "3 hash brown
-patties" assumed 150g vs 225g of potato). Patching the prompt per food does not
-scale. The fix that compounds is **remembering what the user corrected**.
+Corrections now stick: `src/lib/foodMemory.ts` saves `phrase -> macros` under
+`sattvic-food-memory`, the food log reads it on analyse, and the numbers are
+shown as *"using your saved numbers · undo"* rather than applied silently.
+Undo forgets the entry, not just this analysis. Nothing scales by quantity —
+"2 rotis" and "5 rotis" are separate entries, deliberately.
 
-Spec as agreed:
+The thing that nearly broke it: the model often drops the count from the item
+name ("3 hash browns" came back named `hash browns`), so keying on the name
+alone would have served a 3-portion correction for 5. `memoryKey()` borrows the
+number from the phrase the user typed when the name has none.
 
-- When someone edits an item's macros in the Adjust panel and adds the meal,
-  save `normalised phrase -> macros` under a `sattvic-*` localStorage key.
-- On analyse, check that memory first and use the saved numbers when it hits.
-- **Deliberately no scaling by quantity.** Same phrase → same numbers. "2 rotis"
-  → "5 rotis" needs per-unit values and count parsing out of free text, which is
-  a new class of bugs. People log the same things the same way; this cannot be
-  wrong.
-- Show *"using your saved numbers"* with an undo rather than silently
-  overriding — quietly changing numbers is how a tracker loses trust.
+Verified end to end in the browser locally and on production, both edit paths
+(ingredient quantity and typed-in macros), plus undo and the quantity split.
 
-**One decision still open** (mine to make, ask me): whether a saved value
-overrides silently or visibly. I lean visible.
-
-Free win: CloudSync collects **any** key starting with `sattvic`, so the memory
-gets cross-device sync with no backend work and no schema change.
-
-Explicitly **not** doing yet: reading the nutrition label from a photo. Labels
-are per-100g or per-serving in a different format on every package, and getting
-that wrong is a 3× error, not a small one — it adds a second layer of AI
-uncertainty to fix the first.
+Still **not** doing: reading the nutrition label from a photo. Labels are
+per-100g or per-serving in a different format on every package, and getting
+that wrong is a 3× error — a second layer of AI uncertainty to fix the first.
 
 ## Open / unverified
 
