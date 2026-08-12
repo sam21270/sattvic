@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Plus, Trash2, Check } from "lucide-react";
 import { getMicros } from "@/lib/micronutrients";
 import { dayKey } from "@/lib/scoring";
+import { memoryKey, recallMacros, rememberMacros, forgetMacros } from "@/lib/foodMemory";
 
 interface KeyIngredient {
   name: string;
@@ -117,6 +118,13 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
   // Direct overrides typed onto an item, keyed by its index. Wins over the
   // model's estimate and over any ingredient scaling.
   const [macroEdits, setMacroEdits] = useState<Record<number, Partial<Pick<FoodItem, "calories" | "protein" | "carbs" | "fat">>>>({});
+  // Items whose numbers came from a past correction rather than the model.
+  // Shown, not applied silently — quietly changing someone's numbers is how a
+  // tracker loses trust.
+  const [fromMemory, setFromMemory] = useState<Record<number, boolean>>({});
+  // Memory key per item, fixed at analyse time — the textarea stays editable
+  // while the panel is open, so recomputing later could key off changed text.
+  const [memKeys, setMemKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const loaded = loadTodayMeals();
@@ -176,6 +184,7 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     setEdits({});
     setOpenEditor(null);
     setMacroEdits({});
+    setFromMemory({});
     try {
       const res = await fetch("/api/ai/food-log", {
         method: "POST",
@@ -185,6 +194,18 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
       if (!res.ok) throw new Error("failed");
       const data: AnalyzedMeal = await res.json();
       if (!data.items?.length) throw new Error("failed");
+      // Anything corrected before wins over a fresh guess. Reuses the same
+      // override slot a typed-in number uses, so it beats ingredient scaling too.
+      const saved: typeof macroEdits = {};
+      const hits: Record<number, boolean> = {};
+      const keys = data.items.map((it, i) => memoryKey(it.name, text, i));
+      keys.forEach((k, i) => {
+        const m = recallMacros(k);
+        if (m) { saved[i] = m; hits[i] = true; }
+      });
+      setMemKeys(keys);
+      setMacroEdits(saved);
+      setFromMemory(hits);
       setPending(data);
     } catch {
       setError("Couldn't analyze that — try describing the food a bit differently.");
@@ -193,8 +214,24 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     }
   }
 
+  // Undo: this food's saved numbers were wrong too. Drop them and show the
+  // model's estimate again.
+  function undoMemory(i: number) {
+    forgetMacros(memKeys[i]);
+    setMacroEdits((p) => { const n = { ...p }; delete n[i]; return n; });
+    setFromMemory((p) => { const n = { ...p }; delete n[i]; return n; });
+  }
+
   function confirmAdd() {
     if (!pending) return;
+    // Remember every item the user corrected, so the next "3 hashbrowns" uses
+    // their numbers instead of the model's.
+    scaledItems.forEach((item, i) => {
+      const touched =
+        Object.keys(macroEdits[i] ?? {}).length > 0 ||
+        pending.items[i].keyIngredients?.some((_, j) => edits[`${i}:${j}`] !== undefined);
+      if (touched) rememberMacros(memKeys[i], item);
+    });
     const meal: LoggedMeal = {
       id: Date.now().toString(36),
       time: new Date().toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: false }),
@@ -207,6 +244,7 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     setEdits({});
     setOpenEditor(null);
     setMacroEdits({});
+    setFromMemory({});
     setText("");
   }
 
@@ -295,6 +333,18 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
                         </button>
                       </div>
                     </div>
+
+                    {fromMemory[i] && (
+                      <p className="text-[11px] text-emerald-400/80 mt-0.5">
+                        using your saved numbers ·{" "}
+                        <button
+                          onClick={() => undoMemory(i)}
+                          className="underline hover:text-emerald-300"
+                        >
+                          undo
+                        </button>
+                      </p>
+                    )}
 
                     {/* Direct macro entry — the fallback when there are no
                         ingredients, and the override when there are. */}
