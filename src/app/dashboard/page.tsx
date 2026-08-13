@@ -191,8 +191,16 @@ function Dashboard() {
     }
   }, [justFinishedJourney]);
 
+  // Nobody asks for this sentence — it is written by the AI on its own whenever
+  // the dashboard renders with a meal logged, so reopening the page, coming
+  // back to the tab, or bouncing between pages each spent tokens on advice the
+  // reader had already read. Cached per day and score: the same standing costs
+  // one call, and the advice still refreshes the moment the score moves.
   useEffect(() => {
     if (!breakdown || log.mealsLogged === 0) return;
+    const cacheKey = `sattvic-insight-${dayKey()}-${breakdown.total}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) { setInsight(cached); setInsightLoading(false); return; }
     setInsightLoading(true);
     setInsight("");
     const t = setTimeout(async () => {
@@ -204,6 +212,7 @@ function Dashboard() {
         });
         const data = await res.json();
         setInsight(data.insight ?? "");
+        if (data.insight) localStorage.setItem(cacheKey, data.insight);
       } catch { setInsight(""); }
       finally { setInsightLoading(false); }
     }, 600);

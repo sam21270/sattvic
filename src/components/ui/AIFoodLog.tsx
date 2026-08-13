@@ -219,6 +219,31 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
     }
   }
 
+  // The way out when the AI can't answer — quota gone, service down, or it
+  // simply made no sense of the words. Without this the food log dead-ends on
+  // the one screen the whole app is built around.
+  //
+  // ponytail: no new UI. It hands the existing confirm panel a one-item meal
+  // named after what was typed, with the editor already open, so the same
+  // fields, the same memory and the same Add button do the work. A food that
+  // has been corrected before comes back filled in — so once your regulars are
+  // saved, logging them does not need the AI at all.
+  function logManually() {
+    const name = text.trim();
+    const [key] = memoryKeys([{ name }], text);
+    const saved = recallMacros(key);
+    const item: FoodItem = { name, calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    setPending({ items: [item], totals: item, note: "" });
+    setMemKeys([key]);
+    // Saved numbers ride the same override slot they do after an analysis, so
+    // the badge and its undo behave identically here.
+    setMacroEdits(saved ? { 0: saved } : {});
+    setFromMemory(saved ? { 0: true } : {});
+    setEdits({});
+    setOpenEditor(saved ? null : 0);
+    setError("");
+  }
+
   // Undo: this food's saved numbers were wrong too. Drop them and show the
   // model's estimate again.
   function undoMemory(i: number) {
@@ -306,7 +331,17 @@ export function AIFoodLog({ onTotalsChange }: { onTotalsChange?: (totals: FoodLo
             <><Sparkles className="w-4 h-4" /> Analyze with AI</>
           )}
         </button>
-        {error && <p className="text-xs text-rose-400">{error}</p>}
+        {error && (
+          <div className="space-y-1.5">
+            <p className="text-xs text-rose-400">{error}</p>
+            <button
+              onClick={logManually}
+              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+            >
+              Enter the numbers yourself instead
+            </button>
+          </div>
+        )}
       </div>
 
       {/* pending analysis — confirm before logging */}
